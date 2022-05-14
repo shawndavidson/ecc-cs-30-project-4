@@ -20,6 +20,10 @@ int StudentWorld::init()
 	// Initialize ice field - only uses lower 60 squares of screen
 	for (int x = 0; x < ICE_WIDTH; x++) {
 		for (int y = 0; y < ICE_HEIGHT; y++) {
+			// If we're within the tunnel, skip laying ice
+			if (y > 0 && x >= 30 && x <= 33)
+				continue;
+
 			m_ice[x][y] = make_shared<Ice>(x, y + ICE_ROW_BEGIN);
 		}
 	}
