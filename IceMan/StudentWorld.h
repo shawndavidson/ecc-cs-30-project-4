@@ -21,43 +21,32 @@ typedef shared_ptr<Ice>		IcePtr;
 class StudentWorld : public GameWorld
 {
 public:
-	StudentWorld(std::string assetDir)
-		: GameWorld(assetDir)
-	{
-	}
+	/*************************************************************************/
+	/* Construction														     */
+	/*************************************************************************/
+	StudentWorld(std::string assetDir);
 
-	virtual int init()
-	{
-		return GWSTATUS_CONTINUE_GAME;
-	}
+	/*************************************************************************/
+	/* Operations														     */
+	/*************************************************************************/
+    // Perform initializion
+	virtual int init();
 
-	virtual int move()
-	{
-		// This code is here merely to allow the game to build, run, and terminate after you hit enter a few times.
-		// Notice that the return value GWSTATUS_PLAYER_DIED will cause our framework to end the current level.
-		decLives();
-		return GWSTATUS_PLAYER_DIED;
-	}
+	// Handle movement for all game objects within our world
+	virtual int move();
 
-	virtual void cleanUp()
-	{
-		// Release memory for all Actors
-		for (auto actor : m_pActors) {
-			actor.reset();
-		}
-
-		// Release memory for all Ice blocks
-		for (int i = 0; i < VIEW_WIDTH; i++) {
-			for (int j = 0; j < VIEW_HEIGHT; j++) {
-				if (m_ice[i][j] != nullptr) {
-					m_ice[i][j].reset();
-				}
-			}
-		}
-	}
+	// Cleanup game objects (deallocates memory)
+	virtual void cleanUp();
 
 private:
+	/*************************************************************************/
+	/* Data Members														     */
+	/*************************************************************************/
+
+	// Container of Actors
 	std::vector<ActorPtr>	m_pActors;
+
+	// 2D Array for ice blocks 
 	IcePtr					m_ice[VIEW_WIDTH][VIEW_HEIGHT];
 };
 
