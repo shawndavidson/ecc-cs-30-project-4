@@ -5,12 +5,60 @@
 
 // Students:  Add code to this file, Actor.cpp, StudentWorld.h, and StudentWorld.cpp
 
-class Actor {
+class Actor : public GraphObject {
 public:
-	Actor() {}
-	virtual ~Actor() {}
+	// Constructor
+	Actor(int imageID,
+		int startX,
+		int startY,
+		Direction dir /*= right*/,
+		double size /*= 1.0*/,
+		unsigned int /*depth = 0*/,
+		bool visible = true,
+		bool canAnnoy = false,
+		bool canPickup = false);
 
-	virtual void doSomething() = 0;
+	// Destructor
+	virtual ~Actor();
+
+	/*************************************************************************/
+	/* Pure Virtual														     */
+	/*************************************************************************/
+	// Handle a game tick
+	virtual void doSomething()			= 0;
+
+	// Handle annoying this Actor
+	virtual void annoy()				= 0;
+
+	/*************************************************************************/
+	/* Operations														     */
+	/*************************************************************************/
+
+	// Check if we can be picked up by another Actor? 
+	bool canPickup() const;
+
+	// Check if we can be annoyed by another Actor? 
+	bool canAnnoy()	const;
+
+	// Check if we are still alive
+	bool isAlive() const;
+
+	// Update our alive status
+	void setAlive(bool alive);
+
+private:
+	/*************************************************************************/
+	/* Data Members														     */
+	/*************************************************************************/
+	
+	// If we're alive - true. Otherwise, false.
+	bool m_bAlive;
+
+	// If we're capable of being annoyed - true. Otherwise, false.
+	const bool m_bCanAnnoy;
+
+	// If we're capable of being picked up - true. Otherwise, false.
+	const bool m_bCanPickup;
 };
 
 #endif // ACTOR_H_
