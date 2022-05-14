@@ -1,4 +1,5 @@
 ﻿  Actor.cpp
+  Ice.cpp
   StudentWorld.cpp
   GameController.cpp
   GameWorld.cpp
