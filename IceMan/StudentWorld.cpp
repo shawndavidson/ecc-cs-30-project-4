@@ -8,7 +8,6 @@ GameWorld* createStudentWorld(string assetDir)
 }
 
 // Students:  Add code to this file (if you wish), StudentWorld.h, Actor.h and Actor.cpp
-
 // Constructor
 StudentWorld::StudentWorld(std::string assetDir)
 	: GameWorld(assetDir)
@@ -47,8 +46,8 @@ void StudentWorld::cleanUp()
 	}
 
 	// Release memory for all Ice blocks
-	for (int x = 0; x < VIEW_WIDTH; x++) {
-		for (int y = 0; y < VIEW_HEIGHT; y++) {
+	for (int x = 0; x < ICE_WIDTH; x++) {
+		for (int y = 0; y < ICE_HEIGHT; y++) {
 			if (m_ice[x][y] != nullptr) {
 				m_ice[x][y].reset();
 			}
