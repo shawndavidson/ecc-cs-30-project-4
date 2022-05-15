@@ -9,7 +9,7 @@ public:
 	/* Construction														     */
 	/*************************************************************************/
 	// Constructor
-	Ice(int startX, int startY);
+	Ice(StudentWorld* pStudentWorld, int startX, int startY);
 
 	// Destructor
 	virtual ~Ice();

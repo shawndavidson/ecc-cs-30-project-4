@@ -5,15 +5,20 @@
 
 // Students:  Add code to this file, Actor.cpp, StudentWorld.h, and StudentWorld.cpp
 
+// Forward Declaration
+class StudentWorld;
+
 class Actor : public GraphObject {
 public:
 	// Constructor
-	Actor(int imageID,
+	Actor(
+		StudentWorld* pStudentWorld,
+		int imageID,
 		int startX,
 		int startY,
 		Direction dir /*= right*/,
 		double size /*= 1.0*/,
-		unsigned int /*depth = 0*/,
+		unsigned int depth /*= 0*/,
 		bool visible = true,
 		bool canAnnoy = false,
 		bool canPickup = false);
@@ -46,6 +51,9 @@ public:
 	// Update our alive status
 	void setAlive(bool alive);
 
+	// Get a pointer to StudentWorld
+	StudentWorld* getStudentWorld();
+
 private:
 	/*************************************************************************/
 	/* Data Members														     */
@@ -59,6 +67,9 @@ private:
 
 	// If we're capable of being picked up - true. Otherwise, false.
 	const bool m_bCanPickup;
+
+	// Pointer to our world so we can interact with other Actors 
+	StudentWorld* m_pStudentWorld;
 };
 
 #endif // ACTOR_H_

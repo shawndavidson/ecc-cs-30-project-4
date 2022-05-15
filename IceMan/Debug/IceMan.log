@@ -1,2 +1,9 @@
-﻿  StudentWorld.cpp
+﻿  Actor.cpp
+  Ice.cpp
+  IceMan.cpp
+  StudentWorld.cpp
+  GameController.cpp
+  GameWorld.cpp
+  main.cpp
+  Generating Code...
   IceMan.vcxproj -> C:\Users\Shawn Davidson\source\repos\ecc-cs-30-project-4\Debug\IceMan.exe

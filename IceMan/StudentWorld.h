@@ -7,12 +7,17 @@
 #include <vector>
 #include <memory>
 
-#include "Actor.h"
-#include "Ice.h"
+//#include "Actor.h"
+//#include "Ice.h"
 
 // Students:  Add code to this file, StudentWorld.cpp, Actor.h, and Actor.cpp
 
 using namespace std;
+
+// Forward Declarations
+class Actor;
+class IceMan;
+class Ice;
 
 /*************************************************************************/
 /* Type Declaration(s)														     */
@@ -53,7 +58,8 @@ private:
 	/*************************************************************************/
 
 	// Container of Actors
-	std::vector<ActorPtr>	m_pActors;
+	std::vector<ActorPtr>	m_actors;
+	std::weak_ptr<IceMan>   m_pIceMan;
 
 	// 2D Array for ice blocks 
 	IcePtr m_ice[ICE_WIDTH][ICE_HEIGHT];

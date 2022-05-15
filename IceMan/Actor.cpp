@@ -4,7 +4,9 @@
 // Students:  Add code to this file (if you wish), Actor.h, StudentWorld.h, and StudentWorld.cpp
 
 // Constructor
-Actor::Actor(int imageID,
+Actor::Actor(
+	StudentWorld* pStudentWorld,
+	int imageID,
 	int startX,
 	int startY,
 	Direction dir /*= right*/,
@@ -15,7 +17,8 @@ Actor::Actor(int imageID,
 	bool canPickup /*= false*/)
 	: GraphObject(imageID, startX, startY, dir, size, depth),
 	m_bCanAnnoy(canAnnoy),
-	m_bCanPickup(canPickup)
+	m_bCanPickup(canPickup),
+	m_pStudentWorld(pStudentWorld)
 {
 	setVisible(visible);
 }
@@ -43,4 +46,10 @@ bool Actor::isAlive() const {
 // Update our alive status
 void Actor::setAlive(bool alive) {
 	m_bAlive = alive;
+}
+
+// Get a pointer to StudentWorld
+StudentWorld* Actor::getStudentWorld() 
+{ 
+	return m_pStudentWorld; 
 }

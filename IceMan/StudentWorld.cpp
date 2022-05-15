@@ -1,5 +1,10 @@
-#include "StudentWorld.h"
 #include <string>
+
+#include "StudentWorld.h"
+#include "IceMan.h"
+#include "Actor.h"
+#include "Ice.h"
+
 using namespace std;
 
 GameWorld* createStudentWorld(string assetDir)
@@ -24,8 +29,30 @@ int StudentWorld::init()
 			if (y > 0 && x >= 30 && x <= 33)
 				continue;
 
-			m_ice[x][y] = make_shared<Ice>(x, y + ICE_ROW_BEGIN);
+			try {
+				// Instantiate an ice block
+				m_ice[x][y] = make_shared<Ice>(this, x, y);
+			}
+			catch (bad_alloc& /*ex*/) {
+				cout << "Unable to allocate memory for an ice block" << endl;
+			}
 		}
+	}
+
+	// Initialize IceMan
+	shared_ptr<IceMan> pIceMan;
+
+	try {
+		// Instantiate IceMan
+		pIceMan = make_shared<IceMan>(this);
+
+		// Retain a weak pointer so we can easily reach IceMan when necessary
+		m_pIceMan = pIceMan;
+
+		m_actors.push_back(pIceMan);
+	}
+	catch (bad_alloc& /*ex*/) {
+		cout << "Unable to allocate memory for IceMan" << endl;
 	}
 
 	return GWSTATUS_CONTINUE_GAME;
@@ -38,6 +65,22 @@ int StudentWorld::move()
 	// Notice that the return value GWSTATUS_PLAYER_DIED will cause our framework to end the current level.
 	decLives();
 
+	for (auto actor : m_actors) {
+		// TODO: Do we call doSomething() if it's not alive?
+		if (actor != nullptr)
+			actor->doSomething();
+	}
+
+	// TODO: Do we need to call doSomething() for the ice? Think of the
+	// use case where it's falling
+	for (int x = 0; x < ICE_WIDTH; x++) {
+		for (int y = 0; y < ICE_HEIGHT; y++) {
+			if (m_ice[x][y] != nullptr) {
+				m_ice[x][y]->doSomething();
+			}
+		}
+	}
+
 	return GWSTATUS_CONTINUE_GAME;
 }
 
@@ -45,7 +88,7 @@ int StudentWorld::move()
 void StudentWorld::cleanUp()
 {
 	// Release memory for all Actors
-	for (auto actor : m_pActors) {
+	for (auto actor : m_actors) {
 		actor.reset();
 	}
 
