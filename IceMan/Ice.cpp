@@ -6,7 +6,7 @@ Ice::Ice(StudentWorld* pStudentWorld, int startX, int startY)
 			IID_ICE, 
 		    startX, startY, 
 		    Direction::right, 
-		    0.25 /*size*/,
+			ICE_SIZE /*size*/,
 		    3 /*depth*/,
 		    true /*visible*/,
 		    false /*canAnnoy*/,
@@ -18,9 +18,12 @@ Ice::Ice(StudentWorld* pStudentWorld, int startX, int startY)
 Ice::~Ice() {
 }
 
-// Handle Annoy
+// Handle tick
 void Ice::doSomething() {
-	// Ice doesn't do anything
+	// Is we're no longer alive, make ourselves invisible
+	if (!isAlive()) {
+		setVisible(false);
+	}
 }
 
 // Handle Annoy
