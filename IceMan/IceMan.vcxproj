@@ -83,6 +83,7 @@
   <ItemGroup>
     <ClCompile Include="Actor.cpp" />
     <ClCompile Include="Ice.cpp" />
+    <ClCompile Include="IceMan.cpp" />
     <ClCompile Include="StudentWorld.cpp" />
     <ClCompile Include="GameController.cpp">
       <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MultiThreaded</RuntimeLibrary>
@@ -93,6 +94,7 @@
   <ItemGroup>
     <ClInclude Include="Actor.h" />
     <ClInclude Include="Ice.h" />
+    <ClInclude Include="IceMan.h" />
     <ClInclude Include="StudentWorld.h" />
     <ClInclude Include="GameConstants.h" />
     <ClInclude Include="GameController.h" />

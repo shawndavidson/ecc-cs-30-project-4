@@ -1,8 +1,9 @@
 #include "Ice.h"
 
 // Constructor
-Ice::Ice(int startX, int startY)
-	: Actor(IID_ICE, 
+Ice::Ice(StudentWorld* pStudentWorld, int startX, int startY)
+	: Actor(pStudentWorld, 
+			IID_ICE, 
 		    startX, startY, 
 		    Direction::right, 
 		    0.25 /*size*/,
@@ -17,10 +18,12 @@ Ice::Ice(int startX, int startY)
 Ice::~Ice() {
 }
 
+// Handle Annoy
 void Ice::doSomething() {
 	// Ice doesn't do anything
 }
 
+// Handle Annoy
 void Ice::annoy() {
 	// You can't annoy ice
 }
