@@ -26,7 +26,7 @@ typedef shared_ptr<Actor>	ActorPtr;
 typedef shared_ptr<Ice>		IcePtr;
 
 /*************************************************************************/
-/* Construction														     */
+/* Constants														     */
 /*************************************************************************/
 const int ICE_ROW_BEGIN = 4;
 const int ICE_WIDTH		= VIEW_WIDTH;

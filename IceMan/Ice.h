@@ -2,6 +2,9 @@
 #define ICE_H_
 
 #include "Actor.h"
+
+const double ICE_SIZE = 0.25;
+
 class Ice : public Actor
 {
 public:

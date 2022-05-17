@@ -6,6 +6,8 @@
 // Forward Declaration
 class StudentWorld;
 
+const double ICEMAN_SIZE = 1.0;
+
 class IceMan : public Actor
 {
 public:

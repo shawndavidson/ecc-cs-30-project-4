@@ -8,7 +8,7 @@ IceMan::IceMan(StudentWorld* pStudentWorld)
             30 /*startX*/,
             60 /*startY*/,
             Direction::right,
-            1.0 /*size*/,
+            ICEMAN_SIZE /*size*/,
             0 /*depth*/,
             true /*visible*/,
             true /*canAnnoy*/,
