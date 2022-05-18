@@ -82,9 +82,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Actor.cpp" />
+    <ClCompile Include="HardcoreProtester.cpp" />
     <ClCompile Include="Ice.cpp" />
     <ClCompile Include="IceMan.cpp" />
     <ClCompile Include="Protester.cpp" />
+    <ClCompile Include="RegularProtester.cpp" />
     <ClCompile Include="StudentWorld.cpp" />
     <ClCompile Include="GameController.cpp">
       <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MultiThreaded</RuntimeLibrary>
@@ -94,9 +96,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Actor.h" />
+    <ClInclude Include="HardcoreProtester.h" />
     <ClInclude Include="Ice.h" />
     <ClInclude Include="IceMan.h" />
     <ClInclude Include="Protester.h" />
+    <ClInclude Include="RegularProtester.h" />
     <ClInclude Include="StudentWorld.h" />
     <ClInclude Include="GameConstants.h" />
     <ClInclude Include="GameController.h" />
