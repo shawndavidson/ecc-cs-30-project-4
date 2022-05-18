@@ -1,43 +1,38 @@
-#ifndef ICE_H_
-#define ICE_H_
+#ifndef OIL_BARREL_H_
+#define OIL_BARREL_H_
 
-#include "Actor.h"
+#include "Goodie.h"
 
-const double ICE_SIZE = 0.25;
-const int ICE_DEPTH = 3;
+const double OIL_BARREL_SIZE = 1.00;
+const int OIL_BARREL_DEPTH = 2;
+const int OIL_BARREL_POINTS = 1000;
 
-class Ice : public Actor
+class OilBarrel : public Goodie
 {
 public:
 	/*************************************************************************/
 	/* Construction														     */
 	/*************************************************************************/
 	// Constructor
-	Ice(StudentWorld* pStudentWorld, int startX, int startY);
+	OilBarrel(StudentWorld* pStudentWorld, int startX, int startY);
 
 	// Destructor
-	virtual ~Ice();
+	~OilBarrel();
 
 	/*************************************************************************/
 	/* Operations													     */
 	/*************************************************************************/
-	virtual void doSomething();
-	virtual void annoy();
-	
+	void doSomething();
+	// Handles when a Goodie is collected
+	void collect();
+
 	/*************************************************************************/
 	/* Getters/Setters													     */
 	/*************************************************************************/
-
-
-	/*************************************************************************/
-	/* Pure Virtual														     */
-	/*************************************************************************/
-
-
 private:
 	/*************************************************************************/
 	/* Data Members													     */
 	/*************************************************************************/
 };
 
-#endif ICE_H_
+#endif OIL_BARREL_H_

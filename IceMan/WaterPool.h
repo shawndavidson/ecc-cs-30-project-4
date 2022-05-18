@@ -1,43 +1,38 @@
-#ifndef ICE_H_
-#define ICE_H_
+#ifndef WATER_POOL_H_
+#define WATER_POOL_H_
 
-#include "Actor.h"
+#include "Goodie.h"
 
-const double ICE_SIZE = 0.25;
-const int ICE_DEPTH = 3;
+const double WATER_POOL_SIZE = 1.00;
+const int WATER_POOL_DEPTH = 2;
+const int WATER_POOL_POINTS = 1000;
 
-class Ice : public Actor
+class WaterPool : public Goodie
 {
 public:
 	/*************************************************************************/
 	/* Construction														     */
 	/*************************************************************************/
 	// Constructor
-	Ice(StudentWorld* pStudentWorld, int startX, int startY);
+	WaterPool(StudentWorld* pStudentWorld, int startX, int startY);
 
 	// Destructor
-	virtual ~Ice();
+	~WaterPool();
 
 	/*************************************************************************/
 	/* Operations													     */
 	/*************************************************************************/
-	virtual void doSomething();
-	virtual void annoy();
-	
+	void doSomething();
+	// Handles when a Goodie is collected
+	void collect();
+
 	/*************************************************************************/
 	/* Getters/Setters													     */
 	/*************************************************************************/
-
-
-	/*************************************************************************/
-	/* Pure Virtual														     */
-	/*************************************************************************/
-
-
 private:
 	/*************************************************************************/
 	/* Data Members													     */
 	/*************************************************************************/
 };
 
-#endif ICE_H_
+#endif WATER_POOL_H_

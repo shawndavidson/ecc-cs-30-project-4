@@ -16,6 +16,7 @@ Ice::Ice(StudentWorld* pStudentWorld, int startX, int startY)
 
 // Destructor
 Ice::~Ice() {
+	getGraphObjects(ICE_DEPTH).erase(this);
 }
 
 // Handle tick

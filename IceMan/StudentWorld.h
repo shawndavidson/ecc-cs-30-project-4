@@ -16,8 +16,10 @@ using namespace std;
 
 // Forward Declarations
 class Actor;
+class Goodie;
 class IceMan;
 class Ice;
+class OilBarrel;
 
 /*************************************************************************/
 /* Type Declaration(s)														     */
@@ -51,6 +53,10 @@ public:
 
 	// Cleanup game objects (deallocates memory)
 	virtual void cleanUp();
+
+	// Remove all dead game objects (deallocate memory)
+	virtual void removeDeadGameObjects();
+
 
 private:
 	/*************************************************************************/

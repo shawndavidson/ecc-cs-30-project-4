@@ -1,43 +1,41 @@
-#ifndef ICE_H_
-#define ICE_H_
+#ifndef SONAR_KIT_H_
+#define SONAR_KIT_H_
 
-#include "Actor.h"
+#include "Goodie.h"
 
-const double ICE_SIZE = 0.25;
-const int ICE_DEPTH = 3;
+const double SONAR_KIT_SIZE = 1.00;
+const int SONAR_KIT_DEPTH = 2;
+const int SONAR_KIT_POINTS = 75;
 
-class Ice : public Actor
+class SonarKit : public Goodie
 {
 public:
 	/*************************************************************************/
 	/* Construction														     */
 	/*************************************************************************/
 	// Constructor
-	Ice(StudentWorld* pStudentWorld, int startX, int startY);
+	SonarKit(StudentWorld* pStudentWorld,
+		int startX,
+		int startY,
+		bool isVisible);
 
 	// Destructor
-	virtual ~Ice();
+	~SonarKit();
 
 	/*************************************************************************/
 	/* Operations													     */
 	/*************************************************************************/
-	virtual void doSomething();
-	virtual void annoy();
-	
+	void doSomething();
+	// Handles when a Sonar Kit is collected
+	void collect();
+
 	/*************************************************************************/
 	/* Getters/Setters													     */
 	/*************************************************************************/
-
-
-	/*************************************************************************/
-	/* Pure Virtual														     */
-	/*************************************************************************/
-
-
 private:
 	/*************************************************************************/
 	/* Data Members													     */
 	/*************************************************************************/
 };
 
-#endif ICE_H_
+#endif SONAR_KIT_H_

@@ -4,6 +4,10 @@
 #include "IceMan.h"
 #include "Actor.h"
 #include "Ice.h"
+#include "OilBarrel.h"
+#include "Gold.h"
+#include "SonarKit.h"
+#include "WaterPool.h"
 
 using namespace std;
 
@@ -57,6 +61,82 @@ int StudentWorld::init()
 		cout << "Unable to allocate memory for IceMan" << endl;
 	}
 
+	// Initialize OilBarrels
+	shared_ptr<OilBarrel> pOilBarrel;
+	int NUM_OIL_BARRELS = 10; // FIXME this should be handled somewhere else
+	for (int i = 0; i < NUM_OIL_BARRELS; ++i) {
+		try {
+			// This ensures it does not appear in the tunnel
+			int x = rand() % 60;
+			while (x >= 27 && x <= 33)
+				x = rand() % 60;
+			int y = rand() % 56;
+			pOilBarrel = make_shared<OilBarrel>(this, x, y); // FIXME should not appear in open tunnel
+
+			m_actors.push_back(pOilBarrel);
+		}
+		catch (bad_alloc&) {
+			cout << "Unable to allocate memory for Oil Barrel" << endl;
+		}
+	}
+
+	// Initialize Gold Nuggets
+	shared_ptr<Gold> pGold;
+	int NUM_GOLD_NUGGETS = 5; // FIXME this should be handled somewhere else
+	for (int i = 0; i < NUM_GOLD_NUGGETS; ++i) {
+
+		try {
+			// This ensures it does not appear in the tunnel
+			int x = rand() % 60;
+			while (x >= 27 && x <= 33)
+				x = rand() % 60;
+			int y = rand() % 56;
+			
+			pGold = make_shared<Gold>(this, x, y, true, true);
+
+			m_actors.push_back(pGold);
+		}
+		catch (bad_alloc&) {
+			cout << "Unable to allocate memory for Gold Nugget" << endl;
+		}
+	}
+	
+	// Initialize Sonar Kits
+	shared_ptr<SonarKit> pSonar;
+	int NUM_SONAR_KITS = 2; // FIXME this should be handled somewhere else
+	for (int i = 0; i < NUM_SONAR_KITS; ++i) {
+		try {
+
+			// This ensures it does not appear in the tunnel
+			int x = rand() % 60;
+			while (x >= 27 && x <= 33)
+				x = rand() % 60;
+			int y = rand() % 56;
+			pSonar = make_shared<SonarKit>(this, x, y, true);  // FIXME should not appear in open tunnel
+
+			m_actors.push_back(pSonar);
+		}
+		catch (bad_alloc&) {
+			cout << "Unable to allocate memory for Sonar Kit" << endl;
+		}
+	}
+
+	// Initialize Water Pools
+	shared_ptr<WaterPool> pWaterPool;
+	int NUM_WATER_POOLS = 2; // FIXME NUM_WATER_POOLS FIXME this should be handled somewhere else
+	for (int i = 0; i < NUM_SONAR_KITS; ++i) {
+		try {
+			// Randomizes starting x and y
+			int x = rand() % 60;
+			int y = rand() % 56;
+			pWaterPool = make_shared<WaterPool>(this, x, y);
+
+			m_actors.push_back(pWaterPool);
+		}
+		catch (bad_alloc&) {
+			cout << "Unable to allocate memory for Water Pool" << endl;
+		}
+	}
 	return GWSTATUS_CONTINUE_GAME;
 }
 
@@ -97,6 +177,7 @@ int StudentWorld::move()
 			}
 
 		}
+
 	}
 
 	// Give the ice a chance to do something during this tick
@@ -126,6 +207,14 @@ void StudentWorld::cleanUp()
 			if (m_ice[x][y] != nullptr) {
 				m_ice[x][y].reset();
 			}
+		}
+	}
+}
+
+void StudentWorld::removeDeadGameObjects() {
+	for (auto actor : m_actors) {
+		if (actor->isAlive() == false) {
+			actor.reset();
 		}
 	}
 }
