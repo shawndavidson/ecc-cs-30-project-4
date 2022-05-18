@@ -1,4 +1,5 @@
 #include "IceMan.h"
+#include "Ice.h"
 #include "StudentWorld.h"
 
 // Constructor
@@ -50,14 +51,14 @@ void IceMan::doSomething() {
                 break;
             case KEY_PRESS_RIGHT:
                 // If we're already facing right, move right. Otherwise, just face right;
-                if (getDirection() == Direction::right && x < (VIEW_WIDTH-size-1))
+                if (getDirection() == Direction::right && x < (VIEW_WIDTH-(size*ICEMAN_SIZE/ICE_SIZE)))
                     moveTo(x + 1, y);
                 else
                     setDirection(Direction::right);
                 break;
             case KEY_PRESS_UP:
                 // If we're already facing up, move up. Otherwise, just face up;
-                if (getDirection() == Direction::up && y < (VIEW_HEIGHT-size-ICE_ROW_BEGIN))
+                if (getDirection() == Direction::up && y < ICE_HEIGHT)
                     moveTo(x, y + 1);
                 else
                     setDirection(Direction::up);

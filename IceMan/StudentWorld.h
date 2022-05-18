@@ -7,9 +7,6 @@
 #include <vector>
 #include <memory>
 
-//#include "Actor.h"
-//#include "Ice.h"
-
 // Students:  Add code to this file, StudentWorld.cpp, Actor.h, and Actor.cpp
 
 using namespace std;
