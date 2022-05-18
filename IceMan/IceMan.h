@@ -17,8 +17,17 @@ public:
     // Constructor
     IceMan(StudentWorld* pStudentWorld);
 
+    // Prevent copying 
+    IceMan(const IceMan&) = delete;
+
     // Destructor
     virtual ~IceMan();
+
+    /*************************************************************************/
+    /* Operators													     */
+    /*************************************************************************/
+    // Prevent assignment 
+    IceMan& operator=(const IceMan&) = delete;
 
     /*************************************************************************/
     /* Operations													     */

@@ -10,6 +10,10 @@ class StudentWorld;
 
 class Actor : public GraphObject {
 public:
+	/*************************************************************************/
+	/* Construction														     */
+	/*************************************************************************/
+
 	// Constructor
 	Actor(
 		StudentWorld* pStudentWorld,
@@ -23,11 +27,21 @@ public:
 		bool canAnnoy = false,
 		bool canPickup = false);
 
+	// Prevent copying 
+	Actor(const Actor&) = delete;
+
 	// Destructor
 	virtual ~Actor();
 
 	/*************************************************************************/
-	/* Pure Virtual														     */
+	/* Operators													     */
+	/*************************************************************************/
+	// Prevent assignment 
+	Actor& operator=(const Actor&) = delete;
+
+
+	/*************************************************************************/
+	/* Interface (pure virtual)														     */
 	/*************************************************************************/
 	// Handle a game tick
 	virtual void doSomething()			= 0;
