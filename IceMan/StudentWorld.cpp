@@ -4,6 +4,8 @@
 #include "IceMan.h"
 #include "Actor.h"
 #include "Ice.h"
+#include "RegularProtester.h"
+#include "HardcoreProtester.h"
 
 using namespace std;
 
@@ -55,6 +57,17 @@ int StudentWorld::init()
 	}
 	catch (bad_alloc& /*ex*/) {
 		cout << "Unable to allocate memory for IceMan" << endl;
+	}
+
+	// TODO: Remove
+	// Initialize a Regular and Hardcore Protester 
+	try {
+		m_actors.push_back(make_shared<RegularProtester>(this, 40, ICE_HEIGHT));
+		m_actors.push_back(make_shared<HardcoreProtester>(this, 50, ICE_HEIGHT));
+
+	}
+	catch (bad_alloc& /*ex*/) {
+		cout << "Unable to allocate memory for Regular Protester" << endl;
 	}
 
 	return GWSTATUS_CONTINUE_GAME;
