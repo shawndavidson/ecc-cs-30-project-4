@@ -71,7 +71,16 @@ void IceMan::doSomething() {
                     setDirection(Direction::down);
                 break;
             case KEY_PRESS_SPACE:
-                // TODO
+                {
+                    // TODO: Remove - for testing
+                    const int tick = getStudentWorld()->getTick() + 100;
+
+                    Event e(tick, Event::Types::EVENT_TEST);
+
+                    getStudentWorld()->pushEvent(e);
+
+                    cout << "Pushing event in IceMan::doSomething() at tick " << getStudentWorld()->getTick() << endl;
+                }
                 break;
             case KEY_PRESS_ESCAPE:
                 // TODO

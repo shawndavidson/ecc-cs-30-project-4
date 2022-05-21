@@ -1,4 +1,6 @@
 #include "RegularProtester.h"
+#include "StudentWorld.h"
+#include "Event.h"
 
 // Constructor
 RegularProtester::RegularProtester(
@@ -10,6 +12,14 @@ RegularProtester::RegularProtester(
         startX,
         startY)
 {
+    // TODO: Remove - for testing
+    getStudentWorld()->listenForEvent(
+        Event::Types::EVENT_TEST,
+        [&]() { 
+            // TODO: Is capturing "this" safe or could it create a memory leak? Consider
+            // using a shared_pointer
+            this->handleEvent(); 
+        });
 }
 
 // Destructor
@@ -24,4 +34,10 @@ void RegularProtester::doSomething() {
 // Annoy the Protester
 void RegularProtester::annoy() {
     // TODO
+}
+
+// Handle an Event
+void RegularProtester::handleEvent() {
+    std::cout << "Reached RegularProtester::handleEvent() at tick "
+        << getStudentWorld()->getTick() << "!" << std::endl;
 }

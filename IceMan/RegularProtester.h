@@ -2,6 +2,7 @@
 #define REGULARPROTESTER_H_
 
 #include "Protester.h"
+#include <iostream>
 
 class RegularProtester : public Protester
 {
@@ -32,6 +33,9 @@ public:
 	/*************************************************************************/
 	virtual void doSomething();
 	virtual void annoy();
+
+	// Handle an Event
+	void handleEvent();
 
 private:
 };
