@@ -82,6 +82,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Actor.cpp" />
+    <ClCompile Include="Event.cpp" />
     <ClCompile Include="HardcoreProtester.cpp" />
     <ClCompile Include="Ice.cpp" />
     <ClCompile Include="IceMan.cpp" />
@@ -96,6 +97,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Actor.h" />
+    <ClInclude Include="Event.h" />
     <ClInclude Include="HardcoreProtester.h" />
     <ClInclude Include="Ice.h" />
     <ClInclude Include="IceMan.h" />
