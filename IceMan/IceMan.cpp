@@ -71,7 +71,17 @@ void IceMan::doSomething() {
                     setDirection(Direction::down);
                 break;
             case KEY_PRESS_SPACE:
-                // TODO
+                {
+                    // TODO: Remove - for testing
+                    const int tick = getStudentWorld()->getTick() + 100;
+
+                    // Pass along this data with the Event
+                    struct Data data { 1234, "Hello World!" };
+
+                    getStudentWorld()->pushEvent(make_shared<Event<Data>>( tick, EventTypes::EVENT_TEST, data ));
+
+                    cout << "Pushing event in IceMan::doSomething() at tick " << getStudentWorld()->getTick() << endl;
+                }
                 break;
             case KEY_PRESS_ESCAPE:
                 // TODO

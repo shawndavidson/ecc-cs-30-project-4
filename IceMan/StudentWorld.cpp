@@ -1,4 +1,5 @@
 #include <string>
+#include <exception>
 
 #include "StudentWorld.h"
 #include "IceMan.h"
@@ -6,6 +7,7 @@
 #include "Ice.h"
 #include "RegularProtester.h"
 #include "HardcoreProtester.h"
+#include "Event.h"
 
 using namespace std;
 
@@ -19,13 +21,25 @@ GameWorld* createStudentWorld(string assetDir)
 // Students:  Add code to this file (if you wish), StudentWorld.h, Actor.h and Actor.cpp
 // Constructor
 StudentWorld::StudentWorld(std::string assetDir)
-	: GameWorld(assetDir)
+:	GameWorld(assetDir), 
+	m_nTick(0), 
+	m_actors(), 
+	m_pIceMan(),
+	m_events(),
+	m_eventListeners()
 {
+}
+
+// Destructor
+StudentWorld::~StudentWorld() {
 }
 
 // Perform initializion
 int StudentWorld::init()
 {
+	// Reset time
+	m_nTick = 0;
+
 	// Initialize ice field - only uses lower 60 squares of screen
 	for (int x = 0; x < ICE_WIDTH; x++) {
 		for (int y = 0; y < ICE_HEIGHT; y++) {
@@ -78,7 +92,10 @@ int StudentWorld::move()
 {
 	// This code is here merely to allow the game to build, run, and terminate after you hit enter a few times.
 	// Notice that the return value GWSTATUS_PLAYER_DIED will cause our framework to end the current level.
-	decLives();
+	//decLives();
+
+	// Handle the next event from the min heap
+	processNextEvent();
 
 	// Give ALL Actors a chance to do something during this tick
 	for (auto actor : m_actors) {
@@ -122,6 +139,9 @@ int StudentWorld::move()
 		}
 	}
 
+	// Increment time. Keep this at the end of this method.
+	m_nTick++;
+	
 	return GWSTATUS_CONTINUE_GAME;
 }
 
@@ -141,4 +161,41 @@ void StudentWorld::cleanUp()
 			}
 		}
 	}
+}
+
+
+// Process the next Event
+void StudentWorld::processNextEvent() {
+	// Iterate through all of the events for this tick
+	while (!m_events.empty() && m_nTick >= m_events.top()->getTick()) {
+		SharedEventPtr e = m_events.top();
+
+		// Skip any missed events but print an error message
+		if (m_nTick > e->getTick()) {
+			cout << "Uh oh! StudentWorld::processNextEvent() is late to process this event: " << *e;
+		}
+
+		try {
+			auto iterBegin = m_eventListeners.lower_bound(e->getType());
+			auto iterEnd = m_eventListeners.upper_bound(e->getType());
+
+			// Iterate through all pairs where the key matches our Event type
+			for (auto it = iterBegin; it != iterEnd; it++) {
+				EventCallback& callback = it->second;
+
+				callback(e);
+			}
+		}
+		catch (exception& ex) {
+			cout << "An exception occured within a callback associated with an Event of type: " << *e << endl;
+			cout << ex.what() << endl;
+		}
+
+		m_events.pop();
+	}
+}
+
+// Register for an Event
+void StudentWorld::listenForEvent(EventTypes type, EventCallback callback) {
+	m_eventListeners.insert({ type, callback });
 }

@@ -3,9 +3,12 @@
 
 #include "GameWorld.h"
 #include "GameConstants.h"
+#include "Event.h"
 #include <string>
 #include <vector>
 #include <memory>
+#include <queue>
+#include <map>
 
 // Students:  Add code to this file, StudentWorld.cpp, Actor.h, and Actor.cpp
 
@@ -19,8 +22,9 @@ class Ice;
 /*************************************************************************/
 /* Type Declaration(s)														     */
 /*************************************************************************/
-typedef shared_ptr<Actor>	ActorPtr;
-typedef shared_ptr<Ice>		IcePtr;
+typedef shared_ptr<Actor>			ActorPtr;
+typedef shared_ptr<Ice>				IcePtr;
+typedef std::function<void(SharedEventPtr)>	EventCallback;
 
 /*************************************************************************/
 /* Constants														     */
@@ -40,11 +44,19 @@ public:
 	// Prevent copying 
 	StudentWorld(const StudentWorld&) = delete;
 
+	virtual ~StudentWorld();
+
 	/*************************************************************************/
 	/* Operators													     */
 	/*************************************************************************/
 	// Prevent assignment 
 	StudentWorld& operator=(const StudentWorld&) = delete;
+
+	/*************************************************************************/
+	/* Getters/Setters													     */
+	/*************************************************************************/
+	// Get the tick which represents time
+	unsigned long getTick()	const { return m_nTick; }
 
 	/*************************************************************************/
 	/* Operations														     */
@@ -58,10 +70,33 @@ public:
 	// Cleanup game objects (deallocates memory)
 	virtual void cleanUp();
 
+	// Schedule a new Event
+	void pushEvent(SharedEventPtr e)			{ m_events.push(e); }
+
+	// Get the Event with the smallest tick
+	//Event topEvent()						{ return m_events.top(); }
+
+	// Is there another Event in the queue?
+	//bool isEventQueueEmpty() const			{ return m_events.empty(); }
+
+	// Register for an Event
+	void listenForEvent(EventTypes type, EventCallback callback);
+
+private:
+	/*************************************************************************/
+	/* Helpers																 */
+	/*************************************************************************/
+
+	// Process the next Event
+	void processNextEvent();
+
 private:
 	/*************************************************************************/
 	/* Data Members														     */
 	/*************************************************************************/
+
+	// Time
+	unsigned long m_nTick;
 
 	// Container of Actors
 	std::vector<ActorPtr>	m_actors;
@@ -69,6 +104,26 @@ private:
 
 	// 2D Array for ice blocks 
 	IcePtr m_ice[ICE_WIDTH][ICE_HEIGHT];
+
+
+	// Declaration for a Function Object to compare two Events 
+	// in descending order by their tick (time)
+	class EventComparator
+	{
+	public:
+		// Function operator
+		int operator() (const SharedEventPtr& e1, const SharedEventPtr& e2)
+		{
+			return e1->getTick() > e2->getTick();
+		}
+	};
+
+	// Event Queue (Min Heap)
+	// TODO: Make it thread-safe
+	std::priority_queue<SharedEventPtr, vector<SharedEventPtr>, StudentWorld::EventComparator> m_events;
+
+	// Registry of Event Listeners
+	std::multimap<EventTypes, EventCallback> m_eventListeners;
 };
 
 #endif // STUDENTWORLD_H_
