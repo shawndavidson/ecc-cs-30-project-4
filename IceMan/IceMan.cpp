@@ -75,9 +75,8 @@ void IceMan::doSomething() {
                     // TODO: Remove - for testing
                     const int tick = getStudentWorld()->getTick() + 100;
 
+                    // Pass along this data with the Event
                     struct Data data { 1234, "Hello World!" };
-
-                    //Event<Data> e(tick, EventTypes::EVENT_TEST, data);
 
                     getStudentWorld()->pushEvent(make_shared<Event<Data>>( tick, EventTypes::EVENT_TEST, data ));
 

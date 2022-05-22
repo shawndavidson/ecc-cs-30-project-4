@@ -163,6 +163,7 @@ void StudentWorld::cleanUp()
 	}
 }
 
+
 // Process the next Event
 void StudentWorld::processNextEvent() {
 	// Iterate through all of the events for this tick
@@ -175,8 +176,8 @@ void StudentWorld::processNextEvent() {
 		}
 
 		try {
-			auto iterBegin	= m_eventListeners.lower_bound(e->getType());
-			auto iterEnd	= m_eventListeners.upper_bound(e->getType());
+			auto iterBegin = m_eventListeners.lower_bound(e->getType());
+			auto iterEnd = m_eventListeners.upper_bound(e->getType());
 
 			// Iterate through all pairs where the key matches our Event type
 			for (auto it = iterBegin; it != iterEnd; it++) {
