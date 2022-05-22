@@ -75,9 +75,11 @@ void IceMan::doSomething() {
                     // TODO: Remove - for testing
                     const int tick = getStudentWorld()->getTick() + 100;
 
-                    Event e(tick, Event::Types::EVENT_TEST);
+                    struct Data data { 1234, "Hello World!" };
 
-                    getStudentWorld()->pushEvent(e);
+                    //Event<Data> e(tick, EventTypes::EVENT_TEST, data);
+
+                    getStudentWorld()->pushEvent(make_shared<Event<Data>>( tick, EventTypes::EVENT_TEST, data ));
 
                     cout << "Pushing event in IceMan::doSomething() at tick " << getStudentWorld()->getTick() << endl;
                 }

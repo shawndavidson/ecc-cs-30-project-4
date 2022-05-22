@@ -14,11 +14,15 @@ RegularProtester::RegularProtester(
 {
     // TODO: Remove - for testing
     getStudentWorld()->listenForEvent(
-        Event::Types::EVENT_TEST,
-        [&]() { 
-            // TODO: Is capturing "this" safe or could it create a memory leak? Consider
-            // using a shared_pointer
-            this->handleEvent(); 
+        EventTypes::EVENT_TEST,
+        [&](SharedEventPtr pEvent) {
+            // TODO: Is capturing "this" safe or could it cause an access violation? 
+            // happens if this object is removed before the callback is invoked?
+ 
+            // This is a little dangerous but it works. Try to find a better way! 
+            Event<Data>* pData = (Event<Data>*)pEvent.get();
+
+            this->handleTestEvent(pData->getData().num, pData->getData().text); 
         });
 }
 
@@ -37,7 +41,9 @@ void RegularProtester::annoy() {
 }
 
 // Handle an Event
-void RegularProtester::handleEvent() {
-    std::cout << "Reached RegularProtester::handleEvent() at tick "
-        << getStudentWorld()->getTick() << "!" << std::endl;
+void RegularProtester::handleTestEvent(int num, const char* text) {
+    std::cout << "Tick: " << getStudentWorld()->getTick() 
+        << ", RegularProtester::handleTestEvent, num: " << num 
+        << ", text: " << text 
+        << std::endl;
 }

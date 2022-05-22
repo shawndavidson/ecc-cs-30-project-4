@@ -166,27 +166,27 @@ void StudentWorld::cleanUp()
 // Process the next Event
 void StudentWorld::processNextEvent() {
 	// Iterate through all of the events for this tick
-	while (!isEventQueueEmpty() && m_nTick >= m_events.top().getTick()) {
-		const Event& e = m_events.top();
+	while (!m_events.empty() && m_nTick >= m_events.top()->getTick()) {
+		SharedEventPtr e = m_events.top();
 
 		// Skip any missed events but print an error message
-		if (m_nTick > e.getTick()) {
-			cout << "Uh oh! StudentWorld::processNextEvent() missed an event: " << e;
+		if (m_nTick > e->getTick()) {
+			cout << "Uh oh! StudentWorld::processNextEvent() is late to process this event: " << *e;
 		}
 
 		try {
-			auto iterBegin	= m_eventListeners.lower_bound(e.getType());
-			auto iterEnd	= m_eventListeners.upper_bound(e.getType());
+			auto iterBegin	= m_eventListeners.lower_bound(e->getType());
+			auto iterEnd	= m_eventListeners.upper_bound(e->getType());
 
-			// Iterate through pairs where the key matches our Event type
+			// Iterate through all pairs where the key matches our Event type
 			for (auto it = iterBegin; it != iterEnd; it++) {
 				EventCallback& callback = it->second;
 
-				callback();
+				callback(e);
 			}
 		}
 		catch (exception& ex) {
-			cout << "An exception occured within a callback associated with Event: " << e << endl;
+			cout << "An exception occured within a callback associated with an Event of type: " << *e << endl;
 			cout << ex.what() << endl;
 		}
 
@@ -195,6 +195,6 @@ void StudentWorld::processNextEvent() {
 }
 
 // Register for an Event
-void StudentWorld::listenForEvent(Event::Types type, EventCallback callback) {
+void StudentWorld::listenForEvent(EventTypes type, EventCallback callback) {
 	m_eventListeners.insert({ type, callback });
 }

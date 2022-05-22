@@ -24,7 +24,7 @@ class Ice;
 /*************************************************************************/
 typedef shared_ptr<Actor>			ActorPtr;
 typedef shared_ptr<Ice>				IcePtr;
-typedef std::function<void(void)>	EventCallback;
+typedef std::function<void(SharedEventPtr)>	EventCallback;
 
 /*************************************************************************/
 /* Constants														     */
@@ -71,16 +71,16 @@ public:
 	virtual void cleanUp();
 
 	// Schedule a new Event
-	void pushEvent(const Event& e)			{ m_events.push(e); }
+	void pushEvent(SharedEventPtr e)			{ m_events.push(e); }
 
 	// Get the Event with the smallest tick
-	Event topEvent()						{ return m_events.top(); }
+	//Event topEvent()						{ return m_events.top(); }
 
 	// Is there another Event in the queue?
-	bool isEventQueueEmpty() const			{ return m_events.empty(); }
+	//bool isEventQueueEmpty() const			{ return m_events.empty(); }
 
 	// Register for an Event
-	void listenForEvent(Event::Types type, EventCallback callback);
+	void listenForEvent(EventTypes type, EventCallback callback);
 
 private:
 	/*************************************************************************/
@@ -112,18 +112,18 @@ private:
 	{
 	public:
 		// Function operator
-		int operator() (const Event& e1, const Event& e2)
+		int operator() (const SharedEventPtr& e1, const SharedEventPtr& e2)
 		{
-			return e1.getTick() > e2.getTick();
+			return e1->getTick() > e2->getTick();
 		}
 	};
 
 	// Event Queue (Min Heap)
 	// TODO: Make it thread-safe
-	std::priority_queue<Event, vector<Event>, StudentWorld::EventComparator> m_events;
+	std::priority_queue<SharedEventPtr, vector<SharedEventPtr>, StudentWorld::EventComparator> m_events;
 
 	// Registry of Event Listeners
-	std::multimap<Event::Types, EventCallback> m_eventListeners;
+	std::multimap<EventTypes, EventCallback> m_eventListeners;
 };
 
 #endif // STUDENTWORLD_H_

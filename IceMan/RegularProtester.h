@@ -35,7 +35,7 @@ public:
 	virtual void annoy();
 
 	// Handle an Event
-	void handleEvent();
+	void handleTestEvent(int num, const char* text);
 
 private:
 };
