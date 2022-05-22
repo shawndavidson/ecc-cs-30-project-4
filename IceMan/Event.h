@@ -6,7 +6,7 @@
 #include <memory>
 
 /*************************************************************************/
-/* Types														 */
+/* Types														         */
 /*************************************************************************/
 enum EventTypes {
     EVENT_TEST,
@@ -31,7 +31,7 @@ public:
         m_nType(nType)
     {
     }
-
+    
     // Copy Constructor
     EventBase(const EventBase& rhs)
     {
@@ -46,12 +46,13 @@ public:
     ~EventBase() {
     }
 
+
     /*************************************************************************/
     /* Getters/Setters														 */
     /*************************************************************************/
     // Get Tick
     unsigned long getTick() const { return m_nTick; }
-
+    
     // Get Type
     EventTypes getType() const { return m_nType; }
 
