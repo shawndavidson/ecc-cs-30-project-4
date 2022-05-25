@@ -9,14 +9,15 @@
 /* Types														         */
 /*************************************************************************/
 enum EventTypes {
-    EVENT_TEST,
+    EVENT_TEST,         // See EventTestData
     EVENT_ALWAYS_LAST
 };
 
 // TODO: Remove - for testing
-struct Data {
+// For use with EventTypes::EVENT_TEST 
+struct EventTestData {
     int         num;
-    const char* text;
+    const char* text; 
 };
 
 class EventBase 

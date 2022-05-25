@@ -3,6 +3,8 @@
 
 #include "Actor.h"
 
+#define TEST_ICEMAN 1
+
 // Forward Declaration
 class StudentWorld;
 
@@ -35,6 +37,10 @@ public:
     virtual void doSomething();
     virtual void annoy();
 
+#if TEST_ICEMAN
+    // Handle an Event
+    void handleTestEvent(int num, const char* text);
+#endif // TEST_ICEMAN
 };
 
 #endif ICEMAN_H_

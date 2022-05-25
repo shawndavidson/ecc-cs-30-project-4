@@ -6,11 +6,14 @@
 #include <memory>
 #include <queue>
 #include <map>
+#include <unordered_map>
 
 #include "GameWorld.h"
 #include "GameConstants.h"
 #include "Event.h"
 #include "DistanceCalculator.h"
+
+#define TEST_STUDENTWORLD 0
 
 // Students:  Add code to this file, StudentWorld.cpp, Actor.h, and Actor.cpp
 
@@ -100,6 +103,8 @@ private:
 	// Process the next Event
 	void processNextEvent();
 
+	void computeDistances();
+
 private:
 	/*************************************************************************/
 	/* Data Members														     */
@@ -110,7 +115,12 @@ private:
 
 	// Container of Actors
 	std::vector<ActorPtr>	m_actors;
+
+	// Pointer to IceMan
 	std::weak_ptr<IceMan>   m_pIceMan;
+
+	// Distances between Actors
+	std::unordered_map<ActorPtr, std::unordered_map<ActorPtr, int>> m_distances;
 
 	// 2D Array for ice blocks 
 	IcePtr m_ice[ICE_WIDTH][ICE_HEIGHT];

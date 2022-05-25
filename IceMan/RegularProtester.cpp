@@ -12,20 +12,6 @@ RegularProtester::RegularProtester(
         startX,
         startY)
 {
-    // TODO: Remove - for testing
-#if TEST_REGULARPROTESTER
-    getStudentWorld()->listenForEvent(
-        EventTypes::EVENT_TEST,
-        [&](SharedEventPtr pEvent) {
-            // TODO: Is capturing "this" safe or could it cause an access violation? 
-            // happens if this object is removed before the callback is invoked?
- 
-            // This is a little dangerous but it works. Try to find a better way! 
-            Event<Data>* pData = (Event<Data>*)pEvent.get();
-
-            this->handleTestEvent(pData->getData().num, pData->getData().text); 
-        });
-#endif
 }
 
 // Destructor
@@ -45,12 +31,3 @@ void RegularProtester::annoy() {
     // TODO
 }
 
-// Handle an Event
-void RegularProtester::handleTestEvent(int num, const char* text) {
-#if TEST_REGULARPROTESTER
-    std::cout << "Tick: " << getStudentWorld()->getTick() 
-        << ", RegularProtester::handleTestEvent, num: " << num 
-        << ", text: " << text 
-        << std::endl;
-#endif // UNIT_TEST_REGULARPROTESTER
-}

@@ -4,7 +4,7 @@
 #include "Protester.h"
 #include <iostream>
 
-#define TEST_REGULARPROTESTER 1
+#define TEST_REGULARPROTESTER 0
 
 class RegularProtester : public Protester
 {
@@ -35,9 +35,6 @@ public:
 	/*************************************************************************/
 	virtual void doSomething();
 	virtual void annoy();
-
-	// Handle an Event
-	void handleTestEvent(int num, const char* text);
 
 private:
 };
