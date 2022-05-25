@@ -1,5 +1,6 @@
 #include <string>
 #include <exception>
+#include <assert.h>
 
 #include "StudentWorld.h"
 #include "IceMan.h"
@@ -25,6 +26,7 @@ StudentWorld::StudentWorld(std::string assetDir)
 	m_nTick(0), 
 	m_actors(), 
 	m_pIceMan(),
+	m_distances(),
 	m_events(),
 	m_eventListeners(),
 	m_distanceCalc()
@@ -77,9 +79,10 @@ int StudentWorld::init()
 	// TODO: Remove
 	// Initialize a Regular and Hardcore Protester 
 	try {
-		m_actors.push_back(make_shared<RegularProtester>(this, 40, ICE_HEIGHT));
-		m_actors.push_back(make_shared<HardcoreProtester>(this, 50, ICE_HEIGHT));
-
+		for (int i = 0; i < 50; i++) {
+			m_actors.push_back(make_shared<RegularProtester>(this, rand() % ICE_WIDTH, ICE_HEIGHT));
+			m_actors.push_back(make_shared<HardcoreProtester>(this, rand() % ICE_WIDTH, ICE_HEIGHT));
+		}
 	}
 	catch (bad_alloc& /*ex*/) {
 		cout << "Unable to allocate memory for Regular Protester" << endl;
@@ -91,6 +94,9 @@ int StudentWorld::init()
 // Handle movement for all game objects within our world
 int StudentWorld::move()
 {
+	// Compute the distance between all Actors
+	computeDistances();
+
 	// This code is here merely to allow the game to build, run, and terminate after you hit enter a few times.
 	// Notice that the return value GWSTATUS_PLAYER_DIED will cause our framework to end the current level.
 	//decLives();
@@ -205,6 +211,7 @@ void StudentWorld::listenForEvent(EventTypes type, EventCallback callback) {
 int StudentWorld::getDistanceToIceMan(int x, int y) const {
 	shared_ptr<IceMan> pIceMan = m_pIceMan.lock();
 
+	// TODO: Should use m_distances
 	return m_distanceCalc.getDistance(x, y, pIceMan->getX(), pIceMan->getY());
 }
 
@@ -233,4 +240,50 @@ bool StudentWorld::isFacingIceMan(int x, int y, int direction) const {
 	}
 
 	return isFacing; 
+}
+
+// Compute distances betwen actors
+void StudentWorld::computeDistances() {
+	m_distances.clear();
+	
+	// Compute distances between each Actor and every other Actor O(n^2)
+	for (auto it1 = cbegin(m_actors); it1 != cend(m_actors); it1++) {
+		for (auto it2 = cbegin(m_actors); it2 <= it1; it2++) {
+			// If we're looking at the distance from ourself, it's always zero
+			if (it1 == it2) {
+				m_distances[(*it1)][(*it2)] = 0;
+				continue;
+			}
+
+			m_distances[(*it1)][(*it2)] = m_distanceCalc.getDistance(
+				(*it1)->getX(), (*it1)->getY(),
+				(*it2)->getX(), (*it2)->getY());
+			// Also add the transpose for distance from actor a to b, since it's
+			// the same from b to a
+			m_distances[(*it2)][(*it1)] = m_distances[(*it1)][(*it2)];
+		} 
+	}
+
+#if TEST_STUDENTWORLD
+	if (getTick() % 10) {
+		for (auto it1 = cbegin(m_actors); it1 != cend(m_actors); it1++) {
+			for (auto it2 = cbegin(m_actors); it2 != cend(m_actors); it2++) {
+				int calcDistance = m_distanceCalc.getDistance(
+					(*it1)->getX(), (*it1)->getY(),
+					(*it2)->getX(), (*it2)->getY());
+
+				auto it3 = m_distances.find(*it1);
+				if (it3 != end(m_distances)) {
+					auto it4 = it3->second.find(*it2);
+					if (it4 != end(it3->second)) {
+						int distance = (*it4).second;
+
+						assert(calcDistance == distance);
+					}
+				}
+
+			}
+		}
+	}
+#endif // TEST_STUDENTWORLD
 }
