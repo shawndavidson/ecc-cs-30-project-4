@@ -32,11 +32,14 @@ RegularProtester::~RegularProtester() {
 
 // Handle a tick
 void RegularProtester::doSomething() {
+    Protester::doSomething();
+
     // TODO
 }
 
 // Annoy the Protester
 void RegularProtester::annoy() {
+    Protester::annoy();
     // TODO
 }
 
