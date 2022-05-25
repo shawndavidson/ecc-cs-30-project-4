@@ -26,7 +26,8 @@ StudentWorld::StudentWorld(std::string assetDir)
 	m_actors(), 
 	m_pIceMan(),
 	m_events(),
-	m_eventListeners()
+	m_eventListeners(),
+	m_distanceCalc()
 {
 }
 
@@ -176,8 +177,8 @@ void StudentWorld::processNextEvent() {
 		}
 
 		try {
-			auto iterBegin = m_eventListeners.lower_bound(e->getType());
-			auto iterEnd = m_eventListeners.upper_bound(e->getType());
+			auto iterBegin	= m_eventListeners.lower_bound(e->getType());
+			auto iterEnd	= m_eventListeners.upper_bound(e->getType());
 
 			// Iterate through all pairs where the key matches our Event type
 			for (auto it = iterBegin; it != iterEnd; it++) {
@@ -198,4 +199,38 @@ void StudentWorld::processNextEvent() {
 // Register for an Event
 void StudentWorld::listenForEvent(EventTypes type, EventCallback callback) {
 	m_eventListeners.insert({ type, callback });
+}
+
+// Compute distance to IceMan
+int StudentWorld::getDistanceToIceMan(int x, int y) const {
+	shared_ptr<IceMan> pIceMan = m_pIceMan.lock();
+
+	return m_distanceCalc.getDistance(x, y, pIceMan->getX(), pIceMan->getY());
+}
+
+// Check if these coordinates and direction are facing IceMan
+bool StudentWorld::isFacingIceMan(int x, int y, int direction) const {
+	shared_ptr<IceMan> pIceMan = m_pIceMan.lock();
+
+	bool isFacing = false;
+
+	switch (direction) {
+	case GraphObject::Direction::up:
+		isFacing = pIceMan->getY() > y;
+		break;
+	case GraphObject::Direction::down:
+		isFacing = pIceMan->getY() < y;
+		break;
+	case GraphObject::Direction::left:
+		isFacing = pIceMan->getX() < x;
+		break;
+	case GraphObject::Direction::right:
+		isFacing = pIceMan->getX() > x;
+		break;
+	case GraphObject::Direction::none:
+	default:
+		break;
+	}
+
+	return isFacing; 
 }

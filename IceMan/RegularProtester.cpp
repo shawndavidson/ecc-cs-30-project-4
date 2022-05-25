@@ -13,6 +13,7 @@ RegularProtester::RegularProtester(
         startY)
 {
     // TODO: Remove - for testing
+#if TEST_REGULARPROTESTER
     getStudentWorld()->listenForEvent(
         EventTypes::EVENT_TEST,
         [&](SharedEventPtr pEvent) {
@@ -24,6 +25,7 @@ RegularProtester::RegularProtester(
 
             this->handleTestEvent(pData->getData().num, pData->getData().text); 
         });
+#endif
 }
 
 // Destructor
@@ -45,8 +47,10 @@ void RegularProtester::annoy() {
 
 // Handle an Event
 void RegularProtester::handleTestEvent(int num, const char* text) {
+#if TEST_REGULARPROTESTER
     std::cout << "Tick: " << getStudentWorld()->getTick() 
         << ", RegularProtester::handleTestEvent, num: " << num 
         << ", text: " << text 
         << std::endl;
+#endif // UNIT_TEST_REGULARPROTESTER
 }

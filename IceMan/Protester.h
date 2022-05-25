@@ -56,7 +56,7 @@ private:
 
 	unsigned int	m_nTicksToWaitBetweenMoves;
 	bool			m_nLeaveTheOilField;
-	unsigned long   m_nLastShoutTick;
+	unsigned long   m_nLastShoutedTick;
 };
 
 

@@ -1,14 +1,16 @@
 #ifndef STUDENTWORLD_H_
 #define STUDENTWORLD_H_
 
-#include "GameWorld.h"
-#include "GameConstants.h"
-#include "Event.h"
 #include <string>
 #include <vector>
 #include <memory>
 #include <queue>
 #include <map>
+
+#include "GameWorld.h"
+#include "GameConstants.h"
+#include "Event.h"
+#include "DistanceCalculator.h"
 
 // Students:  Add code to this file, StudentWorld.cpp, Actor.h, and Actor.cpp
 
@@ -22,9 +24,10 @@ class Ice;
 /*************************************************************************/
 /* Type Declaration(s)														     */
 /*************************************************************************/
-typedef shared_ptr<Actor>			ActorPtr;
-typedef shared_ptr<Ice>				IcePtr;
+typedef shared_ptr<Actor>					ActorPtr;
+typedef shared_ptr<Ice>						IcePtr;
 typedef std::function<void(SharedEventPtr)>	EventCallback;
+
 
 /*************************************************************************/
 /* Constants														     */
@@ -70,17 +73,24 @@ public:
 	// Cleanup game objects (deallocates memory)
 	virtual void cleanUp();
 
+	// Compute distance to IceMan
+	int getDistanceToIceMan(int x, int y) const;
+
+	// Check if these coordinates and direction are facing IceMan
+	bool isFacingIceMan(int x, int y, int direction) const;
+
 	// Schedule a new Event
 	void pushEvent(SharedEventPtr e)			{ m_events.push(e); }
 
-	// Get the Event with the smallest tick
-	//Event topEvent()						{ return m_events.top(); }
-
-	// Is there another Event in the queue?
-	//bool isEventQueueEmpty() const			{ return m_events.empty(); }
-
 	// Register for an Event
 	void listenForEvent(EventTypes type, EventCallback callback);
+
+private:
+	// Get the Event with the smallest tick
+	SharedEventPtr topEvent()					{ return m_events.top(); }
+
+	// Is there another Event in the queue?
+	bool isEventQueueEmpty() const				{ return m_events.empty(); }
 
 private:
 	/*************************************************************************/
@@ -124,6 +134,9 @@ private:
 
 	// Registry of Event Listeners
 	std::multimap<EventTypes, EventCallback> m_eventListeners;
+
+	// Tool for fast distance calculations between cells
+	DistanceCalculator m_distanceCalc;
 };
 
 #endif // STUDENTWORLD_H_

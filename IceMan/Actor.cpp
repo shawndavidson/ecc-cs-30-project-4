@@ -53,3 +53,7 @@ StudentWorld* Actor::getStudentWorld()
 { 
 	return m_pStudentWorld; 
 }
+
+int Actor::getDistanceToIceman() {
+	return getStudentWorld()->getDistanceToIceMan(getX(), getY());
+}

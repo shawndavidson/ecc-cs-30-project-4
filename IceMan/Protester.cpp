@@ -7,11 +7,11 @@
 /*************************************************************************/
 /* Types														     */
 /*************************************************************************/
-const int           EXIT_POSITION_X = 60;
-const int           EXIT_POSITION_Y = 60;
-const double        PROTESTER_SIZE = 1.0;
-const unsigned int  NON_RESTING_TICKS_BETWEEN_SHOUTS = 15;
-
+const int           EXIT_POSITION_X                     = 60;
+const int           EXIT_POSITION_Y                     = 60;
+const double        PROTESTER_SIZE                      = 1.0;
+const unsigned int  NON_RESTING_TICKS_BETWEEN_SHOUTS    = 15;
+const int           SHOUTING_RANGE                      = 4;
 
 // Constructor
 Protester::Protester(
@@ -31,7 +31,7 @@ Protester::Protester(
         false /*canPickup*/),
     m_nTicksToWaitBetweenMoves(std::max<unsigned int>(0, 3 - getStudentWorld()->getLevel() / 4)),
     m_nLeaveTheOilField(false),
-    m_nLastShoutTick(0)
+    m_nLastShoutedTick(0)
 {
 
 }
@@ -136,19 +136,17 @@ bool Protester::move(Direction direction) {
 
 // Can we shout at IceMan?
 bool Protester::canShout() {
-    // TODO: Return true if we're within 4 units AND we're facing Iceman
-    bool isIceManInRange    = true; // TODO
-    bool isFacingIceMan     = true; // TODO
-
     const unsigned long nTick = getStudentWorld()->getTick();
 
-    return  isFacingIceMan &&
-            (m_nLastShoutTick > 0 && nTick - m_nLastShoutTick > (NON_RESTING_TICKS_BETWEEN_SHOUTS * m_nTicksToWaitBetweenMoves)) &&
-            isIceManInRange;
+    // We're skipping the last shouted tick when it's zero so we can keep it as an
+    // unsigned and use 0 as an initial value.
+    return  getStudentWorld()->isFacingIceMan(getX(), getY(), getDirection()) &&
+            (m_nLastShoutedTick == 0 || nTick - m_nLastShoutedTick > (NON_RESTING_TICKS_BETWEEN_SHOUTS * m_nTicksToWaitBetweenMoves)) &&
+            getDistanceToIceman() <= SHOUTING_RANGE;
 }
 
 // Shout at IceMan
 void Protester::shout() {
     getStudentWorld()->playSound(SOUND_PROTESTER_YELL);
-    m_nLastShoutTick = getStudentWorld()->getTick();
+    m_nLastShoutedTick = getStudentWorld()->getTick();
 }
