@@ -194,7 +194,7 @@ void StudentWorld::processNextEvent() {
 		m_events.pop();
 	}
 }
-
+ 
 // Register for an Event
 void StudentWorld::listenForEvent(EventTypes type, EventCallback callback) {
 	m_eventListeners.insert({ type, callback });
