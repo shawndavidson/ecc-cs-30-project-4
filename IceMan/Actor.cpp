@@ -71,14 +71,6 @@ StudentWorld* Actor::getStudentWorld()
 	return m_pStudentWorld; 
 }
 
-void Actor::setRadiusIceMan(double radius) {
-	m_dRadiusIceMan = radius;
-}
-
-double Actor::getRadiusIceMan() {
-	return m_dRadiusIceMan;
-}
-
 void Actor::setPoints(int points) {
 	m_iPoints = points;
 }
@@ -93,4 +85,8 @@ void Actor::setSoundEffect(int s_e) {
 
 int Actor::getSoundEffect() {
 	return m_iSoundEffect;
+}
+
+int Actor::getDistanceToIceman() {
+	return getStudentWorld()->getDistanceToIceMan(getX(), getY());
 }

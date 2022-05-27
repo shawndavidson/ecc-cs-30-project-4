@@ -1,5 +1,7 @@
 #include <string>
 #include <typeinfo>
+#include <exception>
+#include <assert.h>
 
 #include "StudentWorld.h"
 #include "IceMan.h"
@@ -9,6 +11,9 @@
 #include "Gold.h"
 #include "SonarKit.h"
 #include "WaterPool.h"
+#include "RegularProtester.h"
+#include "HardcoreProtester.h"
+#include "Event.h"
 
 using namespace std;
 
@@ -22,13 +27,27 @@ GameWorld* createStudentWorld(string assetDir)
 // Students:  Add code to this file (if you wish), StudentWorld.h, Actor.h and Actor.cpp
 // Constructor
 StudentWorld::StudentWorld(std::string assetDir)
-	: GameWorld(assetDir)
+:	GameWorld(assetDir), 
+	m_nTick(0), 
+	m_actors(), 
+	m_pIceMan(),
+	m_distances(),
+	m_events(),
+	m_eventListeners(),
+	m_distanceCalc()
 {
+}
+
+// Destructor
+StudentWorld::~StudentWorld() {
 }
 
 // Perform initializion
 int StudentWorld::init()
 {
+	// Reset time
+	m_nTick = 0;
+
 	// Initialize ice field - only uses lower 60 squares of screen
 	for (int x = 0; x < ICE_WIDTH; x++) {
 		for (int y = 0; y < ICE_HEIGHT; y++) {
@@ -117,6 +136,17 @@ int StudentWorld::init()
 		catch (bad_alloc&) {
 			cout << "Unable to allocate memory for Water Pool" << endl;
 		}
+		
+	// TODO: Remove
+	// Initialize a Regular and Hardcore Protester 
+	try {
+		for (int i = 0; i < 50; i++) {
+			m_actors.push_back(make_shared<RegularProtester>(this, rand() % ICE_WIDTH, ICE_HEIGHT));
+			m_actors.push_back(make_shared<HardcoreProtester>(this, rand() % ICE_WIDTH, ICE_HEIGHT));
+		}
+	}
+	catch (bad_alloc& /*ex*/) {
+		cout << "Unable to allocate memory for Regular Protester" << endl;
 	}
 
 	return GWSTATUS_CONTINUE_GAME;
@@ -125,9 +155,15 @@ int StudentWorld::init()
 // Handle movement for all game objects within our world
 int StudentWorld::move()
 {
+	// Compute the distance between all Actors
+	computeDistances();
+
 	// This code is here merely to allow the game to build, run, and terminate after you hit enter a few times.
 	// Notice that the return value GWSTATUS_PLAYER_DIED will cause our framework to end the current level.
-	decLives();
+	//decLives();
+
+	// Handle the next event from the min heap
+	processNextEvent();
 
 
 
@@ -135,8 +171,6 @@ int StudentWorld::move()
 	for (auto actor : m_actors) {
 		// TODO: Do we call doSomething() if it's not alive?
 		if (actor != nullptr) {
-			// Calculate distance to IceMan, send to Actor
-			actor->setRadiusIceMan(calcDistanceSq(actor, m_pIceMan.lock()));
 			// Check if IceMan can pick up the object
 			// If yes, then this is a Goodie
 			if (actor->canPickupIM()) {
@@ -186,7 +220,9 @@ int StudentWorld::move()
 		}
 	}
 
-
+	// Increment time. Keep this at the end of this method.
+	m_nTick++;
+	
 	return GWSTATUS_CONTINUE_GAME;
 }
 
@@ -226,22 +262,6 @@ int StudentWorld::getRandomY() {
 	return rand() % 56;
 }
 
-// Detects collision between two actors
-bool StudentWorld::detectCollison(ActorPtr pA1, ActorPtr pA2, double distance) {
-	// If the distance is less than 9, there has been a collision
-	if (distance <= 9 && pA1 != pA2)
-		return true;
-	return false;
-}
-
-// Calculates the distance squared between any two actors
-// Using distance squared avoid an extra operation
-double StudentWorld::calcDistanceSq(ActorPtr pA1, ActorPtr pA2) {
-	if (pA1 == pA2)
-		return NULL;
-	return pow(pA1->getX() - pA2->getX(), 2) + pow(pA1->getY() - pA2->getY(), 2);
-}
-
 
 // GOODIE FUNCTIONS
 
@@ -262,10 +282,10 @@ void StudentWorld::decNumBarrels() {
 
 // Handles the case where any Goodie is picked up
 void StudentWorld::pickupGoodieIM(ActorPtr actor, IceMan& iceman) {
-	// If there is a collision, increase the score and play a sound
+	// If there is a collision (distance <= 3), increase the score and play a sound
 	// Depending on the goodie, a different action occurs
 	// Uses the image ID to identify the goodie
-	if (detectCollison(actor, m_pIceMan.lock(), actor->getRadiusIceMan())) {
+	if (getDistanceToIceMan(actor->getX(), actor->getY() <= 3)) {
 		
 		switch (actor->getID()) {
 		case IID_BARREL:
@@ -289,4 +309,120 @@ void StudentWorld::pickupGoodieIM(ActorPtr actor, IceMan& iceman) {
 		increaseScore(actor->getPoints());
 		playSound(actor->getSoundEffect());
 	}
+
+// Process the next Event
+void StudentWorld::processNextEvent() {
+	// Iterate through all of the events for this tick
+	while (!m_events.empty() && m_nTick >= m_events.top()->getTick()) {
+		SharedEventPtr e = m_events.top();
+
+		// Skip any missed events but print an error message
+		if (m_nTick > e->getTick()) {
+			cout << "Uh oh! StudentWorld::processNextEvent() is late to process this event: " << *e;
+		}
+
+		try {
+			auto iterBegin	= m_eventListeners.lower_bound(e->getType());
+			auto iterEnd	= m_eventListeners.upper_bound(e->getType());
+
+			// Iterate through all pairs where the key matches our Event type
+			for (auto it = iterBegin; it != iterEnd; it++) {
+				EventCallback& callback = it->second;
+
+				callback(e);
+			}
+		}
+		catch (exception& ex) {
+			cout << "An exception occured within a callback associated with an Event of type: " << *e << endl;
+			cout << ex.what() << endl;
+		}
+
+		m_events.pop();
+	}
+}
+ 
+// Register for an Event
+void StudentWorld::listenForEvent(EventTypes type, EventCallback callback) {
+	m_eventListeners.insert({ type, callback });
+}
+
+// Compute distance to IceMan
+int StudentWorld::getDistanceToIceMan(int x, int y) const {
+	shared_ptr<IceMan> pIceMan = m_pIceMan.lock();
+
+	// TODO: Should use m_distances
+	return m_distanceCalc.getDistance(x, y, pIceMan->getX(), pIceMan->getY());
+}
+
+// Check if these coordinates and direction are facing IceMan
+bool StudentWorld::isFacingIceMan(int x, int y, int direction) const {
+	shared_ptr<IceMan> pIceMan = m_pIceMan.lock();
+
+	bool isFacing = false;
+
+	switch (direction) {
+	case GraphObject::Direction::up:
+		isFacing = pIceMan->getY() > y;
+		break;
+	case GraphObject::Direction::down:
+		isFacing = pIceMan->getY() < y;
+		break;
+	case GraphObject::Direction::left:
+		isFacing = pIceMan->getX() < x;
+		break;
+	case GraphObject::Direction::right:
+		isFacing = pIceMan->getX() > x;
+		break;
+	case GraphObject::Direction::none:
+	default:
+		break;
+	}
+
+	return isFacing; 
+}
+
+// Compute distances betwen actors
+void StudentWorld::computeDistances() {
+	m_distances.clear();
+	
+	// Compute distances between each Actor and every other Actor O(n^2)
+	for (auto it1 = cbegin(m_actors); it1 != cend(m_actors); it1++) {
+		for (auto it2 = cbegin(m_actors); it2 <= it1; it2++) {
+			// If we're looking at the distance from ourself, it's always zero
+			if (it1 == it2) {
+				m_distances[(*it1)][(*it2)] = 0;
+				continue;
+			}
+
+			m_distances[(*it1)][(*it2)] = m_distanceCalc.getDistance(
+				(*it1)->getX(), (*it1)->getY(),
+				(*it2)->getX(), (*it2)->getY());
+			// Also add the transpose for distance from actor a to b, since it's
+			// the same from b to a
+			m_distances[(*it2)][(*it1)] = m_distances[(*it1)][(*it2)];
+		} 
+	}
+
+#if TEST_STUDENTWORLD
+	if (getTick() % 10) {
+		for (auto it1 = cbegin(m_actors); it1 != cend(m_actors); it1++) {
+			for (auto it2 = cbegin(m_actors); it2 != cend(m_actors); it2++) {
+				int calcDistance = m_distanceCalc.getDistance(
+					(*it1)->getX(), (*it1)->getY(),
+					(*it2)->getX(), (*it2)->getY());
+
+				auto it3 = m_distances.find(*it1);
+				if (it3 != end(m_distances)) {
+					auto it4 = it3->second.find(*it2);
+					if (it4 != end(it3->second)) {
+						int distance = (*it4).second;
+
+						assert(calcDistance == distance);
+					}
+				}
+
+			}
+		}
+	}
+#endif // TEST_STUDENTWORLD
 }

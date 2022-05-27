@@ -15,8 +15,17 @@ public:
 	// Constructor
 	Ice(StudentWorld* pStudentWorld, int startX, int startY);
 
+	// Prevent copying 
+	Ice(const Ice&) = delete;
+
 	// Destructor
 	virtual ~Ice();
+
+	/*************************************************************************/
+	/* Operators													     */
+	/*************************************************************************/
+	// Prevent assignment 
+	Ice& operator=(const Ice&) = delete;
 
 	/*************************************************************************/
 	/* Operations													     */

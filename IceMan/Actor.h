@@ -10,6 +10,10 @@ class StudentWorld;
 
 class Actor : public GraphObject {
 public:
+	/*************************************************************************/
+	/* Construction														     */
+	/*************************************************************************/
+
 	// Constructor
 	Actor(
 		StudentWorld* pStudentWorld,
@@ -24,11 +28,21 @@ public:
 		bool canPickupIM = false,
 		bool canPickupP = false);
 
+	// Prevent copying 
+	Actor(const Actor&) = delete;
+
 	// Destructor
 	virtual ~Actor();
 
 	/*************************************************************************/
-	/* Pure Virtual														     */
+	/* Operators													     */
+	/*************************************************************************/
+	// Prevent assignment 
+	Actor& operator=(const Actor&) = delete;
+
+
+	/*************************************************************************/
+	/* Interface (pure virtual)														     */
 	/*************************************************************************/
 	// Handle a game tick
 	virtual void doSomething()			= 0;
@@ -81,6 +95,8 @@ public:
 
 	// Returns the sound effect an Actor plays
 	int getSoundEffect();
+
+	int getDistanceToIceman();
 
 private:
 	/*************************************************************************/
