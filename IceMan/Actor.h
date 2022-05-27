@@ -77,12 +77,6 @@ public:
 
 	// Get a pointer to StudentWorld
 	StudentWorld* getStudentWorld();
-	
-	// Set the radius between a Goodie and IceMan
-	void setRadiusIceMan(double);
-
-	// Get the radius between a Goodie and IceMan
-	double getRadiusIceMan();
 
 	// Sets the number of points an Actor awards for any given action
 	void setPoints(int);
@@ -96,6 +90,7 @@ public:
 	// Returns the sound effect an Actor plays
 	int getSoundEffect();
 
+	// Returns the distance of an Actor to IceMan
 	int getDistanceToIceman();
 
 private:
@@ -117,9 +112,6 @@ private:
 
 	// Pointer to our world so we can interact with other Actors 
 	StudentWorld* m_pStudentWorld;
-
-	// Distance between this actor and IceMan
-	double m_dRadiusIceMan;
 
 	// How many points an actor should award for any given action
 	int m_iPoints;
