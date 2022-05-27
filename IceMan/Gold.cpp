@@ -36,14 +36,14 @@ void Gold::doSomething() {
 	if (!isAlive()) {
 		return;
 	}
-	// If within a radius of 4 to IceMan, become visible (using radius squared)
-	if (!isVisible() && getRadiusIceMan() <= 16) {
+	// If within a radius of 4 to IceMan, become visible
+	if (!isVisible() && getDistanceToIceman() <= 4) {
 		setVisible(true);
 		return;
 	}
 	// Collected by Iceman
-	// If can be picked up by IceMan and within a radius of 3 (squared), get collected
-	if (canPickupIM() && getRadiusIceMan() <= 9) {
+	// If can be picked up by IceMan and within a radius of 3
+	if (canPickupIM() && getDistanceToIceman() <= 3) {
 		collectIM();
 		return;
 	}

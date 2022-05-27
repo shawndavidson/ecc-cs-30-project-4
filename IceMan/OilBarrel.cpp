@@ -28,14 +28,14 @@ void OilBarrel::doSomething() {
 	if (!isAlive()) {
 		return;
 	}
-	// Check if IceMan is within a radius of 4 (using radius squared, so 16)
+	// Check if IceMan is within a radius of 4
 	// Check page 34 for guidlines
-	if (!isVisible() && getRadiusIceMan() <= 16) {
+	if (!isVisible() && getDistanceToIceman() <= 4) {
 		setVisible(true);
 		return;
 	}
-	// Collect if IceMan is within a radius of 3 (using radius sqaured, so 9)
-	if (getRadiusIceMan() <= 9) {
+	// Collect if IceMan is within a radius of 3
+	if (getDistanceToIceman() <= 3) {
 		collect();
 		return;
 	}

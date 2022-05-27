@@ -31,9 +31,9 @@ void SonarKit::doSomething() {
 	if (!isAlive()) {
 		return;
 	}
-	// Check if IceMan is within a radius of 3 (using squared radius so 9)
+	// Check if IceMan is within a radius of 3
 	// Check page 37 for guidlines
-	if (getRadiusIceMan() <= 9) {
+	if (getDistanceToIceman() <= 3) {
 		collect();
 		return;
 	}

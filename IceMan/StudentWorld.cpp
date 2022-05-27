@@ -136,7 +136,7 @@ int StudentWorld::init()
 		catch (bad_alloc&) {
 			cout << "Unable to allocate memory for Water Pool" << endl;
 		}
-		
+	}
 	// TODO: Remove
 	// Initialize a Regular and Hardcore Protester 
 	try {
@@ -285,8 +285,8 @@ void StudentWorld::pickupGoodieIM(ActorPtr actor, IceMan& iceman) {
 	// If there is a collision (distance <= 3), increase the score and play a sound
 	// Depending on the goodie, a different action occurs
 	// Uses the image ID to identify the goodie
-	if (getDistanceToIceMan(actor->getX(), actor->getY() <= 3)) {
-		
+	if (getDistanceToIceMan(actor->getX(), actor->getY()) <= 3) {
+
 		switch (actor->getID()) {
 		case IID_BARREL:
 			decNumBarrels();
@@ -304,11 +304,12 @@ void StudentWorld::pickupGoodieIM(ActorPtr actor, IceMan& iceman) {
 			break;
 		case IID_WATER_POOL:
 			iceman.incWater();
-			break; 
+			break;
 		}
 		increaseScore(actor->getPoints());
 		playSound(actor->getSoundEffect());
 	}
+}
 
 // Process the next Event
 void StudentWorld::processNextEvent() {

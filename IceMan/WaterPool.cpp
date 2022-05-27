@@ -28,8 +28,8 @@ void WaterPool::doSomething() {
 	if (!isAlive()) {
 		return;
 	}
-	// If IceMan is within a radius of 3 (squared)
-	if (getRadiusIceMan() <= 9) {
+	// If IceMan is within a radius of 3
+	if (getDistanceToIceman() <= 3) {
 		collect();
 	}
 }

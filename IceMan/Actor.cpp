@@ -24,8 +24,6 @@ Actor::Actor(
 {
 	setAlive(true);
 	setVisible(visible);
-	// Prevent an object being immediately collected before its radius is calcualted
-	setRadiusIceMan(1000); 
 }
 
 // Destructor
