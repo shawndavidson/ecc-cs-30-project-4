@@ -18,10 +18,12 @@ HardcoreProtester::~HardcoreProtester() {
 
 // Handle a tick
 void HardcoreProtester::doSomething() {
+    Protester::doSomething();
     // TODO
 }
 
 // Annoy the Protester
 void HardcoreProtester::annoy() {
+    Protester::annoy();
     // TODO
 }

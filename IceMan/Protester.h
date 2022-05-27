@@ -35,6 +35,28 @@ public:
 	virtual void annoy();
 
 private:
+	// Take one step towards the exit 
+	void moveTowardsExit();
+	bool move(GraphObject::Direction direction);
+	Direction getShortestPathToExit() const;
+
+	// Can we shout at IceMan
+	bool canShout();
+
+	// Shout at IceMan
+	void shout();
+
+	// Leave the oil field
+	void leave()				{ m_nLeaveTheOilField = true;  }
+
+private:
+	/*************************************************************************/
+	/* Data Members													     */
+	/*************************************************************************/
+
+	unsigned int	m_nTicksToWaitBetweenMoves;
+	bool			m_nLeaveTheOilField;
+	unsigned long   m_nLastShoutedTick;
 };
 
 

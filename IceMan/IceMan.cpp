@@ -15,7 +15,20 @@ IceMan::IceMan(StudentWorld* pStudentWorld)
             true /*canAnnoy*/,
             false /*canPickup*/)
 {
+    // TODO: Remove - for testing
+#if TEST_ICEMAN
+    getStudentWorld()->listenForEvent(
+        EventTypes::EVENT_TEST,
+        [&](SharedEventPtr pEvent) {
+            // TODO: Is capturing "this" safe or could it cause an access violation? 
+            // happens if this object is removed before the callback is invoked?
 
+            // This is a little dangerous but it works. Try to find a better way! 
+            Event<EventTestData>* pData = (Event<EventTestData>*)pEvent.get();
+
+            this->handleTestEvent(pData->getData().num, pData->getData().text);
+        });
+#endif
 }
 
 // Destructor
@@ -76,9 +89,9 @@ void IceMan::doSomething() {
                     const int tick = getStudentWorld()->getTick() + 100;
 
                     // Pass along this data with the Event
-                    struct Data data { 1234, "Hello World!" };
+                    struct EventTestData data { 1234, "Hello World!" };
 
-                    getStudentWorld()->pushEvent(make_shared<Event<Data>>( tick, EventTypes::EVENT_TEST, data ));
+                    getStudentWorld()->pushEvent(make_shared<Event<EventTestData>>( tick, EventTypes::EVENT_TEST, data ));
 
                     cout << "Pushing event in IceMan::doSomething() at tick " << getStudentWorld()->getTick() << endl;
                 }
@@ -106,4 +119,14 @@ void IceMan::doSomething() {
 // Handle Annoy
 void IceMan::annoy() {
     // TODO
+}
+
+// Handle an Event
+void IceMan::handleTestEvent(int num, const char* text) {
+#if TEST_ICEMAN
+    std::cout << "Tick: " << getStudentWorld()->getTick()
+        << ", RegularProtester::handleTestEvent, num: " << num
+        << ", text: " << text
+        << std::endl;
+#endif // TEST_ICEMAN
 }

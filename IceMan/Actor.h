@@ -68,6 +68,8 @@ public:
 	// Get a pointer to StudentWorld
 	StudentWorld* getStudentWorld();
 
+	int getDistanceToIceman();
+
 private:
 	/*************************************************************************/
 	/* Data Members														     */
