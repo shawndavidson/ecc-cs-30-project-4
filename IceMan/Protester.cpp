@@ -31,7 +31,8 @@ Protester::Protester(
         false /*canPickup*/),
     m_nTicksToWaitBetweenMoves(std::max<unsigned int>(0, 3 - getStudentWorld()->getLevel() / 4)),
     m_nLeaveTheOilField(false),
-    m_nLastShoutedTick(0)
+    m_nLastShoutedTick(0),
+    m_nNumSquaresToMoveInCurrentDirection(0)
 {
 
 }
@@ -60,11 +61,32 @@ void Protester::doSomething() {
         }
         return;
     }
-
-    if (canShout()) {
+    
+    if (canShoutAtIceMan()) {
         shout();
+        return;
     }
     
+    // If we have a line of sight with IceMan, move towards him.
+    {
+        Direction direction;
+
+        if (getStudentWorld()->hasPathToIceMan(getX(), getY(), (unsigned int&)direction) &&
+            getStudentWorld()->getDistanceToIceMan(getX(), getY()) <= 4) {
+            setDirection(direction);
+
+            // Move towards IceMan
+            if (!takeOneStep(direction)) {
+                cout << "Protester unable to take step in direction " << direction << endl;
+            }
+
+            // This will cause us to change direction on subsequent ticks
+            // when IceMan is no longer in sight. Otherwise, we'll keep
+            // taking a step towards him.
+            m_nNumSquaresToMoveInCurrentDirection = 0;
+            return;
+        }
+    }
 
     // TODO
 }
@@ -79,7 +101,7 @@ void Protester::annoy() {
 void Protester::moveTowardsExit() {
     Direction direction = getShortestPathToExit();
 
-    if (!move(direction)) {
+    if (!takeOneStep(direction)) {
         cout << "Unable to move the Protester in the direction towards the exit" << endl;
         // throw?
     }
@@ -93,7 +115,7 @@ GraphObject::Direction Protester::getShortestPathToExit() const {
 }
 
 // Take one step in a specified direction
-bool Protester::move(Direction direction) {
+bool Protester::takeOneStep(Direction direction) {
     bool result = true;
 
     const int x         = getX();
@@ -135,7 +157,7 @@ bool Protester::move(Direction direction) {
 }
 
 // Can we shout at IceMan?
-bool Protester::canShout() {
+bool Protester::canShoutAtIceMan() {
     const unsigned long nTick = getStudentWorld()->getTick();
 
     // We're skipping the last shouted tick when it's zero so we can keep it as an
@@ -148,5 +170,9 @@ bool Protester::canShout() {
 // Shout at IceMan
 void Protester::shout() {
     getStudentWorld()->playSound(SOUND_PROTESTER_YELL);
+
+    // TODO: Annoy IceMan
+
     m_nLastShoutedTick = getStudentWorld()->getTick();
 }
+

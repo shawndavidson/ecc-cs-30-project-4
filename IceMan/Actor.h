@@ -66,7 +66,7 @@ public:
 	void setAlive(bool alive);
 
 	// Get a pointer to StudentWorld
-	StudentWorld* getStudentWorld();
+	StudentWorld* getStudentWorld() { return m_pStudentWorld; }
 
 	int getDistanceToIceman();
 

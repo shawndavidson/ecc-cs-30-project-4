@@ -238,8 +238,61 @@ bool StudentWorld::isFacingIceMan(int x, int y, int direction) const {
 	default:
 		break;
 	}
-
+	   
 	return isFacing; 
+}
+
+// Do we have a direct line of sight with IceMan, i.e. we're on 
+// the same horizontal or vertical axis and no ice or boulders are
+// between us. Return true, if so and set direction (by reference)
+// to face IceMan. Otherwise, false.
+bool StudentWorld::hasPathToIceMan(int x, int y, unsigned int& direction) const {
+	bool hasLineOfSight = false;
+
+	shared_ptr<IceMan> pIceMan = m_pIceMan.lock();
+	
+	// Check for ice or boulders in the way on the vertical and
+	// horizontal axis
+	const int iceX = pIceMan->getX();
+	const int iceY = pIceMan->getY();
+
+	auto checkForIce = [&](int x, int y) {
+		return m_ice[x][y] != nullptr || m_ice[x][y]->isAlive();
+	};	
+		 
+	if (x == iceX) {
+		// Are we on IceMan's left?
+		if (y < iceY) {
+			for (int j = y; j < iceY && !hasLineOfSight; j++) {
+				if (checkForIce(x, j)) 
+					return false;
+			}
+		}
+		else { // we must be on his right
+			for (int j = y; j > iceY && !hasLineOfSight; j--) {
+				if (checkForIce(x, j))
+					return false;
+			}
+		}
+	}
+	else if (y == iceY) {
+		// Check for ice or boulders in the way on the vertical axis
+		// Are we on IceMan's left?
+		if (x < iceX) {
+			for (int i = x; i < iceX && !hasLineOfSight; i++) {
+				if (checkForIce(i, y))
+					return false;
+			}
+		}
+		else { // we must be on his right
+			for (int i = x; i > iceX && !hasLineOfSight; i--) {
+				if (checkForIce(i, y))
+					return false;
+			}
+		}
+	}
+
+	return hasLineOfSight;
 }
 
 // Compute distances betwen actors

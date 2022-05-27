@@ -82,6 +82,8 @@ public:
 	// Check if these coordinates and direction are facing IceMan
 	bool isFacingIceMan(int x, int y, int direction) const;
 
+	bool hasPathToIceMan(int x, int y, unsigned int& direction) const;
+
 	// Schedule a new Event
 	void pushEvent(SharedEventPtr e)			{ m_events.push(e); }
 

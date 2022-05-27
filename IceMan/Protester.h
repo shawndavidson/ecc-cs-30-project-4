@@ -34,14 +34,14 @@ public:
 	virtual void doSomething();
 	virtual void annoy();
 
-private:
+protected:
 	// Take one step towards the exit 
 	void moveTowardsExit();
-	bool move(GraphObject::Direction direction);
+	bool takeOneStep(GraphObject::Direction direction);
 	Direction getShortestPathToExit() const;
 
 	// Can we shout at IceMan
-	bool canShout();
+	bool canShoutAtIceMan();
 
 	// Shout at IceMan
 	void shout();
@@ -57,6 +57,7 @@ private:
 	unsigned int	m_nTicksToWaitBetweenMoves;
 	bool			m_nLeaveTheOilField;
 	unsigned long   m_nLastShoutedTick;
+	unsigned int    m_nNumSquaresToMoveInCurrentDirection;
 };
 
 
