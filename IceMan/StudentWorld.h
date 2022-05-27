@@ -57,7 +57,33 @@ public:
 	// Remove all dead game objects (deallocate memory)
 	virtual void removeDeadGameObjects();
 
+	// Creates random x coordinate for actors to spawn in
+	// Will not spawn in tunnel
+	int getRandomX();
 
+	// Creates random y coordinate for actors to spawn in
+	int getRandomY();
+
+	// Handles collisions between all game objects
+	bool detectCollison(ActorPtr, ActorPtr, double);
+
+	// Returns the distance between two actors squared
+	double calcDistanceSq(ActorPtr, ActorPtr);
+
+	/*************************************************************************/
+	/* Goodie Operations												     */
+	/*************************************************************************/
+	// Sets the number of Oil Barrels in the field
+	void setNumBarrels(int);
+
+	// Gets the number of Oil Barrels remaining in the field
+	int getNumBarrels();
+
+	// Decrements the number of Oil Barrels remaining in the field
+	void decNumBarrels();
+
+	// Handles when a Goodie is picked up by IceMan
+	void pickupGoodieIM(ActorPtr, IceMan&);
 private:
 	/*************************************************************************/
 	/* Data Members														     */
@@ -69,6 +95,9 @@ private:
 
 	// 2D Array for ice blocks 
 	IcePtr m_ice[ICE_WIDTH][ICE_HEIGHT];
+	
+	// Number of Oil Barrels in the current level
+	int m_num_barrels;
 };
 
 #endif // STUDENTWORLD_H_

@@ -3,9 +3,9 @@
 
 #include "Goodie.h"
 
-const double SONAR_KIT_SIZE = 1.00;
-const int SONAR_KIT_DEPTH = 2;
-const int SONAR_KIT_POINTS = 75;
+const double	SONAR_KIT_SIZE		= 1.00;
+const int		SONAR_KIT_DEPTH		= 2;
+const int		SONAR_KIT_POINTS	= 75;
 
 class SonarKit : public Goodie
 {
@@ -26,6 +26,7 @@ public:
 	/* Operations													     */
 	/*************************************************************************/
 	void doSomething();
+
 	// Handles when a Sonar Kit is collected
 	void collect();
 

@@ -2,6 +2,8 @@
 #define ICEMAN_H_
 
 #include "Actor.h"
+#include <iostream> // FIXME, just for test prints
+// TODO: REMOVE TEST PRINTS
 
 // Forward Declaration
 class StudentWorld;
@@ -25,6 +27,30 @@ public:
     /*************************************************************************/
     virtual void doSomething();
     virtual void annoy();
+
+    // Increases the number of gold nuggets by 1
+    void incGold();
+
+    // Increases the number of sonar kits by 1
+    void incSonarKits();
+
+    // Increases the number of water squirts by 5
+    void incWater();
+
+    // Decreases the number of gold nuggets by 1
+    void decGold();
+
+    // Decreases the number of sonar kits by 1
+    void decSonarKits();
+
+    // Decreases the number of water squirts by 1
+    void decWater();
+
+private:
+    // Inventory counters
+    int m_iGold;
+    int m_iSonarKits;
+    int m_iWater;
 
 };
 

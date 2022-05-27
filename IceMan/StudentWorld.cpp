@@ -1,4 +1,5 @@
 #include <string>
+#include <typeinfo>
 
 #include "StudentWorld.h"
 #include "IceMan.h"
@@ -62,17 +63,13 @@ int StudentWorld::init()
 	}
 
 	// Initialize OilBarrels
+	// Maybe handle this with a helper function?
 	shared_ptr<OilBarrel> pOilBarrel;
-	int NUM_OIL_BARRELS = 10; // FIXME this should be handled somewhere else
+	int NUM_OIL_BARRELS = 5; // TODO: how many should spawn at the start?
+	setNumBarrels(NUM_OIL_BARRELS);
 	for (int i = 0; i < NUM_OIL_BARRELS; ++i) {
 		try {
-			// This ensures it does not appear in the tunnel
-			int x = rand() % 60;
-			while (x >= 27 && x <= 33)
-				x = rand() % 60;
-			int y = rand() % 56;
-			pOilBarrel = make_shared<OilBarrel>(this, x, y); // FIXME should not appear in open tunnel
-
+			pOilBarrel = make_shared<OilBarrel>(this, getRandomX(), getRandomY());
 			m_actors.push_back(pOilBarrel);
 		}
 		catch (bad_alloc&) {
@@ -82,17 +79,10 @@ int StudentWorld::init()
 
 	// Initialize Gold Nuggets
 	shared_ptr<Gold> pGold;
-	int NUM_GOLD_NUGGETS = 5; // FIXME this should be handled somewhere else
+	int NUM_GOLD_NUGGETS = 1; // TODO: how many should spawn at the start?
 	for (int i = 0; i < NUM_GOLD_NUGGETS; ++i) {
-
 		try {
-			// This ensures it does not appear in the tunnel
-			int x = rand() % 60;
-			while (x >= 27 && x <= 33)
-				x = rand() % 60;
-			int y = rand() % 56;
-			
-			pGold = make_shared<Gold>(this, x, y, true, true);
+			pGold = make_shared<Gold>(this, getRandomX(), getRandomY(), true, true, false, true);
 
 			m_actors.push_back(pGold);
 		}
@@ -103,16 +93,10 @@ int StudentWorld::init()
 	
 	// Initialize Sonar Kits
 	shared_ptr<SonarKit> pSonar;
-	int NUM_SONAR_KITS = 2; // FIXME this should be handled somewhere else
+	int NUM_SONAR_KITS = 1; // TODO: how many should spawn at the start?
 	for (int i = 0; i < NUM_SONAR_KITS; ++i) {
 		try {
-
-			// This ensures it does not appear in the tunnel
-			int x = rand() % 60;
-			while (x >= 27 && x <= 33)
-				x = rand() % 60;
-			int y = rand() % 56;
-			pSonar = make_shared<SonarKit>(this, x, y, true);  // FIXME should not appear in open tunnel
+			pSonar = make_shared<SonarKit>(this, getRandomX(), getRandomY(), true);
 
 			m_actors.push_back(pSonar);
 		}
@@ -123,13 +107,10 @@ int StudentWorld::init()
 
 	// Initialize Water Pools
 	shared_ptr<WaterPool> pWaterPool;
-	int NUM_WATER_POOLS = 2; // FIXME NUM_WATER_POOLS FIXME this should be handled somewhere else
+	int NUM_WATER_POOLS = 1; // FIXME how many should spawn at the start?
 	for (int i = 0; i < NUM_SONAR_KITS; ++i) {
 		try {
-			// Randomizes starting x and y
-			int x = rand() % 60;
-			int y = rand() % 56;
-			pWaterPool = make_shared<WaterPool>(this, x, y);
+			pWaterPool = make_shared<WaterPool>(this, getRandomX(), getRandomY());
 
 			m_actors.push_back(pWaterPool);
 		}
@@ -137,6 +118,7 @@ int StudentWorld::init()
 			cout << "Unable to allocate memory for Water Pool" << endl;
 		}
 	}
+
 	return GWSTATUS_CONTINUE_GAME;
 }
 
@@ -147,11 +129,25 @@ int StudentWorld::move()
 	// Notice that the return value GWSTATUS_PLAYER_DIED will cause our framework to end the current level.
 	decLives();
 
+
+
 	// Give ALL Actors a chance to do something during this tick
 	for (auto actor : m_actors) {
 		// TODO: Do we call doSomething() if it's not alive?
-		if (actor != nullptr)
-			actor->doSomething();
+		if (actor != nullptr) {
+			// Calculate distance to IceMan, send to Actor
+			actor->setRadiusIceMan(calcDistanceSq(actor, m_pIceMan.lock()));
+			// Check if IceMan can pick up the object
+			// If yes, then this is a Goodie
+			if (actor->canPickupIM()) {
+				actor->doSomething();
+				pickupGoodieIM(actor, *(m_pIceMan.lock()));
+			}
+			// Else, this is not a Goodie
+			else {
+				actor->doSomething();
+			}
+		}
 	}
 
 	{
@@ -190,6 +186,7 @@ int StudentWorld::move()
 		}
 	}
 
+
 	return GWSTATUS_CONTINUE_GAME;
 }
 
@@ -212,9 +209,84 @@ void StudentWorld::cleanUp()
 }
 
 void StudentWorld::removeDeadGameObjects() {
-	for (auto actor : m_actors) {
-		if (actor->isAlive() == false) {
-			actor.reset();
+	// TODO
+}
+
+// Creates random x coordinate for actors to spawn in
+// Will not spawn in tunnel
+int StudentWorld::getRandomX() {
+	int x = rand() % 60;
+	while (x >= 27 && x <= 33)
+		x = rand() % 60;
+	return x;
+}
+
+// Creates random y coordinate for actors to spawn in
+int StudentWorld::getRandomY() {
+	return rand() % 56;
+}
+
+// Detects collision between two actors
+bool StudentWorld::detectCollison(ActorPtr pA1, ActorPtr pA2, double distance) {
+	// If the distance is less than 9, there has been a collision
+	if (distance <= 9 && pA1 != pA2)
+		return true;
+	return false;
+}
+
+// Calculates the distance squared between any two actors
+// Using distance squared avoid an extra operation
+double StudentWorld::calcDistanceSq(ActorPtr pA1, ActorPtr pA2) {
+	if (pA1 == pA2)
+		return NULL;
+	return pow(pA1->getX() - pA2->getX(), 2) + pow(pA1->getY() - pA2->getY(), 2);
+}
+
+
+// GOODIE FUNCTIONS
+
+// Sets the number of oil barrels in the oil field
+void StudentWorld::setNumBarrels(int barrels) {
+	m_num_barrels = barrels;
+}
+
+// Returns the number of oil barrels remaining in the field
+int StudentWorld::getNumBarrels() {
+	return m_num_barrels;
+}
+
+// Decrements the number of oil barrels remaining in the field
+void StudentWorld::decNumBarrels() {
+	--m_num_barrels;
+}
+
+// Handles the case where any Goodie is picked up
+void StudentWorld::pickupGoodieIM(ActorPtr actor, IceMan& iceman) {
+	// If there is a collision, increase the score and play a sound
+	// Depending on the goodie, a different action occurs
+	// Uses the image ID to identify the goodie
+	if (detectCollison(actor, m_pIceMan.lock(), actor->getRadiusIceMan())) {
+		
+		switch (actor->getID()) {
+		case IID_BARREL:
+			decNumBarrels();
+			if (getNumBarrels() == 0) {
+				// FIXME level increases when all barrels are collected
+				// TODO: Where should the level be incremented?
+				cout << "LEVEL UP" << endl; // FIXME
+			}
+			break;
+		case IID_GOLD:
+			iceman.incGold();
+			break;
+		case IID_SONAR:
+			iceman.incSonarKits();
+			break;
+		case IID_WATER_POOL:
+			iceman.incWater();
+			break; 
 		}
+		increaseScore(actor->getPoints());
+		playSound(actor->getSoundEffect());
 	}
 }

@@ -3,9 +3,9 @@
 
 #include "Goodie.h"
 
-const double OIL_BARREL_SIZE = 1.00;
-const int OIL_BARREL_DEPTH = 2;
-const int OIL_BARREL_POINTS = 1000;
+const double	OIL_BARREL_SIZE		= 1.00;
+const int		OIL_BARREL_DEPTH	= 2;
+const int		OIL_BARREL_POINTS	= 1000;
 
 class OilBarrel : public Goodie
 {
@@ -23,12 +23,12 @@ public:
 	/* Operations													     */
 	/*************************************************************************/
 	void doSomething();
-	// Handles when a Goodie is collected
 	void collect();
 
 	/*************************************************************************/
 	/* Getters/Setters													     */
 	/*************************************************************************/
+
 private:
 	/*************************************************************************/
 	/* Data Members													     */

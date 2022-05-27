@@ -9,50 +9,45 @@ OilBarrel::OilBarrel(StudentWorld* pStudentWorld, int startX, int startY)
 		Direction::right,
 		OIL_BARREL_SIZE /*size*/,
 		OIL_BARREL_DEPTH /*depth*/,
-		true /*visible*/,
+		false /*visible*/,
 		false /*canAnnoy*/,
-		false /*canPickup*/)
+		true /*canPickupIM*/,
+		false /*canPickupP*/,
+		true /*isPermanent*/)
 {
+	setCanPickupIM(true);
 };
 
 // Destructor
 OilBarrel::~OilBarrel() {
-	getGraphObjects(OIL_BARREL_DEPTH).erase(this);
 }
 
 // Handle tick
 void OilBarrel::doSomething() {
-	//setRadius(); need to figure out how to get the distance from ice man
-	// This code just forces the barrel to be visible
-	// Delete later
-	if (isAlive())
-		setVisible(true);
-	return;
-	
-	// Is we're no longer alive, make ourselves invisible
+	// Is we're no longer alive, return
 	if (!isAlive()) {
-		setVisible(false);
 		return;
 	}
-	// Check if IceMan is within a radius of 4
-	// Check page 34
-	//if (!isVisible() && getRadius() <= 4.0) {
-	//	setVisible(true);
-	//	return;
-	//}
-	//if (getRadius() <= 3.0) {
-	//	
-	//}
-
+	// Check if IceMan is within a radius of 4 (using radius squared, so 16)
+	// Check page 34 for guidlines
+	if (!isVisible() && getRadiusIceMan() <= 16) {
+		setVisible(true);
+		return;
+	}
+	// Collect if IceMan is within a radius of 3 (using radius sqaured, so 9)
+	if (getRadiusIceMan() <= 9) {
+		collect();
+		return;
+	}
 }
 
+// Handles when an oil barrel is collected
 void OilBarrel::collect() {
 	setAlive(false);
-		//playSound(SOUND_FOUND_OIL);
-		//increaseScore(OIL_BARREL_POINTS);
-		//displayMessage(OIL_BARREL_MESSAGE);
-		// Inform StudentWorld that the barrel was picked up?
-		// Decrement the number of OilBarrels
+	setCollected(true);
+	setVisible(false);
+	setSoundEffect(SOUND_FOUND_OIL);
+	setPoints(OIL_BARREL_POINTS);
 }
 
 

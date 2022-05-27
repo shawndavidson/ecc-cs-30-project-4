@@ -100,6 +100,7 @@
     <ClInclude Include="Actor.h" />
     <ClInclude Include="Goodie.h" />
     <ClInclude Include="Gold.h" />
+    <ClInclude Include="Squirt.h" />
     <ClInclude Include="WaterPool.h" />
     <ClInclude Include="SonarKit.h" />
     <ClInclude Include="OilBarrel.h" />

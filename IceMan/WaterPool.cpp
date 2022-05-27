@@ -11,48 +11,36 @@ WaterPool::WaterPool(StudentWorld* pStudentWorld, int startX, int startY)
 		WATER_POOL_DEPTH /*depth*/,
 		true /*visible*/,
 		false /*canAnnoy*/,
-		false /*canPickup*/)
+		true /*canPickupIM*/,
+		false /*canPickupP*/,
+		false /*isPermanent*/)
 {
+	// TODO: water pools are temporary and only stay on screen for a certain number of ticks
 };
 
 // Destructor
 WaterPool::~WaterPool() {
-	getGraphObjects(WATER_POOL_DEPTH).erase(this);
 }
 
 // Handle tick
 void WaterPool::doSomething() {
-	//setRadius(); need to figure out how to get the distance from ice man
-	// This code just forces the barrel to be visible
-	// Delete later
-	if (isAlive())
-		setVisible(true);
-	return;
-
-	// Is we're no longer alive, make ourselves invisible
+	// Is we're no longer alive, return
 	if (!isAlive()) {
-		setVisible(false);
 		return;
 	}
-	// Check if IceMan is within a radius of 4
-	// Check page 34
-	//if (!isVisible() && getRadius() <= 4.0) {
-	//	setVisible(true);
-	//	return;
-	//}
-	//if (getRadius() <= 3.0) {
-	//	
-	//}
-
+	// If IceMan is within a radius of 3 (squared)
+	if (getRadiusIceMan() <= 9) {
+		collect();
+	}
 }
 
+// Handles when a water pool is collected
 void WaterPool::collect() {
 	setAlive(false);
-	//playSound(SOUND_FOUND_OIL);
-	//increaseScore(OIL_BARREL_POINTS);
-	//displayMessage(OIL_BARREL_MESSAGE);
-	// Inform StudentWorld that the barrel was picked up?
-	// Decrement the number of OilBarrels
+	setCollected(true);
+	setVisible(false);
+	setSoundEffect(SOUND_GOT_GOODIE);
+	setPoints(WATER_POOL_POINTS);
 }
 
 

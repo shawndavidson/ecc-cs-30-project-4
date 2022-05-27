@@ -2,16 +2,23 @@
 
 
 // Constructor
-Gold::Gold(StudentWorld* pStudentWorld, int startX, int startY, bool visible, bool isPermanent)
+Gold::Gold(StudentWorld* pStudentWorld,
+	int startX,
+	int startY,
+	bool visible,
+	bool canPickupIM,
+	bool canPickupP,
+	bool isPermanent)
 	: Goodie(pStudentWorld,
 		IID_GOLD,
 		startX, startY,
 		Direction::right,
-		GOLD_SIZE /*size*/,
-		GOLD_DEPTH /*depth*/,
-		visible /*visible*/,
-		false /*canAnnoy*/,
-		false /*canPickup*/,
+		GOLD_SIZE	/*size*/,
+		GOLD_DEPTH	/*depth*/,
+		visible,
+		false		/*canAnnoy*/,
+		canPickupIM,
+		canPickupP,
 		isPermanent)
 {
 	// Permanent status is true when initialized in the ice field
@@ -20,57 +27,54 @@ Gold::Gold(StudentWorld* pStudentWorld, int startX, int startY, bool visible, bo
 
 // Destructor
 Gold::~Gold() {
-	getGraphObjects(GOLD_DEPTH).erase(this);
 }
 
 // Handle tick
 void Gold::doSomething() {
-	//setRadius(); need to figure out how to get the distance from ice man
-	// This code just forces the barrel to be visible
-	// Delete later
-	if (isAlive())
-		setVisible(true);
-	return;
-
-	// Is we're no longer alive, make ourselves invisible
+	// Page 35 has details
+	// If gold is not alive, return immediately
 	if (!isAlive()) {
-		setVisible(false);
 		return;
 	}
-	 //Check if IceMan is within a radius of 4
-	 //Check page 35
-
-	/*
-	if (!isVisible() && getRadius() <= 4.0) {
+	// If within a radius of 4 to IceMan, become visible (using radius squared)
+	if (!isVisible() && getRadiusIceMan() <= 16) {
 		setVisible(true);
 		return;
 	}
-	// If IceMan can collect
-	if (iceManCanCollect() && getRadius() <= 3.0) {
-		setAlive(false);
-		// play SOUND_GOT_GOODIE
-		//increaseScore(GOLD_POINTS);
-		// Must update IceMan's gold inventory by 1
-		// Inform StudentWorld that the barrel was picked up?
+	// Collected by Iceman
+	// If can be picked up by IceMan and within a radius of 3 (squared), get collected
+	if (canPickupIM() && getRadiusIceMan() <= 9) {
+		collectIM();
+		return;
 	}
-	// If Protestor can collect
-	if (protesterCanCollect() && getRadius() <= 3.0) {
-		setAlive(false);
-		// play SOUND_PROTESTER_FOUND_GOLD
-		// increase score by 25
-	}
-	*/
 	
+	// TODO: handle being picked up by a protester
 
-
-
+	// TODO: Check if lifetime expired
 
 }
 
 void Gold::collect() {
 	setAlive(false);
-	//playSound(SOUND_GOT_GOODIE);
-	
+	setCollected(true);
+	setVisible(false);
+}
+
+void Gold::collectIM() {
+	collect();
+	setCanPickupIM(false);
+	setSoundEffect(SOUND_GOT_GOODIE);
+	setPoints(GOLD_ICEMAN_POINTS);
+}
+
+void Gold::collectP() {
+	setCanPickupP(false);
+	setSoundEffect(SOUND_PROTESTER_FOUND_GOLD);
+	setPoints(GOLD_PROTESTER_POINTS);
+}
+
+void Gold::dropGold() {
+	// TODO: this may need to be handled by StudentWorld
 }
 
 

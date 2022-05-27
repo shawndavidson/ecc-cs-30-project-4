@@ -3,9 +3,9 @@
 
 #include "Goodie.h"
 
-const double WATER_POOL_SIZE = 1.00;
-const int WATER_POOL_DEPTH = 2;
-const int WATER_POOL_POINTS = 1000;
+const double	WATER_POOL_SIZE		= 1.00;
+const int		WATER_POOL_DEPTH	= 2;
+const int		WATER_POOL_POINTS	= 100;
 
 class WaterPool : public Goodie
 {
@@ -23,7 +23,8 @@ public:
 	/* Operations													     */
 	/*************************************************************************/
 	void doSomething();
-	// Handles when a Goodie is collected
+
+	// Handles when a Water Pool is collected
 	void collect();
 
 	/*************************************************************************/

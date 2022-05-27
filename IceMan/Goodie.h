@@ -19,7 +19,8 @@ public:
 		unsigned int depth /*= 0*/,
 		bool visible = false,
 		bool canAnnoy = false,
-		bool canPickup = false,
+		bool canPickupIM = true,
+		bool canPickupP = false,
 		bool isPermanent = true);
 
 	// Destructor
@@ -29,44 +30,52 @@ public:
 	/* Operations													     */
 	/*************************************************************************/
 	// Handles one tick
-	virtual void doSomething()			= 0;
+	virtual void doSomething() = 0;
+
 	// Goodies cannot be annoyed
 	void annoy();
-
 
 	/*************************************************************************/
 	/* Getters/Setters													     */
 	/*************************************************************************/
-	// Sets the length of the radius between a Goodie and IceMan
-	void  setRadius(int IceMan_x, int IceMan_y);
-	// Gets the length of the radius between a Goodie and Iceman
-	double getRadius();
 	// Sets whether a goodie is permanent or not
 	void setPermanentStatus(bool);
+
 	// Gets whether a goodie is permanent or not
 	bool getPermanentStatus();
+
 	// Sets the number of ticks a temporary Goodie will remain alive
 	void setTicksAlive(int);
+
 	// Gets the number of ticks a temporary Goodie has left to live
 	int getTicksAlive();
 
+	// Sets whether a Goodie is collected
+	void setCollected(bool);
+
+	// Returns true if goodie was collected
+	bool isCollected();
 
 	/*************************************************************************/
 	/* Pure Virtual														     */
 	/*************************************************************************/
-	// Handles when a Goodie is collected
-	virtual void collect()				 = 0;
+
+	virtual void collect() = 0;
+	
 private:
 	/*************************************************************************/
 	/* Data Members													     */
 	/*************************************************************************/
+
 	// Some goodies are not permanent and must disappear after a certain number of ticks
-	bool m_permanent;
+	bool m_bPermanent;
+
 	// The number of ticks a temporary Goodie will remain alive
-	int m_ticks_alive;
+	int m_iTicksAlive;
+
+	// True if the Goodie has been collected
+	bool m_bCollected;
+
 };
-
-
-
 
 #endif GOODIE_H_

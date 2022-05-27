@@ -9,18 +9,23 @@ Actor::Actor(
 	int imageID,
 	int startX,
 	int startY,
-	Direction dir /*= right*/,
-	double size /*= 1.0*/,
-	unsigned int depth /*= 0*/,
-	bool visible /*= true*/,
-	bool canAnnoy /*= false*/,
-	bool canPickup /*= false*/)
+	Direction dir		/*= right*/,
+	double size			/*= 1.0*/,
+	unsigned int depth	/*= 0*/,
+	bool visible		/*= true*/,
+	bool canAnnoy		/*= false*/,
+	bool canPickupIM	/*= false*/,
+	bool canPickupP		/*false*/)
 	: GraphObject(imageID, startX, startY, dir, size, depth),
 	m_bCanAnnoy(canAnnoy),
-	m_bCanPickup(canPickup),
+	m_bCanPickupIM(canPickupIM),
+	m_bCanPickupP(canPickupP),
 	m_pStudentWorld(pStudentWorld)
 {
+	setAlive(true);
 	setVisible(visible);
+	// Prevent an object being immediately collected before its radius is calcualted
+	setRadiusIceMan(1000); 
 }
 
 // Destructor
@@ -29,8 +34,20 @@ Actor::~Actor()
 }
 
 // Check if we can be picked up by another Actor? 
-bool Actor::canPickup() const {
-	return m_bCanPickup;
+bool Actor::canPickupIM() {
+	return m_bCanPickupIM;
+}
+
+void Actor::setCanPickupIM(bool collectable) {
+	m_bCanPickupIM = collectable;
+}
+
+bool Actor::canPickupP() {
+	return m_bCanPickupP;
+}
+
+void Actor::setCanPickupP(bool collectable) {
+	m_bCanPickupP = collectable;
 }
 
 // Check if we can be annoyed by another Actor? 
@@ -52,4 +69,28 @@ void Actor::setAlive(bool alive) {
 StudentWorld* Actor::getStudentWorld() 
 { 
 	return m_pStudentWorld; 
+}
+
+void Actor::setRadiusIceMan(double radius) {
+	m_dRadiusIceMan = radius;
+}
+
+double Actor::getRadiusIceMan() {
+	return m_dRadiusIceMan;
+}
+
+void Actor::setPoints(int points) {
+	m_iPoints = points;
+}
+
+int Actor::getPoints() {
+	return m_iPoints;
+}
+
+void Actor::setSoundEffect(int s_e) {
+	m_iSoundEffect = s_e;
+}
+
+int Actor::getSoundEffect() {
+	return m_iSoundEffect;
 }

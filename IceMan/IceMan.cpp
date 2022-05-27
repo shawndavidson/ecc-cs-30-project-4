@@ -3,18 +3,20 @@
 
 // Constructor
 IceMan::IceMan(StudentWorld* pStudentWorld)
-    : Actor(pStudentWorld, 
-            IID_PLAYER, 
-            30 /*startX*/,
-            60 /*startY*/,
-            Direction::right,
-            ICEMAN_SIZE /*size*/,
-            0 /*depth*/,
-            true /*visible*/,
-            true /*canAnnoy*/,
-            false /*canPickup*/)
+    : Actor(pStudentWorld,
+        IID_PLAYER,
+        30 /*startX*/,
+        60 /*startY*/,
+        Direction::right,
+        ICEMAN_SIZE /*size*/,
+        0 /*depth*/,
+        true /*visible*/,
+        true /*canAnnoy*/,
+        false /*canPickup*/),
+    m_iGold(0),
+    m_iSonarKits(1),
+    m_iWater(5)
 {
-
 }
 
 // Destructor
@@ -95,4 +97,49 @@ void IceMan::doSomething() {
 // Handle Annoy
 void IceMan::annoy() {
     // TODO
+}
+
+// Increments the gold counter by 1
+void IceMan::incGold() {
+    ++m_iGold;
+    // FIXME - print confirmation, remove when score interface is functional
+    std::cout << "GOLD " << m_iGold << std::endl;
+}
+
+// Increments the sonar kits counter by 1
+void IceMan::incSonarKits(){
+    ++m_iSonarKits;
+    // FIXME - print confirmation, remove when score interface is functional
+    std::cout << "SONAR " << m_iSonarKits << std::endl;
+}
+
+// Increments the water counter by 1
+void IceMan::incWater() {
+    m_iWater += 5;
+    // FIXME - print confirmation, remove when score interface is functional
+    std::cout << "WATER " << m_iWater << std::endl;
+}
+
+// Decrements the gold counter by 1 if there is at least 1 left
+void IceMan::decGold() {
+    if (m_iGold >=1)
+        --m_iGold;
+    // FIXME - print confirmation, remove when score interface is functional
+    std::cout << "GOLD " << m_iGold << std::endl;
+}
+
+// Decrements the sonar kits counter by 1 if there is at least one left
+void IceMan::decSonarKits() {
+   if (m_iSonarKits >= 1)
+       --m_iSonarKits;
+    // FIXME - print confirmation, remove when score interface is functional
+    std::cout << "SONAR " << m_iSonarKits << std::endl;
+}
+
+// Decrements the water counter by 1 if there is at least one left
+void IceMan::decWater() {
+    if (m_iWater >= 1)
+        --m_iWater;
+    // FIXME - print confirmation, remove when score interface is functional
+    std::cout << "WATER " << m_iWater << std::endl;
 }

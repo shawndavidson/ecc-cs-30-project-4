@@ -16,12 +16,13 @@ public:
 		int imageID,
 		int startX,
 		int startY,
-		Direction dir /*= right*/,
-		double size /*= 1.0*/,
-		unsigned int depth /*= 0*/,
+		Direction dir		/*= right*/,
+		double size			/*= 1.0*/,
+		unsigned int depth	/*= 0*/,
 		bool visible = true,
 		bool canAnnoy = false,
-		bool canPickup = false);
+		bool canPickupIM = false,
+		bool canPickupP = false);
 
 	// Destructor
 	virtual ~Actor();
@@ -39,10 +40,19 @@ public:
 	/* Operations														     */
 	/*************************************************************************/
 
-	// Check if we can be picked up by another Actor? 
-	bool canPickup() const;
+	// Check if we can be picked up by Iceman 
+	bool canPickupIM();
 
-	// Check if we can be annoyed by another Actor? 
+	// Check if we can be picke dup by a Protester
+	bool canPickupP();
+
+	// Set canPickupIM
+	void setCanPickupIM(bool);
+
+	// Set canPickupP
+	void setCanPickupP(bool);
+
+	// Check if we can be picked up by IceMan
 	bool canAnnoy()	const;
 
 	// Check if we are still alive
@@ -53,6 +63,24 @@ public:
 
 	// Get a pointer to StudentWorld
 	StudentWorld* getStudentWorld();
+	
+	// Set the radius between a Goodie and IceMan
+	void setRadiusIceMan(double);
+
+	// Get the radius between a Goodie and IceMan
+	double getRadiusIceMan();
+
+	// Sets the number of points an Actor awards for any given action
+	void setPoints(int);
+
+	// Returns the number of points an Actor awards for any given action
+	int getPoints();
+
+	// Sets the sound effect an Actor should play
+	void setSoundEffect(int);
+
+	// Returns the sound effect an Actor plays
+	int getSoundEffect();
 
 private:
 	/*************************************************************************/
@@ -65,11 +93,24 @@ private:
 	// If we're capable of being annoyed - true. Otherwise, false.
 	const bool m_bCanAnnoy;
 
-	// If we're capable of being picked up - true. Otherwise, false.
-	const bool m_bCanPickup;
+	// If we're capable of being picked up by IceMan- true. Otherwise, false.
+	bool m_bCanPickupIM;
+	
+	// If we're capable of being picked up by Protestors
+	bool m_bCanPickupP;
 
 	// Pointer to our world so we can interact with other Actors 
 	StudentWorld* m_pStudentWorld;
+
+	// Distance between this actor and IceMan
+	double m_dRadiusIceMan;
+
+	// How many points an actor should award for any given action
+	int m_iPoints;
+
+	// Sound effect ID when Goodie is picked up
+	int m_iSoundEffect;
+
 };
 
 #endif // ACTOR_H_
