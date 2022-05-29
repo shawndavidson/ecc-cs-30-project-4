@@ -12,6 +12,7 @@
 #include "GameConstants.h"
 #include "Event.h"
 #include "DistanceCalculator.h"
+#include "GraphObject.h"
 
 #define TEST_STUDENTWORLD 0
 
@@ -82,7 +83,12 @@ public:
 	// Check if these coordinates and direction are facing IceMan
 	bool isFacingIceMan(int x, int y, int direction) const;
 
-	bool hasPathToIceMan(int x, int y, unsigned int& direction) const;
+	// Check if a Protester standing in this location and facing this direction has
+	// a direct line of sight to IceMan 
+	bool hasPathToIceMan(int x, int y, GraphObject::Direction& direction) const;
+
+	// Is this location occupied by Ice or a Boulder
+	bool isBlocked(int x, int y) const;
 
 	// Schedule a new Event
 	void pushEvent(SharedEventPtr e)			{ m_events.push(e); }

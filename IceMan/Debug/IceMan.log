@@ -1,9 +1,4 @@
-﻿  Actor.cpp
-  DistanceCalculator.cpp
-  Event.cpp
-  HardcoreProtester.cpp
-  Ice.cpp
-  IceMan.cpp
+﻿  HardcoreProtester.cpp
   Protester.cpp
   RegularProtester.cpp
   StudentWorld.cpp
