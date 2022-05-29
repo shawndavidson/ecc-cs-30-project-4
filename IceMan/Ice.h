@@ -21,15 +21,22 @@ public:
 	virtual ~Ice();
 
 	/*************************************************************************/
-	/* Operators													     */
+	/* Operators															 */
 	/*************************************************************************/
 	// Prevent assignment 
 	Ice& operator=(const Ice&) = delete;
 
 	/*************************************************************************/
-	/* Operations													     */
+	/* Operations															 */
 	/*************************************************************************/
-	virtual void doSomething();
+	// Handle Tick
+	virtual void doSomething() {
+		// Is we're no longer alive, make ourselves invisible
+		if (!isAlive()) {
+			setVisible(false);
+		}
+	}
+
 	virtual void annoy();
 	
 	/*************************************************************************/

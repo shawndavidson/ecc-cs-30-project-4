@@ -74,6 +74,9 @@ public:
 	// Handle movement for all game objects within our world
 	virtual int move();
 
+	// Dig up the ice at this location
+	void digUpIce(int x, int y);
+
 	// Cleanup game objects (deallocates memory)
 	virtual void cleanUp();
 
@@ -132,8 +135,7 @@ private:
 	std::unordered_map<ActorPtr, std::unordered_map<ActorPtr, int>> m_distances;
 
 	// 2D Array for ice blocks 
-	IcePtr m_ice[ICE_WIDTH][ICE_HEIGHT];
-
+	ActorPtr m_ice[ICE_WIDTH][ICE_HEIGHT];
 
 	// Declaration for a Function Object to compare two Events 
 	// in descending order by their tick (time)
@@ -154,7 +156,7 @@ private:
 	// Registry of Event Listeners
 	std::multimap<EventTypes, EventCallback> m_eventListeners;
 
-	// Tool for fast distance calculations between cells
+	// Tool for fast distance calculations between units
 	DistanceCalculator m_distanceCalc;
 };
 
