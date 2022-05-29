@@ -79,9 +79,9 @@ int StudentWorld::init()
 	// TODO: Remove
 	// Initialize a Regular and Hardcore Protester 
 	try {
-		for (int i = 0; i < 50; i++) {
+		for (int i = 0; i < 1; i++) {
 			m_actors.push_back(make_shared<RegularProtester>(this, rand() % ICE_WIDTH, ICE_HEIGHT));
-			m_actors.push_back(make_shared<HardcoreProtester>(this, rand() % ICE_WIDTH, ICE_HEIGHT));
+			//m_actors.push_back(make_shared<HardcoreProtester>(this, rand() % ICE_WIDTH, ICE_HEIGHT));
 		}
 	}
 	catch (bad_alloc& /*ex*/) {
@@ -95,7 +95,7 @@ int StudentWorld::init()
 int StudentWorld::move()
 {
 	// Compute the distance between all Actors
-	computeDistances();
+	computeDistancesBetweenActors();
 
 	// This code is here merely to allow the game to build, run, and terminate after you hit enter a few times.
 	// Notice that the return value GWSTATUS_PLAYER_DIED will cause our framework to end the current level.
@@ -106,9 +106,9 @@ int StudentWorld::move()
 
 	// Give ALL Actors a chance to do something during this tick
 	for (auto actor : m_actors) {
-		// TODO: Do we call doSomething() if it's not alive?
-		if (actor != nullptr)
+		if (actor != nullptr) {
 			actor->doSomething();
+		}
 	}
 
 	{
@@ -211,12 +211,11 @@ void StudentWorld::listenForEvent(EventTypes type, EventCallback callback) {
 int StudentWorld::getDistanceToIceMan(int x, int y) const {
 	shared_ptr<IceMan> pIceMan = m_pIceMan.lock();
 
-	// TODO: Should use m_distances
 	return m_distanceCalc.getDistance(x, y, pIceMan->getX(), pIceMan->getY());
 }
 
 // Check if these coordinates and direction are facing IceMan
-bool StudentWorld::isFacingIceMan(int x, int y, int direction) const {
+bool StudentWorld::isFacingIceMan(int x, int y, GraphObject::Direction direction) const {
 	shared_ptr<IceMan> pIceMan = m_pIceMan.lock();
 
 	bool isFacing = false;
@@ -246,7 +245,7 @@ bool StudentWorld::isFacingIceMan(int x, int y, int direction) const {
 // the same horizontal or vertical axis and no ice or boulders are
 // between us. Return true, if so and set direction (by reference)
 // to face IceMan. Otherwise, false.
-bool StudentWorld::hasPathToIceMan(int x, int y, unsigned int& direction) const {
+bool StudentWorld::hasPathToIceMan(int x, int y, GraphObject::Direction& direction) const {
 	bool hasLineOfSight = false;
 
 	shared_ptr<IceMan> pIceMan = m_pIceMan.lock();
@@ -254,49 +253,73 @@ bool StudentWorld::hasPathToIceMan(int x, int y, unsigned int& direction) const 
 	// Check for ice or boulders in the way on the vertical and
 	// horizontal axis
 	const int iceX = pIceMan->getX();
-	const int iceY = pIceMan->getY();
-
-	auto checkForIce = [&](int x, int y) {
-		return m_ice[x][y] != nullptr || m_ice[x][y]->isAlive();
-	};	
+	const int iceY = pIceMan->getY();	
 		 
 	if (x == iceX) {
-		// Are we on IceMan's left?
+		// Are we below IceMan's?
 		if (y < iceY) {
 			for (int j = y; j < iceY && !hasLineOfSight; j++) {
-				if (checkForIce(x, j)) 
-					return false;
+				if (isBlocked(x, j)) 
+					hasLineOfSight = false;
 			}
+			if (hasLineOfSight)
+				direction = GraphObject::Direction::up;
 		}
-		else { // we must be on his right
+		else if (y > iceY) { // Are we above IceMan?
 			for (int j = y; j > iceY && !hasLineOfSight; j--) {
-				if (checkForIce(x, j))
-					return false;
+				if (isBlocked(x, j))
+					hasLineOfSight = false;
 			}
+			if (hasLineOfSight)
+				direction = GraphObject::Direction::down;
 		}
+		else {
+			direction = GraphObject::Direction::none;
+		}
+
+		hasLineOfSight = true;
 	}
 	else if (y == iceY) {
 		// Check for ice or boulders in the way on the vertical axis
 		// Are we on IceMan's left?
 		if (x < iceX) {
 			for (int i = x; i < iceX && !hasLineOfSight; i++) {
-				if (checkForIce(i, y))
-					return false;
+				if (isBlocked(i, y))
+					hasLineOfSight = false;
 			}
+			if (hasLineOfSight)
+				direction = GraphObject::Direction::left;
 		}
-		else { // we must be on his right
+		else if (x > iceX) { // Are we on IceMan's right?
 			for (int i = x; i > iceX && !hasLineOfSight; i--) {
-				if (checkForIce(i, y))
-					return false;
+				if (isBlocked(i, y))
+					hasLineOfSight = false;
 			}
+			if (hasLineOfSight)
+				direction = GraphObject::Direction::right;
 		}
+		else {
+			direction = GraphObject::Direction::none;
+		}
+
+		hasLineOfSight = true;
 	}
 
 	return hasLineOfSight;
 }
 
-// Compute distances betwen actors
-void StudentWorld::computeDistances() {
+// Is this location occupied by Ice, Boulder, or is out of bounds
+bool StudentWorld::isBlocked(int x, int y) const {
+	// Check boundries
+	if (x < 0 || x >= VIEW_WIDTH || y < 0 || y >= ICE_HEIGHT)
+		return false;
+
+	// TODO: Check for Boulders
+	return m_ice[x][y] != nullptr && m_ice[x][y]->isAlive();
+}
+
+// Compute distances between all actors
+void StudentWorld::computeDistancesBetweenActors() {
 	m_distances.clear();
 	
 	// Compute distances between each Actor and every other Actor O(n^2)
