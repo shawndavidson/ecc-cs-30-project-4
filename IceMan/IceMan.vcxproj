@@ -89,6 +89,7 @@
     <ClCompile Include="IceMan.cpp" />
     <ClCompile Include="Protester.cpp" />
     <ClCompile Include="RegularProtester.cpp" />
+    <ClCompile Include="ShortestPathFinder.cpp" />
     <ClCompile Include="StudentWorld.cpp" />
     <ClCompile Include="GameController.cpp">
       <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MultiThreaded</RuntimeLibrary>
@@ -105,6 +106,7 @@
     <ClInclude Include="IceMan.h" />
     <ClInclude Include="Protester.h" />
     <ClInclude Include="RegularProtester.h" />
+    <ClInclude Include="ShortestPathFinder.h" />
     <ClInclude Include="StudentWorld.h" />
     <ClInclude Include="GameConstants.h" />
     <ClInclude Include="GameController.h" />

@@ -29,7 +29,9 @@ StudentWorld::StudentWorld(std::string assetDir)
 	m_distances(),
 	m_events(),
 	m_eventListeners(),
-	m_distanceCalc()
+	m_distanceCalc(),
+	m_shortestPathToExit(this),
+	m_shortestPathToIceMan(this)
 {
 }
 
@@ -96,6 +98,14 @@ int StudentWorld::move()
 {
 	// Compute the distance between all Actors
 	computeDistancesBetweenActors();
+
+	// Compute shortest paths to exit and IceMan
+	m_shortestPathToExit.compute(60, 60);
+	{
+		auto pIceMan = m_pIceMan.lock();
+
+		m_shortestPathToIceMan.compute(pIceMan->getX(), pIceMan->getY());
+	}
 
 	// This code is here merely to allow the game to build, run, and terminate after you hit enter a few times.
 	// Notice that the return value GWSTATUS_PLAYER_DIED will cause our framework to end the current level.
@@ -307,11 +317,11 @@ bool StudentWorld::hasPathToIceMan(int x, int y, GraphObject::Direction& directi
 // Is this location occupied by Ice, Boulder, or is out of bounds
 bool StudentWorld::isBlocked(int x, int y) const {
 	// Check boundries
-	if (x < 0 || x >= VIEW_WIDTH || y < 0 || y >= ICE_HEIGHT)
-		return false;
+	if (x < 0 || x >= VIEW_WIDTH || y < 0 || y > ICE_HEIGHT)
+		return true;
 
 	// TODO: Check for Boulders
-	return m_ice[x][y] != nullptr && m_ice[x][y]->isAlive();
+	return y < ICE_HEIGHT && m_ice[x][y] != nullptr && m_ice[x][y]->isAlive();
 }
 
 // Compute distances between all actors

@@ -13,6 +13,7 @@
 #include "Event.h"
 #include "DistanceCalculator.h"
 #include "GraphObject.h"
+#include "ShortestPathFinder.h"
 
 #define TEST_STUDENTWORLD 0
 
@@ -158,6 +159,10 @@ private:
 
 	// Tool for fast distance calculations between units
 	DistanceCalculator m_distanceCalc;
+
+	// Tools for computing shortest paths to the Exit and IceMan
+	ShortestPathFinder m_shortestPathToExit;
+	ShortestPathFinder m_shortestPathToIceMan;
 };
 
 #endif // STUDENTWORLD_H_
