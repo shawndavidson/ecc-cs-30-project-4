@@ -13,6 +13,7 @@
 #include "Event.h"
 #include "DistanceCalculator.h"
 #include "GraphObject.h"
+#include "ShortestPathFinder.h"
 
 #define TEST_STUDENTWORLD 0
 
@@ -93,6 +94,12 @@ public:
 	// Is this location occupied by Ice or a Boulder
 	bool isBlocked(int x, int y) const;
 
+	// Get the direction that has the shortest path to the exit
+	GraphObject::Direction getShortestPathToExit(int x, int y)		{ return m_shortestPathToExit.getShortestPath(x, y); }
+
+	// Get the direction that has the shortest path to IceMan
+	GraphObject::Direction getShortestPathToIceMan(int x, int y)	{ return m_shortestPathToIceMan.getShortestPath(x, y); }
+
 	// Schedule a new Event
 	void pushEvent(SharedEventPtr e)			{ m_events.push(e); }
 
@@ -158,6 +165,10 @@ private:
 
 	// Tool for fast distance calculations between units
 	DistanceCalculator m_distanceCalc;
+
+	// Tools for computing shortest paths to the Exit and IceMan
+	ShortestPathFinder m_shortestPathToExit;
+	ShortestPathFinder m_shortestPathToIceMan;
 };
 
 #endif // STUDENTWORLD_H_

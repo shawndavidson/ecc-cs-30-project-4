@@ -190,19 +190,12 @@ void Protester::annoy() {
 
 // Figure out which direction to move towards the exit 
 void Protester::moveTowardsExit() {
-    Direction direction = getShortestPathToExit();
+    Direction direction = getStudentWorld()->getShortestPathToExit(getX(), getY());
 
     if (!takeOneStep(direction)) {
         cout << "Unable to move the Protester in the direction towards the exit" << endl;
         // throw?
     }
-}
-
-// Get direction to move towards exit in shortest path
-GraphObject::Direction Protester::getShortestPathToExit() const {
-    // TODO: Use maze searching algorithm to move towards exit, 
-    // using concurrency, avoiding Ice and Boulders
-    return (Direction)(rand() % Direction::right+1);
 }
 
 // Take one step in a specified direction

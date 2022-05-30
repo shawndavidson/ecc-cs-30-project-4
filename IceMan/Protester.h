@@ -40,7 +40,6 @@ protected:
 	// Take one step towards the exit 
 	void			moveTowardsExit();
 	bool			takeOneStep(GraphObject::Direction direction);
-	Direction		getShortestPathToExit() const;
 	int				getNumSquaresToMove() const;
 	bool			getPossiblePerpendicularDirections(std::vector<GraphObject::Direction>& directions);
 
