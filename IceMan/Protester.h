@@ -2,6 +2,7 @@
 #define PROTESTOR_H_
 
 #include <vector>
+#include <random>
 
 #include "Actor.h"
 
@@ -39,8 +40,17 @@ public:
 protected:
 	// Take one step towards the exit 
 	void			moveTowardsExit();
+
+	// Take one step towards IceMan 
+	void			moveTowardsIceMan();
+
+	// Take one step in the given direction
 	bool			takeOneStep(GraphObject::Direction direction);
-	int				getNumSquaresToMove() const;
+
+	// Get number of squares to move before turning
+	int				getNumSquaresToMoveInCurrentDirection() const;
+
+	// Get possible perpendicular turns relative to the current direction
 	bool			getPossiblePerpendicularDirections(std::vector<GraphObject::Direction>& directions);
 
 	// Can we shout at IceMan
@@ -62,6 +72,10 @@ private:
 	unsigned long   m_nLastShoutedTick;
 	int				m_nNumSquaresToMoveInCurrentDirection;
 	size_t			m_nTickOfLastPerpendicularTurn;
+	std::vector<Direction> m_allDirections;
+
+	static std::random_device	m_randomDevice;
+	static std::mt19937			m_randomGenerator;
 };
 
 

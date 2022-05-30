@@ -15,6 +15,12 @@ const unsigned int  NON_RESTING_TICKS_BETWEEN_SHOUTS    = 15;
 const int           MAX_SHOUTING_RANGE_UNITS            = 4*4; // 4 units * ICEMAN_SIZE
 const int           NON_RESTING_TICKS_BETWEEN_TURNING   = 200;
 
+/*************************************************************************/
+/* Static Members														     */
+/*************************************************************************/
+std::random_device Protester::m_randomDevice;
+std::mt19937 Protester::m_randomGenerator = std::mt19937(m_randomDevice());
+
 // Constructor
 Protester::Protester(
     StudentWorld* pStudentWorld,
@@ -34,8 +40,9 @@ Protester::Protester(
     m_nTicksToWaitBetweenMoves(std::max<unsigned int>(0, 3 - getStudentWorld()->getLevel() / 4)),
     m_nLeaveTheOilField(false),
     m_nLastShoutedTick(0),
-    m_nNumSquaresToMoveInCurrentDirection(getNumSquaresToMove()),
-    m_nTickOfLastPerpendicularTurn(0)
+    m_nNumSquaresToMoveInCurrentDirection(getNumSquaresToMoveInCurrentDirection()),
+    m_nTickOfLastPerpendicularTurn(0),
+    m_allDirections{ Direction::none, Direction::up, Direction::down, Direction::left, Direction::right }
 {
 }
 
@@ -94,24 +101,18 @@ void Protester::doSomething() {
     m_nNumSquaresToMoveInCurrentDirection--;
 
     if (m_nNumSquaresToMoveInCurrentDirection <= 0) {
-        int numTries = 0;
-        bool moved = false;
-        do {
-            Direction newDirection = (Direction)(rand() % (Direction::right + 1));
+        // Move in a new random direction. If we're not able to, then pick another direction.
+        std::shuffle(begin(m_allDirections), end(m_allDirections), m_randomGenerator);
 
-            // Check if we can move in this direction?
-            moved = takeOneStep(newDirection);
-            numTries++;
-        } while (!moved && numTries < 20);
-
-        if (!moved) {
-            // This shouldn't happen
-            cout << "We have a protester that is stuck due to bounds checking, ice, or boulders!" << endl;
-            return;
+        for (auto direction : m_allDirections) {
+            if (takeOneStep(direction)) {
+                // Randomly select a new number of moves [8, 60] to make in this direction 
+                m_nNumSquaresToMoveInCurrentDirection = getNumSquaresToMoveInCurrentDirection();
+                return;
+            }
         }
 
-        // Randomly select a new number of moves [8, 60] to make in this direction 
-        m_nNumSquaresToMoveInCurrentDirection = getNumSquaresToMove();
+        cout << "We have a protester that is stuck due to bounds checking or is blocked on all sides by ice and/or boulders!" << endl;
         return;
     }
 
@@ -126,7 +127,7 @@ void Protester::doSomething() {
 
             setDirection(newDirection);
 
-            m_nNumSquaresToMoveInCurrentDirection = getNumSquaresToMove();
+            m_nNumSquaresToMoveInCurrentDirection = getNumSquaresToMoveInCurrentDirection();
 
             // Keep track of when we made our last turn
             m_nTickOfLastPerpendicularTurn = getStudentWorld()->getTick();
@@ -144,7 +145,7 @@ void Protester::doSomething() {
 }
 
 // Get the number of squares to move in the current direction
-int Protester::getNumSquaresToMove() const {
+int Protester::getNumSquaresToMoveInCurrentDirection() const {
     return 8 + (rand() % (60 - 8 + 1));
 }
 
@@ -194,6 +195,16 @@ void Protester::moveTowardsExit() {
 
     if (!takeOneStep(direction)) {
         cout << "Unable to move the Protester in the direction towards the exit" << endl;
+        // throw?
+    }
+}
+
+// Figure out which direction to move towards IceMan 
+void Protester::moveTowardsIceMan() {
+    Direction direction = getStudentWorld()->getShortestPathToIceMan(getX(), getY());
+
+    if (!takeOneStep(direction)) {
+        cout << "Unable to move the Protester in the direction towards IceMan" << endl;
         // throw?
     }
 }
