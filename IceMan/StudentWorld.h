@@ -73,9 +73,6 @@ public:
     // Perform initializion
 	virtual int init();
 
-	// Start calculations in worker threads
-	void startWorkerThreads();
-
 	// Handle movement for all game objects within our world
 	virtual int move();
 
@@ -117,6 +114,9 @@ private:
 
 	// Is there another Event in the queue?
 	bool isEventQueueEmpty() const				{ return m_events.empty(); }
+
+	// Start calculations in worker threads
+	void startWorkerThreads();
 
 private:
 	/*************************************************************************/
