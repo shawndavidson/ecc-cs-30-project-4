@@ -7,6 +7,7 @@
 #include <queue>
 #include <map>
 #include <unordered_map>
+#include <thread>
 
 #include "GameWorld.h"
 #include "GameConstants.h"
@@ -32,7 +33,7 @@ class Ice;
 typedef shared_ptr<Actor>					ActorPtr;
 typedef shared_ptr<Ice>						IcePtr;
 typedef std::function<void(SharedEventPtr)>	EventCallback;
-
+typedef shared_ptr<thread>					ThreadPtr;
 
 /*************************************************************************/
 /* Constants														     */
@@ -92,7 +93,7 @@ public:
 	bool hasPathToIceMan(int x, int y, GraphObject::Direction& direction) const;
 
 	// Is this location occupied by Ice or a Boulder
-	bool isBlocked(int x, int y) const;
+	inline bool isBlocked(int x, int y) const;
 
 	// Get the direction that has the shortest path to the exit
 	GraphObject::Direction getShortestPathToExit(int x, int y)		{ return m_shortestPathToExit.getShortestPath(x, y); }
@@ -105,6 +106,7 @@ public:
 
 	// Register for an Event
 	void listenForEvent(EventTypes type, EventCallback callback);
+
 
 private:
 	// Get the Event with the smallest tick
@@ -169,6 +171,9 @@ private:
 	// Tools for computing shortest paths to the Exit and IceMan
 	ShortestPathFinder m_shortestPathToExit;
 	ShortestPathFinder m_shortestPathToIceMan;
+
+	// Threads for performing computations 
+	std::vector<ThreadPtr> m_pWorkerThreads;
 };
 
 #endif // STUDENTWORLD_H_
