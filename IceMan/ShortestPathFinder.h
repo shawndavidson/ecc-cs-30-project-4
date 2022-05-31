@@ -35,24 +35,20 @@ public:
     // Get the direction that has the shortest direction
     GraphObject::Direction getShortestPath(int x, int y);
 
-private:
-    // Perform initialization
-    void init();
-
     /*************************************************************************/
     /* Data Members															 */
     /*************************************************************************/
 private:
     struct Coordinates {
         // Constructor
-        Coordinates(int x, int y, int distance) : x(x), y(y), distance(distance) {}
+        Coordinates(byte x, byte y, byte distance) : x(x), y(y), distance(distance) {}
 
-        int x, y;
-        int distance;
+        byte x, y;
+        byte distance;
     };
 
     byte m_distances[VIEW_WIDTH][VIEW_HEIGHT];
-    
+
     StudentWorld* m_pStudentWorld;
 };
 

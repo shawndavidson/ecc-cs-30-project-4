@@ -5,17 +5,9 @@
 
 // Constructor
 ShortestPathFinder::ShortestPathFinder(StudentWorld* pStudentWorld)
-: m_pStudentWorld(pStudentWorld)
+: m_pStudentWorld(pStudentWorld),
+  m_distances{UCHAR_MAX}
 {
-}
-
-// Perform initialization
-void ShortestPathFinder::init() {
-    for (int x = 0; x < VIEW_WIDTH; x++) {
-        for (int y = 0; y < VIEW_HEIGHT; y++) {
-            m_distances[x][y] = UCHAR_MAX;
-        }
-    }
 }
 
 // Compute distances from all units to a specific location
@@ -24,7 +16,8 @@ bool ShortestPathFinder::compute(int x, int y) {
         return false;
     }
 
-    init();
+    // Reset distances to our representation of infinity
+    memset(m_distances, UCHAR_MAX, VIEW_WIDTH * VIEW_HEIGHT * sizeof(byte));
 
     std::queue<Coordinates> queue;
 
@@ -34,8 +27,12 @@ bool ShortestPathFinder::compute(int x, int y) {
     // Perform a BFS (Breadth First Search)
     // TODO: Make multithreaded
     while (!queue.empty()) {
-        const Coordinates& unit = queue.front();
+        Coordinates unit = queue.front();
         queue.pop();
+
+        // TODO: remove kludge - this never should have made it into the queue
+        if (m_distances[unit.x][unit.y] != UCHAR_MAX)
+            continue;
 
         // Store distance
         m_distances[unit.x][unit.y] = unit.distance;
@@ -45,25 +42,33 @@ bool ShortestPathFinder::compute(int x, int y) {
             switch (dir) {
                 case GraphObject::Direction::up:
                     // If there's a path above that isn't blocked AND the distance is still unknown
-                    if (!getStudentWorld()->isBlocked(unit.x, unit.y + 1) && m_distances[unit.x][unit.y + 1] == INT_MAX) {
+                    if (y + 1 < ICE_HEIGHT && 
+                        m_distances[unit.x][unit.y + 1] == UCHAR_MAX &&
+                        !getStudentWorld()->isBlocked(unit.x, unit.y + 1)) {
                         queue.emplace(unit.x, unit.y + 1, unit.distance + 1);
                     }
                     break; 
                 case GraphObject::Direction::down:
                     // If there's a path below that isn't blocked AND the distance is still unknown
-                    if (!getStudentWorld()->isBlocked(unit.x, unit.y - 1) && m_distances[unit.x][unit.y - 1] == INT_MAX) {
+                    if (y - 1 >= 0 && 
+                        m_distances[unit.x][unit.y - 1] == UCHAR_MAX &&
+                        !getStudentWorld()->isBlocked(unit.x, unit.y - 1)) {
                         queue.emplace(unit.x, unit.y - 1, unit.distance + 1);
                     }
                     break;
                 case GraphObject::Direction::left:
                     // If there's a path on the left that isn't blocked AND the distance is still unknown
-                    if (!getStudentWorld()->isBlocked(unit.x - 1, unit.y) && m_distances[unit.x - 1][unit.y] == INT_MAX) {
+                    if (x - 1 >= 0 &&
+                        m_distances[unit.x - 1][unit.y] == UCHAR_MAX &&
+                        !getStudentWorld()->isBlocked(unit.x - 1, unit.y)) {
                         queue.emplace(unit.x - 1, unit.y, unit.distance + 1);
                     }
                     break;
                 case GraphObject::Direction::right:
                     // If there's a path on the right that isn't blocked AND the distance is still unknown
-                    if (!getStudentWorld()->isBlocked(unit.x + 1, unit.y) && m_distances[unit.x + 1][unit.y] == INT_MAX) {
+                    if (x + 1 < VIEW_WIDTH &&
+                        m_distances[unit.x + 1][unit.y] == UCHAR_MAX &&
+                        !getStudentWorld()->isBlocked(unit.x + 1, unit.y)) {
                         queue.emplace(unit.x + 1, unit.y, unit.distance + 1);
                     }
                     break;
@@ -87,6 +92,7 @@ GraphObject::Direction ShortestPathFinder::getShortestPath(int x, int y) {
 
     std::vector<DirectionDistance> directions;
 
+    // Grab the squares around our the location x,y
     for (int d = GraphObject::Direction::up; d <= GraphObject::Direction::right; d++) {
         GraphObject::Direction dir = (GraphObject::Direction)d;
 
@@ -110,9 +116,11 @@ GraphObject::Direction ShortestPathFinder::getShortestPath(int x, int y) {
         }
     }
 
+    // Sort them in descending order of distance
     sort(begin(directions), end(directions), [](const DirectionDistance& dd1, const DirectionDistance& dd2) {
         return dd1.distance < dd2.distance;
     });
 
+    // Return the direction with the shortest distance
     return directions[0].direction;
 }

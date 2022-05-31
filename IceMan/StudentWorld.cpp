@@ -1,6 +1,7 @@
 #include <string>
 #include <exception>
 #include <assert.h>
+#include <thread>
 
 #include "StudentWorld.h"
 #include "IceMan.h"
@@ -31,7 +32,8 @@ StudentWorld::StudentWorld(std::string assetDir)
 	m_eventListeners(),
 	m_distanceCalc(),
 	m_shortestPathToExit(this),
-	m_shortestPathToIceMan(this)
+	m_shortestPathToIceMan(this),
+	m_pWorkerThreads{}
 {
 }
 
@@ -83,27 +85,57 @@ int StudentWorld::init()
 	try {
 		for (int i = 0; i < 1; i++) {
 			m_actors.push_back(make_shared<RegularProtester>(this, rand() % ICE_WIDTH, ICE_HEIGHT));
-			//m_actors.push_back(make_shared<HardcoreProtester>(this, rand() % ICE_WIDTH, ICE_HEIGHT));
+			m_actors.push_back(make_shared<HardcoreProtester>(this, rand() % ICE_WIDTH, ICE_HEIGHT));
 		}
 	}
 	catch (bad_alloc& /*ex*/) {
 		cout << "Unable to allocate memory for Regular Protester" << endl;
 	}
+ 
+	// TODO: make shared data thread safe
+	//startWorkerThreads();
 
 	return GWSTATUS_CONTINUE_GAME;
 }
 
+// Start worker threads to perform expensive calculations
+void StudentWorld::startWorkerThreads()
+{
+	// Create worker to computer distances between actors
+	m_pWorkerThreads.push_back(make_shared<thread>([&]() {
+		while (true) {
+			// TODO: must make thread-safe
+			computeDistancesBetweenActors();
+		}
+	}));
+
+	// Create worker to map shortest path to exit 
+	m_pWorkerThreads.push_back(make_shared<thread>([&]() {
+		while (true) {
+			// TODO: must make thread-safe
+			m_shortestPathToExit.compute(60, 60);
+		}
+	}));
+
+	// Create worker to map shortest path to IceMan
+	m_pWorkerThreads.push_back(make_shared<thread>([&]() {
+		while (true) {
+			auto pIceMan = m_pIceMan.lock();
+			// TODO: must make thread-safe
+			m_shortestPathToIceMan.compute(pIceMan->getX(), pIceMan->getY());
+		}
+	}));
+}
+
 // Handle movement for all game objects within our world
 int StudentWorld::move()
-{
-	// Compute the distance between all Actors
+{	
 	computeDistancesBetweenActors();
 
-	// Compute shortest paths to exit and IceMan
 	m_shortestPathToExit.compute(60, 60);
+
 	{
 		auto pIceMan = m_pIceMan.lock();
-
 		m_shortestPathToIceMan.compute(pIceMan->getX(), pIceMan->getY());
 	}
 
@@ -116,7 +148,8 @@ int StudentWorld::move()
 
 	// Give ALL Actors a chance to do something during this tick
 	for_each(begin(m_actors), end(m_actors), [](ActorPtr& actor) { 
-		if(actor) actor->doSomething();  
+		if (actor) 
+			actor->doSomething();  
 	});
 
 	// Give the ice a chance to do something during this tick
@@ -130,9 +163,10 @@ int StudentWorld::move()
 
 	// Increment time. Keep this at the end of this method.
 	m_nTick++;
-	
+
 	return GWSTATUS_CONTINUE_GAME;
 }
+
 
 // Dig up the ice at this location
 void StudentWorld::digUpIce(int x, int y)
@@ -174,6 +208,12 @@ void StudentWorld::cleanUp()
 	}
 
 	m_distances.clear();
+
+	// Terminate the worker threads and reclaim their resources
+	for_each(begin(m_pWorkerThreads), end(m_pWorkerThreads), [](ThreadPtr pThread) {
+			pThread->join();
+		});
+	m_pWorkerThreads.resize(0);
 }
 
 
@@ -326,6 +366,7 @@ bool StudentWorld::isBlocked(int x, int y) const {
 
 // Compute distances between all actors
 void StudentWorld::computeDistancesBetweenActors() {
+	// TODO: make thread-safe
 	m_distances.clear();
 	
 	// Compute distances between each Actor and every other Actor O(n^2)
