@@ -35,6 +35,7 @@ bool ShortestPathFinder::compute(int x, int y) {
             continue;
 
         // Store distance
+
         m_distances[unit.x][unit.y] = unit.distance;
 
         // Explore adjacent units, if valid, unoccupied, and unexplored
