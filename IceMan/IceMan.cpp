@@ -4,16 +4,12 @@
 
 // Constructor
 IceMan::IceMan(StudentWorld* pStudentWorld)
-    : Actor(pStudentWorld, 
+    : Person(pStudentWorld, 
             IID_PLAYER, 
             30 /*startX*/,
             60 /*startY*/,
             Direction::right,
-            ICEMAN_SIZE /*size*/,
-            0 /*depth*/,
-            true /*visible*/,
-            true /*canAnnoy*/,
-            false /*canPickup*/)
+            10 /* nHitPoints */)
 {
     // TODO: Remove - for testing
 #if TEST_ICEMAN

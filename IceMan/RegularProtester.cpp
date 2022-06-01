@@ -2,6 +2,9 @@
 #include "StudentWorld.h"
 #include "Event.h"
 
+#include <algorithm>
+
+
 // Constructor
 RegularProtester::RegularProtester(
     StudentWorld* pStudentWorld,
@@ -10,7 +13,8 @@ RegularProtester::RegularProtester(
     : Protester(pStudentWorld,
         IID_PROTESTER,
         startX,
-        startY)
+        startY,
+        5 /* nHitPoints */)
 {
 }
 
@@ -21,13 +25,25 @@ RegularProtester::~RegularProtester() {
 // Handle a tick
 void RegularProtester::doSomething() {
     Protester::doSomething();
-
-    // TODO
 }
 
 // Annoy the Protester
-void RegularProtester::annoy() {
-    Protester::annoy();
-    // TODO
+void RegularProtester::annoy(int nHitPoints) {
+    Protester::annoy(nHitPoints);
+}
+
+// Step on a Gold Nugget 
+void RegularProtester::stepOnGoldNugget() {
+    StudentWorld* pStudentWorld = getStudentWorld();
+    
+    pStudentWorld->playSound(SOUND_PROTESTER_FOUND_GOLD);
+    pStudentWorld->increaseScore(25);
+    leave();
+}
+
+// Squirt the Protester
+void RegularProtester::waterSquirt(int nHitPoints) {
+    annoy(nHitPoints);
+    getStudentWorld()->increaseScore(100);
 }
 

@@ -1,7 +1,7 @@
 #ifndef ICEMAN_H_
 #define ICEMAN_H_
 
-#include "Actor.h"
+#include "Person.h"
 
 #define TEST_ICEMAN 1
 
@@ -10,7 +10,7 @@ class StudentWorld;
 
 const double ICEMAN_SIZE = 1.0;
 
-class IceMan : public Actor
+class IceMan : public Person
 {
 public:
     /*************************************************************************/

@@ -87,6 +87,7 @@
     <ClCompile Include="HardcoreProtester.cpp" />
     <ClCompile Include="Ice.cpp" />
     <ClCompile Include="IceMan.cpp" />
+    <ClCompile Include="Person.cpp" />
     <ClCompile Include="Protester.cpp" />
     <ClCompile Include="RegularProtester.cpp" />
     <ClCompile Include="ShortestPathFinder.cpp" />
@@ -104,6 +105,7 @@
     <ClInclude Include="HardcoreProtester.h" />
     <ClInclude Include="Ice.h" />
     <ClInclude Include="IceMan.h" />
+    <ClInclude Include="Person.h" />
     <ClInclude Include="Protester.h" />
     <ClInclude Include="RegularProtester.h" />
     <ClInclude Include="ShortestPathFinder.h" />

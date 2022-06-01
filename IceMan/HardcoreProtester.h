@@ -31,9 +31,18 @@ public:
 	/* Operations													     */
 	/*************************************************************************/
 	virtual void doSomething();
-	virtual void annoy();
+
+	virtual void annoy(int nHitPoints);
+
+	// Step on a Gold Nugget 
+	virtual void stepOnGoldNugget();
+
+	// Squirt the Protester
+	virtual void waterSquirt(int nHitPoints);
 
 private:
+	// Number of ticks to stare at Gold Nugget when found
+	int m_nTicksToStare;
 };
 
 #endif // HARDCOREPROTESTER_H_
