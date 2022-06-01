@@ -66,8 +66,9 @@ public:
 	void setAlive(bool alive);
 
 	// Get a pointer to StudentWorld
-	StudentWorld* getStudentWorld();
+	StudentWorld* getStudentWorld() { return m_pStudentWorld; }
 
+	// Get the distance between this Actor and IceMan
 	int getDistanceToIceman();
 
 private:

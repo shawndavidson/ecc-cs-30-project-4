@@ -1,6 +1,7 @@
 #include <string>
 #include <exception>
 #include <assert.h>
+#include <thread>
 
 #include "StudentWorld.h"
 #include "IceMan.h"
@@ -29,7 +30,10 @@ StudentWorld::StudentWorld(std::string assetDir)
 	m_distances(),
 	m_events(),
 	m_eventListeners(),
-	m_distanceCalc()
+	m_distanceCalc(),
+	m_shortestPathToExit(this),
+	m_shortestPathToIceMan(this),
+	m_pWorkerThreads{}
 {
 }
 
@@ -79,7 +83,7 @@ int StudentWorld::init()
 	// TODO: Remove
 	// Initialize a Regular and Hardcore Protester 
 	try {
-		for (int i = 0; i < 50; i++) {
+		for (int i = 0; i < 1; i++) {
 			m_actors.push_back(make_shared<RegularProtester>(this, rand() % ICE_WIDTH, ICE_HEIGHT));
 			m_actors.push_back(make_shared<HardcoreProtester>(this, rand() % ICE_WIDTH, ICE_HEIGHT));
 		}
@@ -87,15 +91,53 @@ int StudentWorld::init()
 	catch (bad_alloc& /*ex*/) {
 		cout << "Unable to allocate memory for Regular Protester" << endl;
 	}
+ 
+	// TODO: make shared data thread safe
+	//startWorkerThreads();
 
 	return GWSTATUS_CONTINUE_GAME;
 }
 
+// Start worker threads to perform expensive calculations
+void StudentWorld::startWorkerThreads()
+{
+	// Create worker to computer distances between actors
+	m_pWorkerThreads.push_back(make_shared<thread>([&]() {
+		while (true) {
+			// TODO: must make thread-safe
+			computeDistancesBetweenActors();
+		}
+	}));
+
+	// Create worker to map shortest path to exit 
+	m_pWorkerThreads.push_back(make_shared<thread>([&]() {
+		while (true) {
+			// TODO: must make thread-safe
+			m_shortestPathToExit.compute(60, 60);
+		}
+	}));
+
+	// Create worker to map shortest path to IceMan
+	m_pWorkerThreads.push_back(make_shared<thread>([&]() {
+		while (true) {
+			auto pIceMan = m_pIceMan.lock();
+			// TODO: must make thread-safe
+			m_shortestPathToIceMan.compute(pIceMan->getX(), pIceMan->getY());
+		}
+	}));
+}
+
 // Handle movement for all game objects within our world
 int StudentWorld::move()
-{
-	// Compute the distance between all Actors
-	computeDistances();
+{	
+	computeDistancesBetweenActors();
+
+	m_shortestPathToExit.compute(60, 60);
+
+	{
+		auto pIceMan = m_pIceMan.lock();
+		m_shortestPathToIceMan.compute(pIceMan->getX(), pIceMan->getY());
+	}
 
 	// This code is here merely to allow the game to build, run, and terminate after you hit enter a few times.
 	// Notice that the return value GWSTATUS_PLAYER_DIED will cause our framework to end the current level.
@@ -105,39 +147,12 @@ int StudentWorld::move()
 	processNextEvent();
 
 	// Give ALL Actors a chance to do something during this tick
-	for (auto actor : m_actors) {
-		// TODO: Do we call doSomething() if it's not alive?
-		if (actor != nullptr)
-			actor->doSomething();
-	}
-
-	{
-		shared_ptr<IceMan> pIceManShared = m_pIceMan.lock();
-
-		const int x = pIceManShared->getX();
-		const int y = pIceManShared->getY();
-
-		// Is IceMan standing on ice?
-		if (x < ICE_WIDTH && y < ICE_HEIGHT) {
-
-			// Dig through the 4x4 matrix of ice that we're standing on 
-			for (int yOffset = 0; yOffset < ICEMAN_TO_ICE_SIZE_RATIO; yOffset++) {
-				int finalY = y + yOffset;
-
-				for (int xOffset = 0; xOffset < ICEMAN_TO_ICE_SIZE_RATIO && finalY < ICE_HEIGHT; xOffset++) {
-					int finalX = x + xOffset;
-					// If ice is present, kill it
-					if (finalX < ICE_WIDTH && m_ice[finalX][finalY]) {
-						m_ice[finalX][finalY]->setAlive(false);
-					}
-				}
-			}
-
-		}
-	}
+	for_each(begin(m_actors), end(m_actors), [](ActorPtr& actor) { 
+		if (actor) 
+			actor->doSomething();  
+	});
 
 	// Give the ice a chance to do something during this tick
-	// TODO: Does ice need to do anything?
 	for (int x = 0; x < ICE_WIDTH; x++) {
 		for (int y = 0; y < ICE_HEIGHT; y++) {
 			if (m_ice[x][y] != nullptr) {
@@ -148,8 +163,31 @@ int StudentWorld::move()
 
 	// Increment time. Keep this at the end of this method.
 	m_nTick++;
-	
+
 	return GWSTATUS_CONTINUE_GAME;
+}
+
+
+// Dig up the ice at this location
+void StudentWorld::digUpIce(int x, int y)
+{
+	// Is IceMan standing on ice?
+	if (x < ICE_WIDTH && y < ICE_HEIGHT) {
+
+		// Dig through the 4x4 matrix of ice that we're standing on 
+		for (int yOffset = 0; yOffset < ICEMAN_TO_ICE_SIZE_RATIO; yOffset++) {
+			int finalY = y + yOffset;
+
+			for (int xOffset = 0; xOffset < ICEMAN_TO_ICE_SIZE_RATIO && finalY < ICE_HEIGHT; xOffset++) {
+				int finalX = x + xOffset;
+				// If ice is present, kill it
+				if (finalX < ICE_WIDTH && m_ice[finalX][finalY]) {
+					m_ice[finalX][finalY]->setAlive(false);
+				}
+			}
+		}
+
+	}
 }
 
 // Cleanup game objects (deallocates memory)
@@ -168,6 +206,14 @@ void StudentWorld::cleanUp()
 			}
 		}
 	}
+
+	m_distances.clear();
+
+	// Terminate the worker threads and reclaim their resources
+	for_each(begin(m_pWorkerThreads), end(m_pWorkerThreads), [](ThreadPtr pThread) {
+			pThread->join();
+		});
+	m_pWorkerThreads.resize(0);
 }
 
 
@@ -211,12 +257,11 @@ void StudentWorld::listenForEvent(EventTypes type, EventCallback callback) {
 int StudentWorld::getDistanceToIceMan(int x, int y) const {
 	shared_ptr<IceMan> pIceMan = m_pIceMan.lock();
 
-	// TODO: Should use m_distances
 	return m_distanceCalc.getDistance(x, y, pIceMan->getX(), pIceMan->getY());
 }
 
 // Check if these coordinates and direction are facing IceMan
-bool StudentWorld::isFacingIceMan(int x, int y, int direction) const {
+bool StudentWorld::isFacingIceMan(int x, int y, GraphObject::Direction direction) const {
 	shared_ptr<IceMan> pIceMan = m_pIceMan.lock();
 
 	bool isFacing = false;
@@ -238,12 +283,90 @@ bool StudentWorld::isFacingIceMan(int x, int y, int direction) const {
 	default:
 		break;
 	}
-
+	   
 	return isFacing; 
 }
 
-// Compute distances betwen actors
-void StudentWorld::computeDistances() {
+// Do we have a direct line of sight with IceMan, i.e. we're on 
+// the same horizontal or vertical axis and no ice or boulders are
+// between us. Return true, if so and set direction (by reference)
+// to face IceMan. Otherwise, false.
+bool StudentWorld::hasPathToIceMan(int x, int y, GraphObject::Direction& direction) const {
+	bool hasLineOfSight = false;
+
+	shared_ptr<IceMan> pIceMan = m_pIceMan.lock();
+	
+	// Check for ice or boulders in the way on the vertical and
+	// horizontal axis
+	const int iceX = pIceMan->getX();
+	const int iceY = pIceMan->getY();	
+		 
+	if (x == iceX) {
+		// Are we below IceMan's?
+		if (y < iceY) {
+			for (int j = y; j < iceY && !hasLineOfSight; j++) {
+				if (isBlocked(x, j)) 
+					hasLineOfSight = false;
+			}
+			if (hasLineOfSight)
+				direction = GraphObject::Direction::up;
+		}
+		else if (y > iceY) { // Are we above IceMan?
+			for (int j = y; j > iceY && !hasLineOfSight; j--) {
+				if (isBlocked(x, j))
+					hasLineOfSight = false;
+			}
+			if (hasLineOfSight)
+				direction = GraphObject::Direction::down;
+		}
+		else {
+			direction = GraphObject::Direction::none;
+		}
+
+		hasLineOfSight = true;
+	}
+	else if (y == iceY) {
+		// Check for ice or boulders in the way on the vertical axis
+		// Are we on IceMan's left?
+		if (x < iceX) {
+			for (int i = x; i < iceX && !hasLineOfSight; i++) {
+				if (isBlocked(i, y))
+					hasLineOfSight = false;
+			}
+			if (hasLineOfSight)
+				direction = GraphObject::Direction::left;
+		}
+		else if (x > iceX) { // Are we on IceMan's right?
+			for (int i = x; i > iceX && !hasLineOfSight; i--) {
+				if (isBlocked(i, y))
+					hasLineOfSight = false;
+			}
+			if (hasLineOfSight)
+				direction = GraphObject::Direction::right;
+		}
+		else {
+			direction = GraphObject::Direction::none;
+		}
+
+		hasLineOfSight = true;
+	}
+
+	return hasLineOfSight;
+}
+
+// Is this location occupied by Ice, Boulder, or is out of bounds
+bool StudentWorld::isBlocked(int x, int y) const {
+	// Check boundries
+	if (x < 0 || x >= VIEW_WIDTH || y < 0 || y > ICE_HEIGHT)
+		return true;
+
+	// TODO: Check for Boulders
+	return y < ICE_HEIGHT && m_ice[x][y] != nullptr && m_ice[x][y]->isAlive();
+}
+
+// Compute distances between all actors
+void StudentWorld::computeDistancesBetweenActors() {
+	// TODO: make thread-safe
 	m_distances.clear();
 	
 	// Compute distances between each Actor and every other Actor O(n^2)

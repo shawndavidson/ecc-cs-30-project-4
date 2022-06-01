@@ -26,16 +26,23 @@ public:
     virtual ~IceMan();
 
     /*************************************************************************/
-    /* Operators													     */
+    /* Operators													         */
     /*************************************************************************/
     // Prevent assignment 
     IceMan& operator=(const IceMan&) = delete;
 
     /*************************************************************************/
-    /* Operations													     */
+    /* Operations													         */
     /*************************************************************************/
+    // Hanlde Tick
     virtual void doSomething();
+
+    // Annoy IceMan
     virtual void annoy();
+
+private:
+    // Take a step and dig up ice, if necessary
+    void takeOneStep(int x, int y);
 
 #if TEST_ICEMAN
     // Handle an Event

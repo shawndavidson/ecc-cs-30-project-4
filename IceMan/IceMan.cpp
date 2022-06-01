@@ -58,28 +58,28 @@ void IceMan::doSomething() {
             case KEY_PRESS_LEFT:
                 // If we're already facing left, move left. Otherwise, just face left;
                 if (getDirection() == Direction::left && x > 0)
-                    moveTo(x - 1, y);
+                    takeOneStep(x - 1, y);
                 else
                     setDirection(Direction::left);
                 break;
             case KEY_PRESS_RIGHT:
                 // If we're already facing right, move right. Otherwise, just face right;
                 if (getDirection() == Direction::right && x < (VIEW_WIDTH-(size*ICEMAN_SIZE/ICE_SIZE)))
-                    moveTo(x + 1, y);
+                    takeOneStep(x + 1, y);
                 else
                     setDirection(Direction::right);
                 break;
             case KEY_PRESS_UP:
                 // If we're already facing up, move up. Otherwise, just face up;
                 if (getDirection() == Direction::up && y < ICE_HEIGHT)
-                    moveTo(x, y + 1);
+                    takeOneStep(x, y + 1);
                 else
                     setDirection(Direction::up);
                 break;
             case KEY_PRESS_DOWN:
                 // If we're already facing down, move down. Otherwise, just face down;
                 if (getDirection() == Direction::down && y > 0)
-                    moveTo(x, y - 1);
+                    takeOneStep(x, y - 1);
                 else
                     setDirection(Direction::down);
                 break;
@@ -129,4 +129,10 @@ void IceMan::handleTestEvent(int num, const char* text) {
         << ", text: " << text
         << std::endl;
 #endif // TEST_ICEMAN
+}
+
+// Take a step and dig up ice, if necessary
+void IceMan::takeOneStep(int x, int y) {
+    moveTo(x, y);
+    getStudentWorld()->digUpIce(x, y);
 }

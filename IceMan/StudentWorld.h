@@ -7,11 +7,14 @@
 #include <queue>
 #include <map>
 #include <unordered_map>
+#include <thread>
 
 #include "GameWorld.h"
 #include "GameConstants.h"
 #include "Event.h"
 #include "DistanceCalculator.h"
+#include "GraphObject.h"
+#include "ShortestPathFinder.h"
 
 #define TEST_STUDENTWORLD 0
 
@@ -30,7 +33,7 @@ class Ice;
 typedef shared_ptr<Actor>					ActorPtr;
 typedef shared_ptr<Ice>						IcePtr;
 typedef std::function<void(SharedEventPtr)>	EventCallback;
-
+typedef shared_ptr<thread>					ThreadPtr;
 
 /*************************************************************************/
 /* Constants														     */
@@ -73,6 +76,9 @@ public:
 	// Handle movement for all game objects within our world
 	virtual int move();
 
+	// Dig up the ice at this location
+	void digUpIce(int x, int y);
+
 	// Cleanup game objects (deallocates memory)
 	virtual void cleanUp();
 
@@ -80,7 +86,20 @@ public:
 	int getDistanceToIceMan(int x, int y) const;
 
 	// Check if these coordinates and direction are facing IceMan
-	bool isFacingIceMan(int x, int y, int direction) const;
+	bool isFacingIceMan(int x, int y, GraphObject::Direction direction) const;
+
+	// Check if a Protester standing in this location and facing this direction has
+	// a direct line of sight to IceMan 
+	bool hasPathToIceMan(int x, int y, GraphObject::Direction& direction) const;
+
+	// Is this location occupied by Ice or a Boulder
+	inline bool isBlocked(int x, int y) const;
+
+	// Get the direction that has the shortest path to the exit
+	GraphObject::Direction getShortestPathToExit(int x, int y)		{ return m_shortestPathToExit.getShortestPath(x, y); }
+
+	// Get the direction that has the shortest path to IceMan
+	GraphObject::Direction getShortestPathToIceMan(int x, int y)	{ return m_shortestPathToIceMan.getShortestPath(x, y); }
 
 	// Schedule a new Event
 	void pushEvent(SharedEventPtr e)			{ m_events.push(e); }
@@ -88,12 +107,16 @@ public:
 	// Register for an Event
 	void listenForEvent(EventTypes type, EventCallback callback);
 
+
 private:
 	// Get the Event with the smallest tick
 	SharedEventPtr topEvent()					{ return m_events.top(); }
 
 	// Is there another Event in the queue?
 	bool isEventQueueEmpty() const				{ return m_events.empty(); }
+
+	// Start calculations in worker threads
+	void startWorkerThreads();
 
 private:
 	/*************************************************************************/
@@ -103,7 +126,8 @@ private:
 	// Process the next Event
 	void processNextEvent();
 
-	void computeDistances();
+	// Compute distances between all Actors
+	void computeDistancesBetweenActors();
 
 private:
 	/*************************************************************************/
@@ -123,8 +147,7 @@ private:
 	std::unordered_map<ActorPtr, std::unordered_map<ActorPtr, int>> m_distances;
 
 	// 2D Array for ice blocks 
-	IcePtr m_ice[ICE_WIDTH][ICE_HEIGHT];
-
+	ActorPtr m_ice[ICE_WIDTH][ICE_HEIGHT];
 
 	// Declaration for a Function Object to compare two Events 
 	// in descending order by their tick (time)
@@ -145,8 +168,15 @@ private:
 	// Registry of Event Listeners
 	std::multimap<EventTypes, EventCallback> m_eventListeners;
 
-	// Tool for fast distance calculations between cells
+	// Tool for fast distance calculations between units
 	DistanceCalculator m_distanceCalc;
+
+	// Tools for computing shortest paths to the Exit and IceMan
+	ShortestPathFinder m_shortestPathToExit;
+	ShortestPathFinder m_shortestPathToIceMan;
+
+	// Threads for performing computations 
+	std::vector<ThreadPtr> m_pWorkerThreads;
 };
 
 #endif // STUDENTWORLD_H_

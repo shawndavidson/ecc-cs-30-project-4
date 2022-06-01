@@ -16,6 +16,7 @@ Actor::Actor(
 	bool canAnnoy /*= false*/,
 	bool canPickup /*= false*/)
 	: GraphObject(imageID, startX, startY, dir, size, depth),
+	m_bAlive(true),
 	m_bCanAnnoy(canAnnoy),
 	m_bCanPickup(canPickup),
 	m_pStudentWorld(pStudentWorld)
@@ -46,12 +47,6 @@ bool Actor::isAlive() const {
 // Update our alive status
 void Actor::setAlive(bool alive) {
 	m_bAlive = alive;
-}
-
-// Get a pointer to StudentWorld
-StudentWorld* Actor::getStudentWorld() 
-{ 
-	return m_pStudentWorld; 
 }
 
 int Actor::getDistanceToIceman() {
