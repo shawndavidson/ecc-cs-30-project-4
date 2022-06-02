@@ -36,11 +36,13 @@ public:
 	virtual void doSomething();
 	virtual void annoy(int nHitPoints);
 
+	// TODO: Resolve in merge
 	// Step on a Gold Nugget 
-	virtual void stepOnGoldNugget();
+	//virtual void stepOnGoldNugget();
 
+	// TODO: Resolve in merge
 	// Squirt the Protester
-	virtual void waterSquirt(int nHitPoints);
+	//virtual void waterSquirt(int nHitPoints);
 
 private:
 };

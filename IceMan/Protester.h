@@ -39,10 +39,12 @@ public:
 	virtual void	annoy(int nHitPoints);
 
 	// Step on a Gold Nugget 
-	virtual void stepOnGoldNugget() = 0;
+	// TODO: resolve in merge
+	//virtual void stepOnGoldNugget() = 0;
 
 	// Squirt the Protester
-	virtual void waterSquirt(int nHitPoints) = 0;
+	// TODO: resolve in merge
+	//virtual void waterSquirt(int nHitPoints) = 0;
 
 	// Bonk the Protester with a Boulder
 	virtual void boulderBonk(int nHitPoints);

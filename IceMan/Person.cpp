@@ -19,7 +19,7 @@ Person::Person(
     true    /*visible*/,
     true    /*canAnnoy*/,
     false   /*canPickup*/),
-  m_nHitPoints(0) 
+  m_nHitPoints(nHitPoints) 
 {
 }
 

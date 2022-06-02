@@ -55,6 +55,8 @@ void HardcoreProtester::annoy(int nHitPoints) {
 }
 
 // Step on a Gold Nugget 
+// TODO: Resolve in merge
+/*
 void HardcoreProtester::stepOnGoldNugget() {
     StudentWorld* pStudentWorld = getStudentWorld();
 
@@ -70,4 +72,4 @@ void HardcoreProtester::waterSquirt(int nHitPoints) {
     annoy(nHitPoints);
     getStudentWorld()->increaseScore(250);
 }
-
+*/

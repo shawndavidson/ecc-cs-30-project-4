@@ -32,7 +32,9 @@ void RegularProtester::annoy(int nHitPoints) {
     Protester::annoy(nHitPoints);
 }
 
-// Step on a Gold Nugget 
+// Step on a Gold Nugget
+// TODO: Resolve in merge
+/*
 void RegularProtester::stepOnGoldNugget() {
     StudentWorld* pStudentWorld = getStudentWorld();
     
@@ -46,4 +48,4 @@ void RegularProtester::waterSquirt(int nHitPoints) {
     annoy(nHitPoints);
     getStudentWorld()->increaseScore(100);
 }
-
+*/

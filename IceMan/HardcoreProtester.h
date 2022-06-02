@@ -34,14 +34,16 @@ public:
 
 	virtual void annoy(int nHitPoints);
 
+	// TODO: Resolve in merge
 	// Step on a Gold Nugget 
-	virtual void stepOnGoldNugget();
+	//virtual void stepOnGoldNugget();
 
+	// TODO: Resolve in merge
 	// Squirt the Protester
-	virtual void waterSquirt(int nHitPoints);
+	//virtual void waterSquirt(int nHitPoints);
 
 private:
-	// Number of ticks to stare at Gold Nugget when found
+	// Number of ticks to stare at Gold Nugget when found 
 	int m_nTicksToStare;
 };
 
