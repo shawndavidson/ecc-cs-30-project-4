@@ -1,6 +1,7 @@
 #include "IceMan.h"
 #include "Ice.h"
 #include "StudentWorld.h"
+#include "Squirt.h"
 
 // Constructor
 IceMan::IceMan(StudentWorld* pStudentWorld)
@@ -14,9 +15,9 @@ IceMan::IceMan(StudentWorld* pStudentWorld)
         true /*visible*/,
         true /*canAnnoy*/,
         false /*canPickup*/),
-    m_iGold(0),
+    m_iGold(1000),  // FIXME should be 0
     m_iSonarKits(1),
-    m_iWater(5)
+    m_iWater(1000)  // FIXME should be 5
 {
     // TODO: Remove - for testing
 #if TEST_ICEMAN
@@ -46,7 +47,7 @@ void IceMan::doSomething() {
     }
 
     // Cache a pointer to StudentWorld, for the sake of convenience
-    StudentWorld* pStudentWorld = getStudentWorld();
+    StudentWorld* const pStudentWorld = getStudentWorld();
 
     int key;
 
@@ -87,27 +88,30 @@ void IceMan::doSomething() {
                     setDirection(Direction::down);
                 break;
             case KEY_PRESS_SPACE:
-                {
-                    // TODO: Remove - for testing
-                    const int tick = getStudentWorld()->getTick() + 100;
-
-                    // Pass along this data with the Event
-                    struct EventTestData data { 1234, "Hello World!" };
-
-                    getStudentWorld()->pushEvent(make_shared<Event<EventTestData>>( tick, EventTypes::EVENT_TEST, data ));
-
-                    cout << "Pushing event in IceMan::doSomething() at tick " << getStudentWorld()->getTick() << endl;
+                // Fire a water squirt
+                if (m_iWater > 0) {
+                    pStudentWorld->StudentWorld::fireSquirt(getX(), getY(), getDirection());
+                    --m_iWater;
+                    return;
                 }
                 break;
             case KEY_PRESS_ESCAPE:
                 // TODO
                 break;
             case KEY_PRESS_TAB:
-                // TODO
+                // Drop Gold Nugget
+                if (m_iGold > 0) {
+                    pStudentWorld->StudentWorld::dropGold();
+                    --m_iGold;
+                }
                 break;
             case 'z':
-            case 'Z':
-                // TODO: Are 'z' and 'Z' the same?
+            case 'Z': 
+                // Use SonarKit
+                if (m_iSonarKits > 0) {
+                    pStudentWorld->StudentWorld::useSonarKit();
+                    --m_iSonarKits;
+                }
                 break;
             default:
                 // TODO: what is the behavior if the key is invalid?
@@ -122,51 +126,52 @@ void IceMan::doSomething() {
 // Handle Annoy
 void IceMan::annoy() {
     // TODO
+    std::cout << "IceMan annoyed" << std::endl;
 }
 
 // Increments the gold counter by 1
 void IceMan::incGold() {
     ++m_iGold;
-    // FIXME - print confirmation, remove when score interface is functional
-    std::cout << "GOLD " << m_iGold << std::endl;
 }
 
 // Increments the sonar kits counter by 1
 void IceMan::incSonarKits(){
     ++m_iSonarKits;
-    // FIXME - print confirmation, remove when score interface is functional
-    std::cout << "SONAR " << m_iSonarKits << std::endl;
 }
 
-// Increments the water counter by 1
+// Increments the water counter by 5 (since picking up a Water Pool gives 5)
 void IceMan::incWater() {
     m_iWater += 5;
-    // FIXME - print confirmation, remove when score interface is functional
-    std::cout << "WATER " << m_iWater << std::endl;
 }
 
 // Decrements the gold counter by 1 if there is at least 1 left
 void IceMan::decGold() {
-    if (m_iGold >=1)
-        --m_iGold;
-    // FIXME - print confirmation, remove when score interface is functional
-    std::cout << "GOLD " << m_iGold << std::endl;
+   --m_iGold;
 }
 
 // Decrements the sonar kits counter by 1 if there is at least one left
 void IceMan::decSonarKits() {
-   if (m_iSonarKits >= 1)
-       --m_iSonarKits;
-    // FIXME - print confirmation, remove when score interface is functional
-    std::cout << "SONAR " << m_iSonarKits << std::endl;
+   --m_iSonarKits;
 }
 
 // Decrements the water counter by 1 if there is at least one left
 void IceMan::decWater() {
-    if (m_iWater >= 1)
-        --m_iWater;
-    // FIXME - print confirmation, remove when score interface is functional
-    std::cout << "WATER " << m_iWater << std::endl;
+    --m_iWater;
+}
+
+// Return Gold
+int IceMan:: getGold() {
+    return m_iGold;
+}
+
+// Return Sonar Kits
+int IceMan::getSonarKits() {
+    return m_iSonarKits;
+}
+
+// Return Water Squirts
+int IceMan::getWater() {
+    return m_iWater;
 }
 
 // Handle an Event

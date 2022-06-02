@@ -31,10 +31,10 @@ void SonarKit::doSomething() {
 	if (!isAlive()) {
 		return;
 	}
-	// Check if IceMan is within a radius of 3
-	// Check page 37 for guidlines
+	// Get collected if if IceMan is within a radius of 3
 	if (getDistanceToIceman() <= 3) {
 		collect();
+		getStudentWorld()->pickupGoodieIM(getID(), getPoints(), getSoundEffect());
 		return;
 	}
 
@@ -46,6 +46,7 @@ void SonarKit::collect() {
 	setCollected(true);
 	setVisible(false);
 	setSoundEffect(SOUND_GOT_GOODIE);
+	setPoints(SONAR_KIT_POINTS);
 }
 
 

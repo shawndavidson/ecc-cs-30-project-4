@@ -15,7 +15,7 @@ Actor::Actor(
 	bool visible		/*= true*/,
 	bool canAnnoy		/*= false*/,
 	bool canPickupIM	/*= false*/,
-	bool canPickupP		/*false*/)
+	bool canPickupP		/*= false*/)
 	: GraphObject(imageID, startX, startY, dir, size, depth),
 	m_bCanAnnoy(canAnnoy),
 	m_bCanPickupIM(canPickupIM),

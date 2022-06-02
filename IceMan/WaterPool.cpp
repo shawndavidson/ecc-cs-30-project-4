@@ -15,7 +15,8 @@ WaterPool::WaterPool(StudentWorld* pStudentWorld, int startX, int startY)
 		false /*canPickupP*/,
 		false /*isPermanent*/)
 {
-	// TODO: water pools are temporary and only stay on screen for a certain number of ticks
+	const int level = getStudentWorld()->getLevel();
+	setTicksRemaining(max(100, 300 - 10 * level));
 };
 
 // Destructor
@@ -28,9 +29,18 @@ void WaterPool::doSomething() {
 	if (!isAlive()) {
 		return;
 	}
+	if (getTicksRemaining() > 0) {
+		decTicksRemaining();
+	}
+	else {
+		setAlive(false);
+		setVisible(false);
+		return;
+	}
 	// If IceMan is within a radius of 3
 	if (getDistanceToIceman() <= 3) {
 		collect();
+		getStudentWorld()->pickupGoodieIM(getID(), getPoints(), getSoundEffect());
 	}
 }
 

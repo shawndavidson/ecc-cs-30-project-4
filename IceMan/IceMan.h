@@ -62,11 +62,20 @@ public:
     // Decreases the number of water squirts by 1
     void decWater();
 
+    // Return Gold
+    int getGold();
+
+    // Return Sonar Kits
+    int getSonarKits();
+
+    // Return Water Squirts
+    int getWater();
+
 private:
     // Inventory counters
-    int m_iGold;
-    int m_iSonarKits;
-    int m_iWater;
+    unsigned int m_iGold;
+    unsigned int m_iSonarKits;
+    unsigned int m_iWater;
 
 
 };

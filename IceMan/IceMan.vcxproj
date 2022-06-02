@@ -91,6 +91,8 @@
     <ClCompile Include="OilBarrel.cpp" />
     <ClCompile Include="Gold.cpp" />
     <ClCompile Include="SonarKit.cpp" />
+    <ClCompile Include="Boulder.cpp" />
+    <ClCompile Include="Squirt.cpp" />
     <ClCompile Include="WaterPool.cpp" />
     <ClCompile Include="Protester.cpp" />
     <ClCompile Include="RegularProtester.cpp" />
@@ -105,6 +107,7 @@
     <ClInclude Include="Actor.h" />
     <ClInclude Include="Goodie.h" />
     <ClInclude Include="Gold.h" />
+    <ClInclude Include="Boulder.h" />
     <ClInclude Include="Squirt.h" />
     <ClInclude Include="WaterPool.h" />
     <ClInclude Include="SonarKit.h" />

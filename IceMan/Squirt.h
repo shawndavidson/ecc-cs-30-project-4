@@ -16,7 +16,6 @@ public:
 	// Constructor
 	Squirt(
 		StudentWorld* pStudentWorld,
-		int imageID,
 		int startX,		// X is IceMan's X
 		int startY,		// Y is Iceman's Y
 		Direction dir); // Direction is IceMan's direction
@@ -29,6 +28,9 @@ public:
 	/*************************************************************************/
 	void doSomething();
 
+	// Squirts cannot be annoyed
+	void annoy() {};
+
 	/*************************************************************************/
 	/* Getters/Setters													     */
 	/*************************************************************************/
@@ -36,7 +38,8 @@ private:
 	/*************************************************************************/
 	/* Data Members													     */
 	/*************************************************************************/
-
+	// Distance a water squirt has left to travel
+	int m_iTravelDist;
 
 };
 

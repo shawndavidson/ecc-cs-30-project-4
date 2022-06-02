@@ -37,6 +37,7 @@ void OilBarrel::doSomething() {
 	// Collect if IceMan is within a radius of 3
 	if (getDistanceToIceman() <= 3) {
 		collect();
+		getStudentWorld()->pickupGoodieIM(getID(), getPoints(), getSoundEffect());
 		return;
 	}
 }

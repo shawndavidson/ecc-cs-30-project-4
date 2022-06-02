@@ -12,13 +12,14 @@ Goodie::Goodie(
 	bool visible		/*= false*/,
 	bool canAnnoy		/*= false*/,
 	bool canPickupIM	/*= true*/,
-	bool canPikcupP		/*false*/,
+	bool canPickupP		/*false*/,
 	bool isPermanent	/*= true*/)
-	: Actor(pStudentWorld, imageID, startX, startY, dir, size, depth),
+	: Actor(pStudentWorld, imageID, startX, startY, dir, size, depth, visible),
 	m_bCollected(false),
 	m_bPermanent(isPermanent)
 {
-	setCollected(false);
+	if (!isPermanent)
+		m_iTicksRemaining = 0;
 };
 
 Goodie::~Goodie() {
@@ -35,20 +36,25 @@ void Goodie::setPermanentStatus(bool isPermanent) {
 }
 
 // Returns the permanent status of a Goodie
-bool Goodie::getPermanentStatus() {
+bool Goodie::isPermanent() {
 	return m_bPermanent;
 }
 
-// Sets the number of ticks a non-permanent Goodie will be alive
-void Goodie::setTicksAlive(int ticks) {
-	m_iTicksAlive = ticks;
+// Sets the number of ticks a non-permanent Goodie
+// must wait before doing something
+void Goodie::setTicksRemaining(int ticks) {
+	m_iTicksRemaining = ticks;
 }
 
-// Returns the number of ticks a Goodie will be alive
-// This is NOT how many ticks it has left to live,
-// but is the total number of ticks it will live
-int Goodie::getTicksAlive() {
-	return m_iTicksAlive;
+// Returns the number of ticks a Goodie has left
+// before doing something
+int Goodie::getTicksRemaining() {
+	return m_iTicksRemaining;
+}
+
+// Decrements the number of ticks remaining
+void Goodie::decTicksRemaining() {
+	--m_iTicksRemaining;
 }
 
 // Sets the collected status

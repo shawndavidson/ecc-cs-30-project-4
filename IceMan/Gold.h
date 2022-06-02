@@ -40,10 +40,6 @@ public:
 	// Handles when gold is collected by Protester
 	void collectP();
 
-	// Handles what to do when IceMan drops a gold nugget
-	// TODO: can this actually be handled by this class?
-	// Might need to be handled by StudentWorld
-	void dropGold();
 
 	/*************************************************************************/
 	/* Getters/Setters													     */

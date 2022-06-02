@@ -2,6 +2,7 @@
 #define GOODIE_H_
 
 #include "Actor.h"
+#include "StudentWorld.h"
 
 class Goodie : public Actor {
 public:
@@ -42,13 +43,18 @@ public:
 	void setPermanentStatus(bool);
 
 	// Gets whether a goodie is permanent or not
-	bool getPermanentStatus();
+	bool isPermanent();
 
-	// Sets the number of ticks a temporary Goodie will remain alive
-	void setTicksAlive(int);
+	// Sets the number of ticks a temporary Goodie
+	// must wait to do something
+	void setTicksRemaining(int);
 
-	// Gets the number of ticks a temporary Goodie has left to live
-	int getTicksAlive();
+	// Gets the number of ticks a temporary Goodie
+	// must wait before doing an action
+	int getTicksRemaining();
+
+	// Decrements the number of ticks remaining
+	void decTicksRemaining();
 
 	// Sets whether a Goodie is collected
 	void setCollected(bool);
@@ -71,7 +77,7 @@ private:
 	bool m_bPermanent;
 
 	// The number of ticks a temporary Goodie will remain alive
-	int m_iTicksAlive;
+	unsigned int m_iTicksRemaining;
 
 	// True if the Goodie has been collected
 	bool m_bCollected;
