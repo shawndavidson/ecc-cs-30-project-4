@@ -7,9 +7,6 @@
 // Set to 1 to ensure optimizations generate the correct results.
 #define TEST_DISTANCECALCULATOR 0
 
-typedef uint8_t byte;
-
-
 
 class DistanceCalculator
 {
@@ -41,13 +38,13 @@ public:
 #endif //UNIT_TEST
 
     // Get distance between two squares
-    inline byte getDistance(int x0, int y0, int x1, int y1) const 
+    inline uint8_t getDistance(int x0, int y0, int x1, int y1) const 
     {
         return m_table[x0][y0][x1][y1];
     }
 
 private:
-    byte m_table[VIEW_WIDTH][VIEW_HEIGHT][VIEW_WIDTH][VIEW_HEIGHT];
+    uint8_t m_table[VIEW_WIDTH][VIEW_HEIGHT][VIEW_WIDTH][VIEW_HEIGHT];
 };
 
 #endif // DISTANCECALCULATOR_H_

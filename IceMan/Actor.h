@@ -46,9 +46,6 @@ public:
 	// Handle a game tick
 	virtual void doSomething()			= 0;
 
-	// Handle annoying this Actor
-	virtual void annoy()				= 0;
-
 	/*************************************************************************/
 	/* Operations														     */
 	/*************************************************************************/

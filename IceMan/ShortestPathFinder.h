@@ -41,13 +41,13 @@ public:
 private:
     struct Coordinates {
         // Constructor
-        Coordinates(byte x, byte y, byte distance) : x(x), y(y), distance(distance) {}
+        Coordinates(uint8_t x, uint8_t y, uint8_t distance) : x(x), y(y), distance(distance) {}
 
-        byte x, y;
-        byte distance;
+        uint8_t x, y;
+        uint8_t distance;
     };
 
-    byte m_distances[VIEW_WIDTH][VIEW_HEIGHT];
+    uint8_t m_distances[VIEW_WIDTH][VIEW_HEIGHT];
 
     StudentWorld* m_pStudentWorld;
 };

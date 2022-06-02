@@ -4,9 +4,9 @@
 #include <vector>
 #include <random>
 
-#include "Actor.h"
+#include "Person.h"
 
-class Protester : public Actor
+class Protester : public Person
 {
 public:
 	/*************************************************************************/
@@ -17,7 +17,8 @@ public:
 		StudentWorld* pStudentWorld, 
 		int imageID,
 		int startX,
-		int startY);
+		int startY,
+		int nHitPoints);
 
 	// Prevent copying 
 	Protester(const Protester&) = delete;
@@ -35,7 +36,18 @@ public:
 	/* Operations													     */
 	/*************************************************************************/
 	virtual void	doSomething();
-	virtual void	annoy();
+	virtual void	annoy(int nHitPoints);
+
+	// Step on a Gold Nugget 
+	// TODO: resolve in merge
+	//virtual void stepOnGoldNugget() = 0;
+
+	// Squirt the Protester
+	// TODO: resolve in merge
+	//virtual void waterSquirt(int nHitPoints) = 0;
+
+	// Bonk the Protester with a Boulder
+	virtual void boulderBonk(int nHitPoints);
 
 protected:
 	// Take one step towards the exit 
@@ -46,9 +58,6 @@ protected:
 
 	// Take one step in the given direction
 	bool			takeOneStep(GraphObject::Direction direction);
-
-	// Get number of squares to move before turning
-	int				getNumSquaresToMoveInCurrentDirection() const;
 
 	// Get possible perpendicular turns relative to the current direction
 	bool			getPossiblePerpendicularDirections(std::vector<GraphObject::Direction>& directions);
@@ -61,6 +70,9 @@ protected:
 
 	// Leave the oil field
 	void			leave()				{ m_nLeaveTheOilField = true;  }
+
+	// Check if we're leaving the oil field
+	bool			isLeaving() const	{ return m_nLeaveTheOilField;  }
 
 private:
 	/*************************************************************************/
@@ -76,6 +88,8 @@ private:
 
 	static std::random_device	m_randomDevice;
 	static std::mt19937			m_randomGenerator;
+
+	size_t			m_nTicksStunned;
 };
 
 

@@ -17,7 +17,7 @@ bool ShortestPathFinder::compute(int x, int y) {
     }
 
     // Reset distances to our representation of infinity
-    memset(m_distances, UCHAR_MAX, VIEW_WIDTH * VIEW_HEIGHT * sizeof(byte));
+    memset(m_distances, UCHAR_MAX, VIEW_WIDTH * VIEW_HEIGHT * sizeof(uint8_t));
 
     std::queue<Coordinates> queue;
 
@@ -83,11 +83,11 @@ bool ShortestPathFinder::compute(int x, int y) {
 GraphObject::Direction ShortestPathFinder::getShortestPath(int x, int y) {
 
     struct DirectionDistance {
-        DirectionDistance(GraphObject::Direction direction, byte distance)
+        DirectionDistance(GraphObject::Direction direction, uint8_t distance)
             : direction(direction), distance(distance) {}
 
         GraphObject::Direction  direction;
-        byte                    distance;
+        uint8_t                    distance;
     };
 
     std::vector<DirectionDistance> directions;

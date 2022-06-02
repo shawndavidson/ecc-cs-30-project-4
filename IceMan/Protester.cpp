@@ -6,6 +6,15 @@
 #include "Ice.h"
 
 /*************************************************************************/
+/* Macros														        */
+/*************************************************************************/
+// Get the random # of squares to move in the current direction
+#define GET_RANDOM_NUM_SQUARES_TO_MOVE()    ((int)8 + (rand() % (60 - 8 + 1)))
+
+// Calculated # of ticks to be stunned for when annoyed
+#define CALCULATE_STUNNED_TICKS(GAME_LEVEL) (std::max<size_t>({ 50, 100 - GAME_LEVEL * 10 }))
+
+/*************************************************************************/
 /* Types														     */
 /*************************************************************************/
 const int           EXIT_POSITION_X                     = 60;
@@ -16,33 +25,31 @@ const int           MAX_SHOUTING_RANGE_UNITS            = 4*4; // 4 units * ICEM
 const int           NON_RESTING_TICKS_BETWEEN_TURNING   = 200;
 
 /*************************************************************************/
-/* Static Members														     */
+/* Static Members														 */
 /*************************************************************************/
-std::random_device Protester::m_randomDevice;
-std::mt19937 Protester::m_randomGenerator = std::mt19937(m_randomDevice());
+std::random_device  Protester::m_randomDevice;
+std::mt19937        Protester::m_randomGenerator = std::mt19937(m_randomDevice());
 
 // Constructor
 Protester::Protester(
     StudentWorld* pStudentWorld,
     int imageID,
 	int startX,
-	int startY)
-    : Actor(pStudentWorld,
-        imageID,
-        startX,
-        startY,
-        Direction::left,
-        PROTESTER_SIZE,
-        0 /*depth*/,
-        true /*visible*/,
-        true /*canAnnoy*/,
-        false /*canPickup*/),
+	int startY,
+    int nHitPoints)
+: Person(pStudentWorld,
+    imageID,
+    startX,
+    startY,
+    Direction::left,
+    nHitPoints),
     m_nTicksToWaitBetweenMoves(std::max<unsigned int>(0, 3 - getStudentWorld()->getLevel() / 4)),
     m_nLeaveTheOilField(false),
     m_nLastShoutedTick(0),
-    m_nNumSquaresToMoveInCurrentDirection(getNumSquaresToMoveInCurrentDirection()),
+    m_nNumSquaresToMoveInCurrentDirection(GET_RANDOM_NUM_SQUARES_TO_MOVE()),
     m_nTickOfLastPerpendicularTurn(0),
-    m_allDirections{ Direction::none, Direction::up, Direction::down, Direction::left, Direction::right }
+    m_allDirections{ Direction::none, Direction::up, Direction::down, Direction::left, Direction::right },
+    m_nTicksStunned(CALCULATE_STUNNED_TICKS(getStudentWorld()->getLevel()))
 {
 }
 
@@ -52,9 +59,23 @@ Protester::~Protester() {
 
 // Handle a tick
 void Protester::doSomething() {
-    // If we're dead or resting, then do nothing...
-    const bool isRestingTick = getStudentWorld()->getTick() % m_nTicksToWaitBetweenMoves == 0;
+    // If we're stunned, then rest for N ticks...
+    if (m_nTicksStunned > 0) {
+        m_nTicksStunned--;
+        return;
+    }
+    else {
+        // Exit the stunned state 
+        m_nTicksStunned = 0;
+    }
+
+    // Resting ticks throttle speed of movement to give the user
+    // a chance to react in human-speed
+    const bool isRestingTick = 
+        getStudentWorld()->getTick() % m_nTicksToWaitBetweenMoves == 0 && 
+        !m_nLeaveTheOilField;
     
+    // If we're dead or resting, then do nothing...
     if (!isAlive() || isRestingTick) {
         return;
     }
@@ -107,7 +128,7 @@ void Protester::doSomething() {
         for (auto direction : m_allDirections) {
             if (takeOneStep(direction)) {
                 // Randomly select a new number of moves [8, 60] to make in this direction 
-                m_nNumSquaresToMoveInCurrentDirection = getNumSquaresToMoveInCurrentDirection();
+                m_nNumSquaresToMoveInCurrentDirection = GET_RANDOM_NUM_SQUARES_TO_MOVE();
                 return;
             }
         }
@@ -127,7 +148,7 @@ void Protester::doSomething() {
 
             setDirection(newDirection);
 
-            m_nNumSquaresToMoveInCurrentDirection = getNumSquaresToMoveInCurrentDirection();
+            m_nNumSquaresToMoveInCurrentDirection = GET_RANDOM_NUM_SQUARES_TO_MOVE();
 
             // Keep track of when we made our last turn
             m_nTickOfLastPerpendicularTurn = getStudentWorld()->getTick();
@@ -142,11 +163,6 @@ void Protester::doSomething() {
     }
 
     return;
-}
-
-// Get the number of squares to move in the current direction
-int Protester::getNumSquaresToMoveInCurrentDirection() const {
-    return 8 + (rand() % (60 - 8 + 1));
 }
 
 // Determine what perpendicular directions, relative to our current direction, that we could move here?
@@ -184,9 +200,32 @@ bool Protester::getPossiblePerpendicularDirections(std::vector<GraphObject::Dire
 }
 
 // Annoy the Protester
-void Protester::annoy() {
-    // TODO
-    cout << "Protester was annoyed" << endl;
+void Protester::annoy(int nHitPoints) {
+    // If we're leaving, we can't be annoyed any further
+    if (isLeaving()) {
+        return;
+    }
+
+    Person::annoy(nHitPoints);
+
+    // If we're fully annoyed, give up by exiting the oil field
+    if (isAnnoyed()) {
+        leave();
+
+        getStudentWorld()->playSound(SOUND_PROTESTER_GIVE_UP);
+        m_nTicksStunned = 0;
+    }
+
+    // Sound annoyed and stunned for N ticks, where N = m_nStunnedTicks
+    getStudentWorld()->playSound(SOUND_PROTESTER_ANNOYED);
+
+    m_nTicksStunned = CALCULATE_STUNNED_TICKS(getStudentWorld()->getLevel());
+}
+
+// Bonk the Protester with a Boulder
+void Protester::boulderBonk(int nHitPoints) {
+    annoy(nHitPoints);
+    getStudentWorld()->increaseScore(500);
 }
 
 // Figure out which direction to move towards the exit 
