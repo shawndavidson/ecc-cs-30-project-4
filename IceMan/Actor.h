@@ -60,7 +60,7 @@ public:
 	bool isAlive() const;
 
 	// Update our alive status
-	void setAlive(bool alive);
+	void setAlive(bool alive, bool changeVisibility = true);
 
 	// Get a pointer to StudentWorld
 	StudentWorld* getStudentWorld() { return m_pStudentWorld; }
