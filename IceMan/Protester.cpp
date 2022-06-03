@@ -91,7 +91,7 @@ void Protester::doSomething() {
         return;
     }
 
-    // If we within shouting distance, facing IceMan, and haven't shouted recently then
+    // If we are within shouting distance, facing IceMan, and haven't shouted recently then
     // shout at him!
     if (canShoutAtIceMan()) {
         shout();
@@ -101,21 +101,23 @@ void Protester::doSomething() {
     // If we have a line of sight with IceMan, move towards him.
     Direction direction = getDirection();
 
-    if (getStudentWorld()->hasLineOfSightToIceMan(getX(), getY(), direction) &&
-        getStudentWorld()->getDistanceToIceMan(getX(), getY()) > MAX_SHOUTING_RANGE_UNITS) {
-        // Move towards IceMan
-        if (!takeOneStep(direction)) {
-            cout << "Protester unable to take step in direction " << direction << endl;
+    if (getStudentWorld()->hasLineOfSightToIceMan(getX(), getY(), direction)) {
+        if (getStudentWorld()->getDistanceToIceMan(getX(), getY()) > MAX_SHOUTING_RANGE_UNITS) {
+            // Move towards IceMan
+            if (!takeOneStep(direction)) {
+                cout << "Protester unable to take step in direction " << direction << endl;
+            }
+
+            // This will cause us to change direction on subsequent ticks
+            // when IceMan is no longer in sight. Otherwise, we'll keep
+            // taking a step towards him.
+            m_nNumSquaresToMoveInCurrentDirection = 0;
         }
 
-        // This will cause us to change direction on subsequent ticks
-        // when IceMan is no longer in sight. Otherwise, we'll keep
-        // taking a step towards him.
-        m_nNumSquaresToMoveInCurrentDirection = 0;
         return;
     }
 
-    // Can we detect IceMan's location from his cell phone?
+    // Can we track IceMan's location from his cell phone?
     if (getStudentWorld()->getPathDistanceToIceMan(getX(), getY()) <= m_nIceManCellRange) {
         moveTowardsIceMan();
         return;
