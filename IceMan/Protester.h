@@ -6,6 +6,8 @@
 
 #include "Person.h"
 
+const int SQUIRT_DAMAGE = 2;
+
 class Protester : public Person
 {
 public:
@@ -44,6 +46,9 @@ public:
 
 	// Protester is bonked by a Boulder
 	virtual void	bonkedByBoulder();
+
+	// Protester is hit by a squirt
+	virtual void	squirtedByIceMan();
 
 
 protected:

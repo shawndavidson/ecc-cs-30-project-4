@@ -229,7 +229,12 @@ void Protester::annoy(int nHitPoints) {
 // Protester is bonked by a Boulder
 void Protester::bonkedByBoulder() {
     annoy(100);
+    // Being hit by a boulder always kills the Protester
     getStudentWorld()->increaseScore(500);
+}
+
+void Protester::squirtedByIceMan() {
+    annoy(SQUIRT_DAMAGE);
 }
 
 

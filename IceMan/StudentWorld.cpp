@@ -551,8 +551,11 @@ bool StudentWorld::hitBySquirt(int x, int y) {
 			continue;
 		if (m_distanceCalc.getDistance(actor->getX(), actor->getY(), x, y) <= 3) {
 			if (actor->getID() == IID_PROTESTER || actor->getID() == IID_HARD_CORE_PROTESTER) {
-				hitProtester = true; // Allows for multiple protesters to be hit by the same squirt
-				static_pointer_cast<Protester>(actor)->annoy(2);
+				// Allows for multiple protesters to be hit by the same squirt
+				hitProtester = true; 
+				// Prevents an annoyed protester from awarding points mutliple times
+				if (!static_pointer_cast<Protester>(actor)->isAnnoyed())
+					static_pointer_cast<Protester>(actor)->squirtedByIceMan();
 			}
 			else if (actor->getID() == IID_BOULDER) {
 				return true;
@@ -621,7 +624,7 @@ bool StudentWorld::hitByBoulder(int x, int y) {
 				static_pointer_cast<Protester>(actor)->bonkedByBoulder();
 			}
 			if (actorID == IID_PLAYER) {
-				static_pointer_cast<IceMan>(actor)->annoy(100);
+				static_pointer_cast<IceMan>(actor)->annoy(100); // FIXME for testing
 			}
 			// Stop the boulder if it hits another Boulder
 			else if (actor->getID() == IID_BOULDER) {

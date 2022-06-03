@@ -38,9 +38,13 @@ public:
 	/*************************************************************************/
 	virtual void doSomething();
 	virtual void annoy(int nHitPoints);
+	// Get squirted by IceMan
+	virtual void squirtedByIceMan();
 
 	// Step on a Gold Nugget
 	virtual void pickUpGold();
+
+	
 
 private:
 };

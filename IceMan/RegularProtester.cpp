@@ -45,8 +45,13 @@ void RegularProtester::doSomething() {
 // Annoy the Protester
 void RegularProtester::annoy(int nHitPoints) {
     Protester::annoy(nHitPoints);
+}
+// Get squirted by IceMan
+void RegularProtester::squirtedByIceMan() {
+    Protester::squirtedByIceMan();
     if (isAnnoyed())
         getStudentWorld()->increaseScore(SQUIRT_ANNOYED_POINTS_R);
+    
 }
 
 void RegularProtester::pickUpGold() {
