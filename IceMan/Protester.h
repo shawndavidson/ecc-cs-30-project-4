@@ -18,7 +18,8 @@ public:
 		int imageID,
 		int startX,
 		int startY,
-		int nHitPoints);
+		int nHitPoints,
+		bool bCanTrackIceMansCell);
 
 	// Prevent copying 
 	Protester(const Protester&) = delete;
@@ -90,6 +91,7 @@ private:
 
 	size_t			m_nTicksStunned;
 	const size_t	m_nIceManCellRange;
+	const bool		m_bCanTrackIceMansCell;
 };
 
 

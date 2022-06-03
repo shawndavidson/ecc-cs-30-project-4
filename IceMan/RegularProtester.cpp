@@ -14,7 +14,8 @@ RegularProtester::RegularProtester(
         IID_PROTESTER,
         startX,
         startY,
-        5 /* nHitPoints */)
+        5 /* nHitPoints */,
+        false /* bCanTrackIceMansCell */)
 {
 #if TEST_REGULARPROTESTER
     getStudentWorld()->listenForEvent(

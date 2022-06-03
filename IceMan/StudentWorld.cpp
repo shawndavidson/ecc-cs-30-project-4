@@ -237,15 +237,14 @@ void StudentWorld::digUpIce(int x, int y)
 		// Dig through the 4x4 matrix of ice that we're standing on 
 		for (int yOffset = 0; yOffset < ICEMAN_TO_ICE_SIZE_RATIO; yOffset++) {
 			int finalY = y + yOffset;
-			if (finalY > ICE_HEIGHT)
+			if (finalY >= ICE_HEIGHT)
 				continue;
 
 			for (int xOffset = 0; xOffset < ICEMAN_TO_ICE_SIZE_RATIO; xOffset++) {
 				int finalX = x + xOffset;
 				// If ice is present, kill it
 				if (finalX < ICE_WIDTH && m_ice[finalX][finalY]) {
-					playSound(SOUND_DIG);
-					m_ice[finalX][finalY].reset();
+					m_ice[finalX][finalY]->setAlive(false);
 				}
 			}
 		}
@@ -260,6 +259,8 @@ void StudentWorld::cleanUp()
 	m_actors.clear();
 	m_distances.clear();
 
+	m_nNumProtesters = 0;
+
 	// Release memory for all Ice blocks
 	for (int x = 0; x < ICE_WIDTH; x++) {
 		for (int y = 0; y < ICE_HEIGHT; y++) {
@@ -270,6 +271,7 @@ void StudentWorld::cleanUp()
 	}
 
 	m_distances.clear();
+
 
 	// Terminate the worker threads and reclaim their resources
 	for_each(begin(m_pWorkerThreads), end(m_pWorkerThreads), [](ThreadPtr pThread) {
@@ -283,8 +285,18 @@ void StudentWorld::removeDeadGameObjects() {
 
 	remove_if(begin(m_actors), end(m_actors), [](ActorPtr pActor) {
 		return pActor == nullptr || !pActor->isAlive();
-		});
+	});
+
+	// Clear distances, this will be regenerated on the next tick
 	m_distances.clear();
+
+	// Clear dead ice
+	for (int x = 0; x < ICE_WIDTH; x++) {
+		for (int y = 0; y < ICE_HEIGHT; y++) {
+			if (m_ice[x][y] && !m_ice[x][y]->isAlive())
+				m_ice[x][y].reset();
+		}
+	}
 }
 
 string StudentWorld::getGameStatText() {
@@ -357,12 +369,15 @@ void StudentWorld::addNewActors() {
 	bool addNewProtester = (getTick() - m_nTickLastProtesterAdded) >= max(25, 200 - level);
 	if (addNewProtester) {
 		if (m_nNumProtesters < min(15, int(2 + level * 1.5))) {
-			// Random if it is Hardcore or Regular
-			int ID = (0 == rand() % min(90, level * 10 + 30)) ? IID_HARD_CORE_PROTESTER : IID_PROTESTER;
+			// Random if it is Hardcore or Regular, gives probability as percentage [30...90]
+			int probabilityOfHardcore = min(90, level * 10 + 30);
+
+			// Keep in mind, rand() doesn't give a uniform distribution but it's good enough.
+			// https://stackoverflow.com/questions/12885356/random-numbers-with-different-probabilities
+			int ID = (rand() % (100+1) < probabilityOfHardcore) ? IID_HARD_CORE_PROTESTER : IID_PROTESTER;
 			addProtester(ID);
 		}
 	}
-
 
 	for (auto newActor : m_newActors) {
 		m_actors.push_back(newActor);
@@ -714,7 +729,7 @@ bool StudentWorld::isFacingIceMan(int x, int y, GraphObject::Direction direction
 // Returns true and changes direction (by reference), if needed towards IceMan
 // to face IceMan. Otherwise, false.
 bool StudentWorld::hasLineOfSightToIceMan(int x, int y, GraphObject::Direction& direction) const {
-	bool hasLineOfSight = true;
+	bool hasLineOfSight = false;
 
 	shared_ptr<IceMan> pIceMan = m_pIceMan.lock();
 	
@@ -724,6 +739,8 @@ bool StudentWorld::hasLineOfSightToIceMan(int x, int y, GraphObject::Direction& 
 	const int iceY = pIceMan->getY();	
 		 
 	if (x == iceX) {
+		hasLineOfSight = true;
+
 		// Are we below IceMan's?
 		if (y < iceY) {
 			for (int j = y; j < iceY && hasLineOfSight; j++) {
@@ -747,6 +764,8 @@ bool StudentWorld::hasLineOfSightToIceMan(int x, int y, GraphObject::Direction& 
 		}
 	}
 	else if (y == iceY) {
+		hasLineOfSight = true;
+
 		// Check for ice or boulders in the way on the vertical axis
 		// Are we on IceMan's left?
 		if (x < iceX) {
@@ -776,21 +795,69 @@ bool StudentWorld::hasLineOfSightToIceMan(int x, int y, GraphObject::Direction& 
 
 // Is this location occupied by Ice, Boulder, or is out of bounds
 bool StudentWorld::isBlocked(int x, int y, GraphObject::Direction direction) const {
-	// Check boundries
+	// Is this location outside of the ice field's boundries?
 	if (x < 0 || x > (ICE_WIDTH - PERSON_SIZE) || y < 0 || y > ICE_HEIGHT)
 		return true;
 
-	if (isBlockedByBoulder(x, y))
+	// Is this location occupied by a boulder?
+	if (isBlockedByBoulder(x, y)) {
 		return true;
-	
-	return y < ICE_HEIGHT && m_ice[x][y] != nullptr && m_ice[x][y]->isAlive();
+	}
 
+	// Is this location occupied by ice?
+	int xBegin{ x }, xEnd{ x };
+	int yBegin{ y }, yEnd{ y };
+	
+	// Check the strip of ice on the far side of the box surround the sprite
+	// with respect to the direction we're facing. 
+	// TODO: Keep in mind that the (x,y) values we're receiving are already being offset by
+	// 1 depending on the direction. A cleaner approach would be to handle it all here, i.e. 
+	// x,y would always represent the lower left coordinate of the sprite.
+	switch (direction) {
+		case GraphObject::Direction::up:
+			xEnd	+= PERSON_SIZE;
+			yBegin	+= PERSON_SIZE;
+			yEnd	= yBegin + 1;
+			break;
+		case GraphObject::Direction::down:
+			xEnd	+= PERSON_SIZE;
+			yEnd	= yBegin + 1;
+			break;
+		case GraphObject::Direction::left:
+			xEnd	= xBegin + 1;
+			yEnd	+= PERSON_SIZE;
+			break;
+		case GraphObject::Direction::right:
+			xBegin	+= PERSON_SIZE;
+			xEnd	= xBegin + 1;
+			yEnd	+= PERSON_SIZE;
+			break;
+	};
+
+	
+	xBegin	= std::max<int>(0, std::min<int>(ICE_WIDTH, xBegin));
+	xEnd	= std::max<int>(0, std::min<int>(ICE_WIDTH, xEnd));
+	yBegin	= std::max<int>(0, std::min<int>(ICE_HEIGHT, yBegin));
+	yEnd	= std::max<int>(0, std::min<int>(ICE_HEIGHT, yEnd));
+
+	for (int x_ = xBegin; x_ < xEnd; x_++) {
+		for (int y_ = yBegin; y_ < yEnd; y_++) {
+			if (m_ice[x_][y_] != nullptr && m_ice[x_][y_]->isAlive()) {
+				return true;
+			}
+		}
+	}
+
+	return false;
 }
+
+// Is this location occupied by a Boulder?
 bool StudentWorld::isBlockedByBoulder(int x, int y) const {
 	// Check for Boulders
-	for (auto actor : m_actors) {
+	for (const auto& actor : m_actors) {
 		if (actor == nullptr)
 			continue;
+
 		if (actor->getID() == IID_BOULDER) {
 			if (x > actor->getX() - 4 && x < actor->getX() + 4 && y > actor->getY() - 4 && y < actor->getY() + 4)
 				return true;
