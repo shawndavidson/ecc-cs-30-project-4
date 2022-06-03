@@ -284,8 +284,13 @@ void StudentWorld::cleanUp()
 void StudentWorld::removeDeadGameObjects() {
 	// TODO: test
 
-	remove_if(begin(m_actors), end(m_actors), [](ActorPtr pActor) {
-		return pActor == nullptr || !pActor->isAlive();
+	auto endIter = remove_if(begin(m_actors), end(m_actors), [](ActorPtr pActor) {
+		if (pActor == nullptr || !pActor->isAlive())
+		{
+			pActor.reset();
+			return true;
+		}
+		return false;
 	});
 
 	// Clear distances, this will be regenerated on the next tick
@@ -352,7 +357,7 @@ pair<int, int> StudentWorld::getRandCoordinates(int minHeight) {
 // Adds new actors during each tick
 void StudentWorld::addNewActors() {
 	// All values are specified on page 20 and 21
-	const int level = getLevel();
+	const unsigned int level = getLevel();
 	// Random chance if a new goodie should be added
 	bool addNewGoodie = (0 == rand() % (level * 25 + 300));
 	if (addNewGoodie) {
@@ -366,15 +371,15 @@ void StudentWorld::addNewActors() {
 	
 	// Only add a Protester if there are fewer than the max already in the field
 	// And enough ticks have passed since the last Protester was added
-	bool addNewProtester = getTick() - m_nTickLastProtesterAdded >= max(25, 200 - level);
+	bool addNewProtester = getTick() - m_nTickLastProtesterAdded >= std::max<unsigned int>(25, 200 - level);
 	if (addNewProtester) {
-		if (m_nNumProtesters < min(15, int(2 + level * 1.5))) {
+		if (m_nNumProtesters < std::min<unsigned int>(15, int(2 + level * 1.5))) {
 			// Random if it is Hardcore or Regular, gives probability as percentage [30...90]
-			int probabilityOfHardcore = min(90, level * 10 + 30);
+			unsigned int probabilityOfHardcore = std::min<unsigned int>(90, level * 10 + 30);
 
 			// Keep in mind, rand() doesn't give a uniform distribution but it's good enough.
 			// https://stackoverflow.com/questions/12885356/random-numbers-with-different-probabilities
-			int ID = (rand() % (100+1) < probabilityOfHardcore) ? IID_HARD_CORE_PROTESTER : IID_PROTESTER;
+			int ID = (rand() % (100+1) < (int)probabilityOfHardcore) ? IID_HARD_CORE_PROTESTER : IID_PROTESTER;
 			addProtester(ID);
 		}
 	}
