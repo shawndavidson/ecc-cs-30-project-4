@@ -38,16 +38,8 @@ public:
 	virtual void	doSomething();
 	virtual void	annoy(int nHitPoints);
 
-	// Step on a Gold Nugget 
-	// TODO: resolve in merge
-	//virtual void stepOnGoldNugget() = 0;
-
-	// Squirt the Protester
-	// TODO: resolve in merge
-	//virtual void waterSquirt(int nHitPoints) = 0;
-
-	// Bonk the Protester with a Boulder
-	virtual void boulderBonk(int nHitPoints);
+	// Step on a Gold Nugget
+	virtual void	pickUpGold()  = 0;
 
 protected:
 	// Take one step towards the exit 

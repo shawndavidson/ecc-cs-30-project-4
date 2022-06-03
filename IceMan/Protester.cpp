@@ -85,6 +85,7 @@ void Protester::doSomething() {
         // Have we reached the exit?
         if (getX() == EXIT_POSITION_X && getY() == EXIT_POSITION_Y) {
             setAlive(false);
+            setVisible(false);
         }
         else {
             moveTowardsExit();
@@ -222,11 +223,6 @@ void Protester::annoy(int nHitPoints) {
     m_nTicksStunned = CALCULATE_STUNNED_TICKS(getStudentWorld()->getLevel());
 }
 
-// Bonk the Protester with a Boulder
-void Protester::boulderBonk(int nHitPoints) {
-    annoy(nHitPoints);
-    getStudentWorld()->increaseScore(500);
-}
 
 // Figure out which direction to move towards the exit 
 void Protester::moveTowardsExit() {
@@ -309,9 +305,8 @@ bool Protester::canShoutAtIceMan() {
 
 // Shout at IceMan
 void Protester::shout() {
-    getStudentWorld()->playSound(SOUND_PROTESTER_YELL);
-
-    // TODO: Annoy IceMan
+    // Play sound effect and annoy IceMan
+    getStudentWorld()->iceManShoutedAt();
 
     m_nLastShoutedTick = getStudentWorld()->getTick();
 }
