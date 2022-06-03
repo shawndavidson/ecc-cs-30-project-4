@@ -727,7 +727,7 @@ bool StudentWorld::isFacingIceMan(int x, int y, GraphObject::Direction direction
 // Returns true and changes direction (by reference), if needed towards IceMan
 // to face IceMan. Otherwise, false.
 bool StudentWorld::hasLineOfSightToIceMan(int x, int y, GraphObject::Direction& direction) const {
-	bool hasLineOfSight = true;
+	bool hasLineOfSight = false;
 
 	shared_ptr<IceMan> pIceMan = m_pIceMan.lock();
 	
@@ -737,6 +737,8 @@ bool StudentWorld::hasLineOfSightToIceMan(int x, int y, GraphObject::Direction& 
 	const int iceY = pIceMan->getY();	
 		 
 	if (x == iceX) {
+		hasLineOfSight = true;
+
 		// Are we below IceMan's?
 		if (y < iceY) {
 			for (int j = y; j < iceY && hasLineOfSight; j++) {
@@ -760,6 +762,8 @@ bool StudentWorld::hasLineOfSightToIceMan(int x, int y, GraphObject::Direction& 
 		}
 	}
 	else if (y == iceY) {
+		hasLineOfSight = true;
+
 		// Check for ice or boulders in the way on the vertical axis
 		// Are we on IceMan's left?
 		if (x < iceX) {
