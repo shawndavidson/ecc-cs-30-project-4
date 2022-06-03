@@ -174,25 +174,25 @@ bool Protester::getPossiblePerpendicularDirections(std::vector<GraphObject::Dire
 
     const int x = getX();
     const int y = getY();
-    const Direction dir = getDirection();
+    const Direction direction = getDirection();
 
-    if (dir == Direction::up    || 
-        dir == Direction::down  || 
-        dir == Direction::none) {
+    if (direction == Direction::up    || 
+        direction == Direction::down  || 
+        direction == Direction::none) {
         // Check if we can move left or right
-        if (!getStudentWorld()->isBlocked(x - 1, y))
+        if (!getStudentWorld()->isBlocked(x - 1, y, direction))
             directions.push_back(Direction::left);
-        if (!getStudentWorld()->isBlocked(x + 1, y))
+        if (!getStudentWorld()->isBlocked(x + 1, y, direction))
             directions.push_back(Direction::right);
     }
-    if (dir == Direction::left  || 
-        dir == Direction::right || 
-        dir == Direction::none) {
+    if (direction == Direction::left  || 
+        direction == Direction::right || 
+        direction == Direction::none) {
 
         // Check if we can move up or down?
-        if (!getStudentWorld()->isBlocked(x, y - 1))
+        if (!getStudentWorld()->isBlocked(x, y - 1, direction))
             directions.push_back(Direction::down);
-        if (!getStudentWorld()->isBlocked(x, y + 1))
+        if (!getStudentWorld()->isBlocked(x, y + 1, direction))
             directions.push_back(Direction::up);
     }
 
@@ -266,25 +266,25 @@ bool Protester::takeOneStep(Direction direction) {
             cout << "Protester::takeOneStep Direction is none" << endl;
             break;
         case Direction::up:
-            if (y < ICE_HEIGHT && !getStudentWorld()->isBlocked(x, y + 1))
+            if (y < ICE_HEIGHT && !getStudentWorld()->isBlocked(x, y + 1, direction))
                 moveTo(x, y + 1);
             else
                 result = false;
             break;
         case Direction::down:
-            if (y > 0 && !getStudentWorld()->isBlocked(x, y - 1))
+            if (y > 0 && !getStudentWorld()->isBlocked(x, y - 1, direction))
                 moveTo(x, y - 1);
             else
                 result = false;
             break;
         case Direction::left:
-            if (x > 0 && !getStudentWorld()->isBlocked(x - 1, y))
+            if (x > 0 && !getStudentWorld()->isBlocked(x - 1, y, direction))
                 moveTo(x - 1, y);
             else
                 result = false;
             break;
         case Direction::right:
-            if (x < (VIEW_WIDTH - PERSON_SIZE) && !getStudentWorld()->isBlocked(x + 1, y))
+            if (x < (VIEW_WIDTH - PERSON_SIZE) && !getStudentWorld()->isBlocked(x + 1, y, direction))
                 moveTo(x + 1, y);
             else
                 result = false;

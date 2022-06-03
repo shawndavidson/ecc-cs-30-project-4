@@ -93,7 +93,7 @@ public:
 	bool hasLineOfSightToIceMan(int x, int y, GraphObject::Direction& direction) const;
 
 	// Is this location occupied by Ice or a Boulder
-	inline bool isBlocked(int x, int y) const;
+	inline bool isBlocked(int x, int y, GraphObject::Direction direction) const;
 
 	// Get the direction that has the shortest path to the exit
 	bool getShortestPathToExit(int x, int y, DirectionDistance& result)		{ return m_shortestPathToExit.getShortestPath(x, y, result); }

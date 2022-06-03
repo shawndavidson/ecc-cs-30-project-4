@@ -177,8 +177,10 @@ void StudentWorld::digUpIce(int x, int y)
 		// Dig through the 4x4 matrix of ice that we're standing on 
 		for (int yOffset = 0; yOffset < ICEMAN_TO_ICE_SIZE_RATIO; yOffset++) {
 			int finalY = y + yOffset;
+			if (finalY > ICE_HEIGHT)
+				continue;
 
-			for (int xOffset = 0; xOffset < ICEMAN_TO_ICE_SIZE_RATIO && finalY < ICE_HEIGHT; xOffset++) {
+			for (int xOffset = 0; xOffset < ICEMAN_TO_ICE_SIZE_RATIO; xOffset++) {
 				int finalX = x + xOffset;
 				// If ice is present, kill it
 				if (finalX < ICE_WIDTH && m_ice[finalX][finalY]) {
@@ -312,7 +314,7 @@ bool StudentWorld::hasLineOfSightToIceMan(int x, int y, GraphObject::Direction& 
 		// Are we below IceMan's?
 		if (y < iceY) {
 			for (int j = y; j < iceY && hasLineOfSight; j++) {
-				hasLineOfSight = !isBlocked(x, j);
+				hasLineOfSight = !isBlocked(x, j, direction);
 			}
 			// If we have a line of sight, then face IceMan
 			if (hasLineOfSight)
@@ -320,7 +322,7 @@ bool StudentWorld::hasLineOfSightToIceMan(int x, int y, GraphObject::Direction& 
 		}
 		else if (y > iceY) { // Are we above IceMan?
 			for (int j = y; j > iceY && hasLineOfSight; j--) {
-				hasLineOfSight = !isBlocked(x, j);
+				hasLineOfSight = !isBlocked(x, j, direction);
 			}
 			// If we have a line of sight, then face IceMan
 			if (hasLineOfSight)
@@ -336,7 +338,7 @@ bool StudentWorld::hasLineOfSightToIceMan(int x, int y, GraphObject::Direction& 
 		// Are we on IceMan's left?
 		if (x < iceX) {
 			for (int i = x; i < iceX && hasLineOfSight; i++) {
-				hasLineOfSight = !isBlocked(i, y);
+				hasLineOfSight = !isBlocked(i, y, direction);
 			}
 			// If we have a line of sight, then face IceMan
 			if (hasLineOfSight)
@@ -344,7 +346,7 @@ bool StudentWorld::hasLineOfSightToIceMan(int x, int y, GraphObject::Direction& 
 		}
 		else if (x > iceX) { // Are we on IceMan's right?
 			for (int i = x; i > iceX && hasLineOfSight; i--) {
-				hasLineOfSight = !isBlocked(i, y);
+				hasLineOfSight = !isBlocked(i, y, direction);
 			}
 			// If we have a line of sight, then face IceMan
 			if (hasLineOfSight)
@@ -360,9 +362,9 @@ bool StudentWorld::hasLineOfSightToIceMan(int x, int y, GraphObject::Direction& 
 }
 
 // Is this location occupied by Ice, Boulder, or is out of bounds
-bool StudentWorld::isBlocked(int x, int y) const {
+bool StudentWorld::isBlocked(int x, int y, GraphObject::Direction direction) const {
 	// Check boundries
-	if (x < 0 || x > (VIEW_WIDTH - PERSON_SIZE) || y < 0 || y > ICE_HEIGHT)
+	if (x < 0 || x > (ICE_WIDTH - PERSON_SIZE) || y < 0 || y > ICE_HEIGHT)
 		return true;
 
 	// TODO: Check for Boulders
@@ -372,17 +374,26 @@ bool StudentWorld::isBlocked(int x, int y) const {
 		return false;
 	}
 
-	//const int xStop = std::max<int>(x + PERSON_SIZE, ICE_WIDTH);
-	//const int yStop = std::max<int>(y + PERSON_SIZE, ICE_HEIGHT);
+	int xOffset{};
+	int yOffset{};
 
-	//for (int i = x; i < xStop; i++) {
-	//	for (int j = y; j < yStop; j--) {
-	//		if (m_ice[i][j] != nullptr && m_ice[i][j]->isAlive())
-	//			return true;
-	//	}
-	//}
+	switch (direction) {
+		case GraphObject::Direction::up:
+			//yOffset += PERSON_SIZE;
+			break;
+		case GraphObject::Direction::down:
+		case GraphObject::Direction::left:
+			break;
+		case GraphObject::Direction::right:
+			//xOffset += PERSON_SIZE;
+			break;
+	}
 
-	return m_ice[x][y] != nullptr && m_ice[x][y]->isAlive();
+	// Limit to x_,y_ to the boundries of the ice field
+	int x_ = std::max<int>(0, std::min<int>(x + xOffset, ICE_WIDTH - PERSON_SIZE));
+	int y_ = std::max<int>(0, std::min<int>(y + yOffset, ICE_HEIGHT));
+
+	return m_ice[x_][y_] != nullptr && m_ice[x_][y_]->isAlive();
 }
 
 // Compute distances between all actors

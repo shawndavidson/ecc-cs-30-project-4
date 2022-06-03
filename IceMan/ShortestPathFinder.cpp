@@ -30,7 +30,6 @@ bool ShortestPathFinder::compute(int x, int y) {
     queue.emplace(x, y, 0);
 
     // Perform a BFS (Breadth First Search)
-    // TODO: Make multithreaded
     while (!queue.empty()) {
         Coordinates unit = queue.front();
         queue.pop();
@@ -43,13 +42,15 @@ bool ShortestPathFinder::compute(int x, int y) {
         m_distances[unit.x][unit.y] = unit.distance;
 
         // Explore adjacent units, if valid, unoccupied, and unexplored
-        for (int dir = GraphObject::Direction::up; dir <= GraphObject::Direction::right; dir++) {
-            switch (dir) {
+        for (int direction = GraphObject::Direction::up; 
+            direction <= GraphObject::Direction::right; 
+            direction++) {
+            switch (direction) {
                 case GraphObject::Direction::up:
                     // If there's a path above that isn't blocked AND the distance is still unknown
                     if (y + 1 < ICE_HEIGHT && 
                         m_distances[unit.x][unit.y + 1] == UCHAR_MAX &&
-                        !getStudentWorld()->isBlocked(unit.x, unit.y + 1)) {
+                        !getStudentWorld()->isBlocked(unit.x, unit.y + 1, (GraphObject::Direction)direction)) {
                         queue.emplace(unit.x, unit.y + 1, unit.distance + 1);
                     }
                     break; 
@@ -57,7 +58,7 @@ bool ShortestPathFinder::compute(int x, int y) {
                     // If there's a path below that isn't blocked AND the distance is still unknown
                     if (y - 1 >= 0 && 
                         m_distances[unit.x][unit.y - 1] == UCHAR_MAX &&
-                        !getStudentWorld()->isBlocked(unit.x, unit.y - 1)) {
+                        !getStudentWorld()->isBlocked(unit.x, unit.y - 1, (GraphObject::Direction)direction)) {
                         queue.emplace(unit.x, unit.y - 1, unit.distance + 1);
                     }
                     break;
@@ -65,7 +66,7 @@ bool ShortestPathFinder::compute(int x, int y) {
                     // If there's a path on the left that isn't blocked AND the distance is still unknown
                     if (x - 1 >= 0 &&
                         m_distances[unit.x - 1][unit.y] == UCHAR_MAX &&
-                        !getStudentWorld()->isBlocked(unit.x - 1, unit.y)) {
+                        !getStudentWorld()->isBlocked(unit.x - 1, unit.y, (GraphObject::Direction)direction)) {
                         queue.emplace(unit.x - 1, unit.y, unit.distance + 1);
                     }
                     break;
@@ -73,7 +74,7 @@ bool ShortestPathFinder::compute(int x, int y) {
                     // If there's a path on the right that isn't blocked AND the distance is still unknown
                     if (x + 1 < VIEW_WIDTH &&
                         m_distances[unit.x + 1][unit.y] == UCHAR_MAX &&
-                        !getStudentWorld()->isBlocked(unit.x + 1, unit.y)) {
+                        !getStudentWorld()->isBlocked(unit.x + 1, unit.y, (GraphObject::Direction)direction)) {
                         queue.emplace(unit.x + 1, unit.y, unit.distance + 1);
                     }
                     break;
