@@ -771,21 +771,62 @@ bool StudentWorld::hasLineOfSightToIceMan(int x, int y, GraphObject::Direction& 
 
 // Is this location occupied by Ice, Boulder, or is out of bounds
 bool StudentWorld::isBlocked(int x, int y, GraphObject::Direction direction) const {
-	// Check boundries
+	// Is this location outside of the ice field's boundries?
 	if (x < 0 || x > (ICE_WIDTH - PERSON_SIZE) || y < 0 || y > ICE_HEIGHT)
 		return true;
 
-	/*if (isBlockedByBoulder(x, y))
-		return true;*/
-	
-	return y < ICE_HEIGHT && m_ice[x][y] != nullptr && m_ice[x][y]->isAlive();
+	// Is this location occupied by a boulder?
+	if (isBlockedByBoulder(x, y)) {
+		return true;
+	}
 
+	// Is this location occupied by ice?
+	int xBegin{ x }, xEnd{ x };
+	int yBegin{ y }, yEnd{ y };
+	
+	// Check the strip of ice on the far side of the box surround the sprite
+	// with respect to the direction we're facing. 
+	// TODO: Keep in mind that the (x,y) values we're receiving are already being offset by
+	// 1 depending on the direction. A cleaner approach would be to handle it all here, i.e. 
+	// x,y would always represent the lower left coordinate of the sprite.
+	switch (direction) {
+		case GraphObject::Direction::up:
+			xEnd	+= PERSON_SIZE;
+			yBegin	+= PERSON_SIZE;
+			yEnd	= yBegin;
+			break;
+		case GraphObject::Direction::down:
+			xEnd	+= PERSON_SIZE;
+			yEnd	= yBegin;
+			break;
+		case GraphObject::Direction::left:
+			yEnd	+= PERSON_SIZE;
+			break;
+		case GraphObject::Direction::right:
+			xBegin	+= PERSON_SIZE;
+			xEnd	= xBegin;
+			yEnd	+= PERSON_SIZE;
+			break;
+	};
+
+	for (int x_ = xBegin; x_ < xEnd; x_++) {
+		for (int y_ = yBegin; y_ < yEnd; y_++) {
+			if (y_ < ICE_HEIGHT && m_ice[x_][y_] != nullptr && m_ice[x_][y_]->isAlive()) {
+				return true;
+			}
+		}
+	}
+
+	return false;
 }
+
+// Is this location occupied by a Boulder?
 bool StudentWorld::isBlockedByBoulder(int x, int y) const {
 	// Check for Boulders
-	for (auto actor : m_actors) {
+	for (const auto& actor : m_actors) {
 		if (actor == nullptr)
 			continue;
+
 		if (actor->getID() == IID_BOULDER) {
 			if (x > actor->getX() - 4 && x < actor->getX() + 4 && y > actor->getY() - 4 && y < actor->getY() + 4)
 				return true;
