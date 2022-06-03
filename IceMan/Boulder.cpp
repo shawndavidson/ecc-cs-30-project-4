@@ -36,7 +36,6 @@ void Boulder::doSomething() {
 
 	// Check for Ice below Boulder
 	if (isStable()) {
-		
 		if (!goundUnderBoulder) {
 			setStable(false);
 			setWaiting(true);

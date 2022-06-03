@@ -318,8 +318,8 @@ int StudentWorld::getRandomY(int minHeight) {
 // Not within 6 of other actors and not in tunnel
 pair<int, int> StudentWorld::getRandCoordinates(int minHeight) {
 	int x = getRandomX();
-	if (x >= 26 && x <= 35)
-		x += 5;
+	if (x >= 26 && x < 35)
+		x += 10;
 	int y = getRandomY(minHeight);
 
 	for (auto actor : m_actors) {
@@ -327,6 +327,10 @@ pair<int, int> StudentWorld::getRandCoordinates(int minHeight) {
 			continue;
 		while (m_distanceCalc.getDistance(x, y, actor->getX(), actor->getY()) <= 6) {
 			y = getRandomY(minHeight);
+			x = getRandomX();
+			if (x >= 26 && x < 35)
+				x += 10;
+			cout << "Too close!" << endl;
 		}
 	}
 	return pair<int, int>(x, y);
@@ -544,6 +548,8 @@ bool StudentWorld::hitBySquirt(int x, int y) {
 void StudentWorld::useSonarKit() {
 	playSound(SOUND_SONAR);
 	for (auto actor : m_actors) {
+		if (actor == nullptr)
+			continue;
 		if (actor->getDistanceToIceman() <= 12 && actor->canPickupIM()) {
 			actor->setVisible(true);
 		}
@@ -755,8 +761,23 @@ bool StudentWorld::isBlocked(int x, int y) const {
 	if (x < 0 || x >= VIEW_WIDTH || y < 0 || y > ICE_HEIGHT)
 		return true;
 
-	// TODO: Check for Boulders
+	/*if (isBlockedByBoulder(x, y))
+		return true;*/
+	
 	return y < ICE_HEIGHT && m_ice[x][y] != nullptr && m_ice[x][y]->isAlive();
+
+}
+bool StudentWorld::isBlockedByBoulder(int x, int y) const {
+	// Check for Boulders
+	for (auto actor : m_actors) {
+		if (actor == nullptr)
+			continue;
+		if (actor->getID() == IID_BOULDER) {
+			if (x > actor->getX() - 4 && x < actor->getX() + 4 && y > actor->getY() - 4 && y < actor->getY() + 4)
+				return true;
+		}
+	}
+	return false;
 }
 
 // Compute distances between all actors

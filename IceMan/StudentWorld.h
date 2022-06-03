@@ -126,6 +126,9 @@ public:
 	// Is this location occupied by Ice or a Boulder
 	inline bool isBlocked(int x, int y) const;
 
+	// Is this location occupied by a Boulder
+	bool StudentWorld::isBlockedByBoulder(int x, int y) const;
+
 	// Get the direction that has the shortest path to the exit
 	GraphObject::Direction getShortestPathToExit(int x, int y)		{ return m_shortestPathToExit.getShortestPath(x, y); }
 
