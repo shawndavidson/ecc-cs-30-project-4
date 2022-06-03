@@ -1,6 +1,7 @@
 #include "IceMan.h"
 #include "Ice.h"
 #include "StudentWorld.h"
+#include "Squirt.h"
 
 // Constructor
 IceMan::IceMan(StudentWorld* pStudentWorld)
@@ -9,8 +10,12 @@ IceMan::IceMan(StudentWorld* pStudentWorld)
             30 /*startX*/,
             60 /*startY*/,
             Direction::right,
-            10 /* nHitPoints */)
+            10 /* nHitPoints */),
+    m_iGold(0),  // FIXME should be 0
+    m_iSonarKits(1), // FIXME should be 1
+    m_iWater(5)  // FIXME should be 5
 {
+    
     // TODO: Remove - for testing
 #if TEST_ICEMAN
     getStudentWorld()->listenForEvent(
@@ -39,7 +44,7 @@ void IceMan::doSomething() {
     }
 
     // Cache a pointer to StudentWorld, for the sake of convenience
-    StudentWorld* pStudentWorld = getStudentWorld();
+    StudentWorld* const pStudentWorld = getStudentWorld();
 
     int key;
 
@@ -51,59 +56,68 @@ void IceMan::doSomething() {
 
         // Handle user keyboard input
         switch (key) {
+            // Check if there is a Boulder before moving in any direction
             case KEY_PRESS_LEFT:
                 // If we're already facing left, move left. Otherwise, just face left;
-                if (getDirection() == Direction::left && x > 0)
+                if (!pStudentWorld->isBlockedByBoulder(x - 1, y) &&
+                    getDirection() == Direction::left && x > 0)
                     takeOneStep(x - 1, y);
                 else
                     setDirection(Direction::left);
                 break;
             case KEY_PRESS_RIGHT:
                 // If we're already facing right, move right. Otherwise, just face right;
-                if (getDirection() == Direction::right && x < (VIEW_WIDTH-(size*ICEMAN_SIZE/ICE_SIZE)))
+                if (!pStudentWorld->isBlockedByBoulder(x + 1, y) &&
+                    getDirection() == Direction::right && x < (VIEW_WIDTH-(size*ICEMAN_SIZE/ICE_SIZE)))
                     takeOneStep(x + 1, y);
                 else
                     setDirection(Direction::right);
                 break;
             case KEY_PRESS_UP:
                 // If we're already facing up, move up. Otherwise, just face up;
-                if (getDirection() == Direction::up && y < ICE_HEIGHT)
+                if (!pStudentWorld->isBlockedByBoulder(x, y + 1) &&
+                    getDirection() == Direction::up && y < ICE_HEIGHT)
                     takeOneStep(x, y + 1);
                 else
                     setDirection(Direction::up);
                 break;
             case KEY_PRESS_DOWN:
                 // If we're already facing down, move down. Otherwise, just face down;
-                if (getDirection() == Direction::down && y > 0)
+                if (!pStudentWorld->isBlockedByBoulder(x, y - 1) &&
+                    getDirection() == Direction::down && y > 0)
                     takeOneStep(x, y - 1);
                 else
                     setDirection(Direction::down);
                 break;
             case KEY_PRESS_SPACE:
-                {
-                    // TODO: Remove - for testing
-                    const int tick = getStudentWorld()->getTick() + 100;
-
-                    // Pass along this data with the Event
-                    struct EventTestData data { 1234, "Hello World!" };
-
-                    getStudentWorld()->pushEvent(make_shared<Event<EventTestData>>( tick, EventTypes::EVENT_TEST, data ));
-
-                    cout << "Pushing event in IceMan::doSomething() at tick " << getStudentWorld()->getTick() << endl;
+                // Fire a water squirt
+                if (m_iWater > 0) {
+                    pStudentWorld->StudentWorld::fireSquirt(getX(), getY(), getDirection());
+                    --m_iWater;
+                    return;
                 }
                 break;
             case KEY_PRESS_ESCAPE:
-                // TODO
+                // Restart level. Lose a life
+                setAlive(false); // FIXME - should be handled by annoying IceMan
                 break;
             case KEY_PRESS_TAB:
-                // TODO
+                // Drop Gold Nugget
+                if (m_iGold > 0) {
+                    pStudentWorld->StudentWorld::dropGold();
+                    --m_iGold;
+                }
                 break;
             case 'z':
-            case 'Z':
-                // TODO: Are 'z' and 'Z' the same?
+            case 'Z': 
+                // Use SonarKit
+                if (m_iSonarKits > 0) {
+                    pStudentWorld->StudentWorld::useSonarKit();
+                    --m_iSonarKits;
+                }
                 break;
             default:
-                // TODO: what is the behavior if the key is invalid?
+                // Do nothing if input key is invalid
                 break;
         };
     }
@@ -113,8 +127,55 @@ void IceMan::doSomething() {
 }
 
 // Handle Annoy
-void IceMan::annoy() {
+void IceMan::annoy(int nHitPoints) {
     // TODO
+    Person::annoy(nHitPoints);
+    std::cout << "IceMan annoyed" << std::endl;
+}
+
+// Increments the gold counter by 1
+void IceMan::incGold() {
+    ++m_iGold;
+}
+
+// Increments the sonar kits counter by 1
+void IceMan::incSonarKits(){
+    ++m_iSonarKits;
+}
+
+// Increments the water counter by 5 (since picking up a Water Pool gives 5)
+void IceMan::incWater() {
+    m_iWater += 5;
+}
+
+// Decrements the gold counter by 1 if there is at least 1 left
+void IceMan::decGold() {
+   --m_iGold;
+}
+
+// Decrements the sonar kits counter by 1 if there is at least one left
+void IceMan::decSonarKits() {
+   --m_iSonarKits;
+}
+
+// Decrements the water counter by 1 if there is at least one left
+void IceMan::decWater() {
+    --m_iWater;
+}
+
+// Return Gold
+int IceMan:: getGold() {
+    return m_iGold;
+}
+
+// Return Sonar Kits
+int IceMan::getSonarKits() {
+    return m_iSonarKits;
+}
+
+// Return Water Squirts
+int IceMan::getWater() {
+    return m_iWater;
 }
 
 #if TEST_ICEMAN

@@ -1,12 +1,21 @@
 #include <string>
+#include <typeinfo>
 #include <exception>
 #include <assert.h>
+#include <algorithm>
 #include <thread>
 
 #include "StudentWorld.h"
 #include "IceMan.h"
 #include "Actor.h"
+#include "Person.h"
 #include "Ice.h"
+#include "OilBarrel.h"
+#include "Gold.h"
+#include "SonarKit.h"
+#include "WaterPool.h"
+#include "Squirt.h"
+#include "Boulder.h"
 #include "RegularProtester.h"
 #include "HardcoreProtester.h"
 #include "Event.h"
@@ -46,6 +55,7 @@ int StudentWorld::init()
 {
 	// Reset time
 	m_nTick = 0;
+	const int level = getLevel();
 
 	// Initialize ice field - only uses lower 60 squares of screen
 	for (int x = 0; x < ICE_WIDTH; x++) {
@@ -53,7 +63,6 @@ int StudentWorld::init()
 			// If we're within the tunnel, skip laying ice
 			if (y > 0 && x >= 30 && x <= 33)
 				continue;
-
 			try {
 				// Instantiate an ice block
 				m_ice[x][y] = make_shared<Ice>(this, x, y);
@@ -61,6 +70,29 @@ int StudentWorld::init()
 			catch (bad_alloc& /*ex*/) {
 				cout << "Unable to allocate memory for an ice block" << endl;
 			}
+		}
+	}
+
+	// Initialize Boulders
+	int NUM_BOULDERS = min(level / 2 + 2, 9);
+	for (int i = 0; i < NUM_BOULDERS; ++i) {
+
+		pair<int, int> coordinates = getRandCoordinates(20);
+		int x = coordinates.first;
+		int y = coordinates.second;
+
+		// Delete ice where the boulder spawns
+		for (int xOffset = x; xOffset < x + 4; ++xOffset) {
+			for (int yOffset = y; yOffset < y + 4; ++yOffset) {
+				if (m_ice[xOffset][yOffset])
+					m_ice[xOffset][yOffset].reset();
+			}
+		}
+		try {
+			m_actors.push_back(make_shared<Boulder>(this, x, y));
+		}
+		catch (bad_alloc&) {
+			cout << "Unable to allocate memory for Boulder" << endl;
 		}
 	}
 
@@ -80,16 +112,34 @@ int StudentWorld::init()
 		cout << "Unable to allocate memory for IceMan" << endl;
 	}
 
-	// TODO: Remove
-	// Initialize a Regular and Hardcore Protester 
-	try {
-		for (int i = 0; i < 1; i++) {
-			m_actors.push_back(make_shared<RegularProtester>(this, rand() % (ICE_WIDTH - PERSON_SIZE), ICE_HEIGHT));
-			m_actors.push_back(make_shared<HardcoreProtester>(this, rand() % (ICE_WIDTH - PERSON_SIZE), ICE_HEIGHT));
+	// Initialize OilBarrels
+	int NUM_OIL_BARRELS = min(2 + level, 21);
+	setNumBarrels(NUM_OIL_BARRELS);
+	for (int i = 0; i < NUM_OIL_BARRELS; ++i) {
+		try {
+			pair<int, int> coordinates = getRandCoordinates(0);
+			int x = coordinates.first;
+			int y = coordinates.second;
+			m_actors.push_back(make_shared<OilBarrel>(this, x, y));
+		}
+		catch (bad_alloc&) {
+			cout << "Unable to allocate memory for Oil Barrel" << endl;
 		}
 	}
-	catch (bad_alloc& /*ex*/) {
-		cout << "Unable to allocate memory for Regular Protester" << endl;
+
+	// Initialize Gold Nuggets
+	shared_ptr<Gold> pGold;
+	int NUM_GOLD_NUGGETS = max(5 - level / 2, 2);
+	for (int i = 0; i < NUM_GOLD_NUGGETS; ++i) {
+		try {
+			pair<int, int> coordinates = getRandCoordinates(0);
+			int x = coordinates.first;
+			int y = coordinates.second;
+			m_actors.push_back(make_shared<Gold>(this, x, y, false, true, false, true));
+		}
+		catch (bad_alloc&) {
+			cout << "Unable to allocate memory for Gold Nugget" << endl;
+		}
 	}
  
 	// TODO: make shared data thread safe
@@ -129,7 +179,10 @@ void StudentWorld::startWorkerThreads()
 
 // Handle movement for all game objects within our world
 int StudentWorld::move()
-{	
+{
+	addNewActors();
+
+	// Compute the distance between all Actors
 	computeDistancesBetweenActors();
 
 	m_shortestPathToExit.compute(60, 60);
@@ -139,9 +192,8 @@ int StudentWorld::move()
 		m_shortestPathToIceMan.compute(pIceMan->getX(), pIceMan->getY());
 	}
 
-	// This code is here merely to allow the game to build, run, and terminate after you hit enter a few times.
-	// Notice that the return value GWSTATUS_PLAYER_DIED will cause our framework to end the current level.
-	//decLives();
+	setGameStatText(getGameStatText());
+
 
 	// Handle the next event from the min heap
 	processNextEvent();
@@ -153,6 +205,8 @@ int StudentWorld::move()
 	});
 
 	// Give the ice a chance to do something during this tick
+	// Is this code necessary?
+	// Ice doesn't do anything
 	for (int x = 0; x < ICE_WIDTH; x++) {
 		for (int y = 0; y < ICE_HEIGHT; y++) {
 			if (m_ice[x][y] != nullptr) {
@@ -160,6 +214,20 @@ int StudentWorld::move()
 			}
 		}
 	}
+	
+	// Go to next level if all Oil Barrels Collected
+	if (getNumBarrels() == 0) {
+		playSound(SOUND_FINISHED_LEVEL);
+		return GWSTATUS_FINISHED_LEVEL;
+	}
+	// Restart the level if IceMan dies
+	if (!m_pIceMan.lock()->isAlive()) {
+		playSound(SOUND_PLAYER_GIVE_UP);
+		decLives();
+		return GWSTATUS_PLAYER_DIED;
+	}
+	
+	removeDeadGameObjects();
 
 	// Increment time. Keep this at the end of this method.
 	m_nTick++;
@@ -184,7 +252,8 @@ void StudentWorld::digUpIce(int x, int y)
 				int finalX = x + xOffset;
 				// If ice is present, kill it
 				if (finalX < ICE_WIDTH && m_ice[finalX][finalY]) {
-					m_ice[finalX][finalY]->setAlive(false);
+					playSound(SOUND_DIG);
+					m_ice[finalX][finalY].reset();
 				}
 			}
 		}
@@ -198,9 +267,8 @@ void StudentWorld::digUpIce(int x, int y)
 void StudentWorld::cleanUp()
 {
 	// Release memory for all Actors
-	for (auto actor : m_actors) {
-		actor.reset();
-	}
+	m_actors.clear();
+	m_distances.clear();
 
 	// Release memory for all Ice blocks
 	for (int x = 0; x < ICE_WIDTH; x++) {
@@ -218,6 +286,339 @@ void StudentWorld::cleanUp()
 			pThread->join();
 		});
 	m_pWorkerThreads.resize(0);
+}
+
+void StudentWorld::removeDeadGameObjects() {
+	// TODO: test
+
+	remove_if(begin(m_actors), end(m_actors), [](ActorPtr pActor) {
+		return pActor == nullptr || !pActor->isAlive();
+		});
+	m_distances.clear();
+}
+
+string StudentWorld::getGameStatText() {
+	return
+		"Lvl: " + to_string(getLevel()) +
+		" Lives: " + to_string(getLives()) +
+		" Hlth: " + to_string(0) + // TODO - should be IceMan Hit Points
+		" Wtr: " + to_string(m_pIceMan.lock()->getWater()) +
+		" Gld : " + to_string(m_pIceMan.lock()->getGold()) +
+		" Oil Left: " + to_string(getNumBarrels()) +
+		" Sonar: " + to_string(m_pIceMan.lock()->getSonarKits()) +
+		" Scr: " + to_string(getScore());
+}
+
+// Creates random x coordinate for actors to spawn in
+int StudentWorld::getRandomX() {
+	return rand() % (ICE_WIDTH - 4);
+}
+
+// Creates random y coordinate for actors to spawn in
+int StudentWorld::getRandomY(int minHeight) {
+	return minHeight + rand() % (ICE_HEIGHT - 4 - minHeight);
+}
+
+// Not within 6 of other actors and not in tunnel
+pair<int, int> StudentWorld::getRandCoordinates(int minHeight) {
+	int x = getRandomX();
+	if (x >= 26 && x < 35)
+		x += 10;
+	int y = getRandomY(minHeight);
+
+	for (auto actor : m_actors) {
+		if (actor == nullptr)
+			continue;
+		while (m_distanceCalc.getDistance(x, y, actor->getX(), actor->getY()) <= 6) {
+			y = getRandomY(minHeight);
+			x = getRandomX();
+			if (x >= 26 && x < 35)
+				x += 10;
+			cout << "Too close!" << endl;
+		}
+	}
+	return pair<int, int>(x, y);
+}
+
+/*************************************************************************/
+/* Functions that add actors										     */
+/*************************************************************************/
+
+// Adds new actors during each tick
+void StudentWorld::addNewActors() {
+	// All values are specified on page 20 and 21
+	const int level = getLevel();
+	// Random chance if a new goodie should be added
+	bool addNewGoodie = (0 == rand() % (level * 25 + 300));
+	if (addNewGoodie) {
+		// 1/5 chance it is a SonarKit
+		if (0 == rand() % 5)
+			addSonarKit();
+		// 4/5 chance it is a WaterPool
+		else
+			addWaterPool();
+	}
+	
+	// Only add a Protester if there are fewer than the max already in the field
+	// And enough ticks have passed since the last Protester was added
+	bool addNewProtester = getTick() - m_nTickLastProtesterAdded >= max(25, 200 - level);
+	if (addNewProtester) {
+		if (m_nNumProtesters < min(15, int(2 + level * 1.5))) {
+			// Random if it is Hardcore or Regular
+			int ID = (1 == rand() % min(90, level * 10 + 30)) ? IID_HARD_CORE_PROTESTER : IID_PROTESTER;
+			addProtester(ID);
+		}
+	}
+
+
+	for (auto newActor : m_newActors) {
+		m_actors.push_back(newActor);
+	}
+	m_newActors.clear();
+}
+
+// Adds new Protesters, either Regular or Hardcore
+void StudentWorld::addProtester(int ID) {
+	
+	try {
+		if (ID == IID_HARD_CORE_PROTESTER)
+			m_newActors.emplace_back(make_shared<HardcoreProtester>(this, 60, 60));
+		else
+			m_newActors.emplace_back(make_shared<RegularProtester>(this, 60, 60));
+	}
+	catch (bad_alloc& /*ex*/) {
+		cout << "Unable to allocate memory for Protester" << endl;
+	}
+
+	++m_nNumProtesters;
+	m_nTickLastProtesterAdded = getTick();
+}
+
+// Initializes and places new WaterPool
+void StudentWorld::addWaterPool() {
+	int x = getRandomX();
+	int y = getRandomY(0);
+	bool overlaps = true;
+	while (overlaps == true) {
+		x = getRandomX();
+		y = getRandomY(0);
+		overlaps = false;
+		for (int xOffset = x; xOffset < x + 4; ++xOffset) {
+			for (int yOffset = y; yOffset < y + 4; ++yOffset) {
+				if (m_ice[xOffset][yOffset]) {
+					overlaps = true;
+				}
+			}
+		}
+		for (auto actor : m_actors) {
+			if (actor == nullptr)
+				continue;
+			if (m_distanceCalc.getDistance(x, y, actor->getX(), actor->getY()) <= 6)
+				overlaps = true;
+		}
+	}
+	try {
+		m_newActors.emplace_back(make_shared<WaterPool>(this, x, y));
+	}
+	catch (bad_alloc&) {
+		cout << "Unable to allocate memory for Water Pool" << endl;
+	}
+}
+
+// Initializes and places new SonarKits
+void StudentWorld::addSonarKit() {
+	try {
+		m_newActors.emplace_back(make_shared<SonarKit>(this, 0, 60, true));
+	}
+	catch (bad_alloc&) {
+		cout << "Unable to allocate memory for Sonar Kit" << endl;
+	}
+}
+
+
+/*************************************************************************/
+/* Non-Person Functions												     */
+/*************************************************************************/
+
+// Sets the number of oil barrels in the oil field
+void StudentWorld::setNumBarrels(int barrels) {
+	m_iNumBarrels = barrels;
+}
+
+// Returns the number of oil barrels remaining in the field
+int StudentWorld::getNumBarrels() {
+	return m_iNumBarrels;
+}
+
+// Decrements the number of oil barrels remaining in the field
+void StudentWorld::decNumBarrels() {
+	--m_iNumBarrels;
+}
+
+// Handles the case where any Goodie is picked up
+void StudentWorld::pickupGoodieIM(int ID, int points, int soundEffect) {
+	// If there is a collision (distance <= 3), increase the score and play a sound
+	// Depending on the goodie, a different action occurs
+	// Uses the image ID to identify the goodie
+
+	switch (ID) {
+	case IID_BARREL:
+		decNumBarrels();
+		break;
+	case IID_GOLD:
+		m_pIceMan.lock()->incGold();
+		break;
+	case IID_SONAR:
+		m_pIceMan.lock()->incSonarKits();
+		break;
+	case IID_WATER_POOL:
+		m_pIceMan.lock()->incWater();
+		break;
+	}
+	increaseScore(points);
+	playSound(soundEffect);
+}
+
+// Handles when a Protester picks up Gold
+void StudentWorld::pickupGoldP(ActorPtr gold) {
+	// TODO: implement this
+}
+// Handles when a Squirt is fired by IceMan
+void StudentWorld::fireSquirt(int x, int y, GraphObject::Direction dir) {
+	int xOffset = 0;
+	int yOffset = 0;
+
+	switch (dir) {
+	case GraphObject::Direction::left:
+		x+= -4;
+		break;
+	case GraphObject::Direction::right:
+		x+= 4;
+		break;
+	case GraphObject::Direction::up:
+		y+= 4;
+		break;
+	case GraphObject::Direction::down:
+		y+= -4;
+		break;
+	}
+	playSound(SOUND_PLAYER_SQUIRT);
+
+	// Dont' make a squirt if it goes outside the edge of the screen or ice
+	for (int xOffset = x; xOffset < x + 4; ++xOffset) {
+		for (int yOffset = y; yOffset < y + 4; ++yOffset) {
+			if (x >= ICE_WIDTH || x < 0 || y >= VIEW_HEIGHT || y < 0 || (y < ICE_HEIGHT && m_ice[xOffset][yOffset]))
+				return;
+		}
+	}
+	m_newActors.emplace_back(make_shared<Squirt>(this, x, y, dir));
+}
+
+// Handles when a Squirt hits Ice, Boulder, or Protester
+// TODO: finish Protester case (annoy by 2 points)
+bool StudentWorld::hitBySquirt(int x, int y) {
+
+	// Did the squirt hit ice or the edge of the screen?
+	for (int xOffset = x; xOffset < x + 4; ++xOffset) {
+		for (int yOffset = y; yOffset < y + 4; ++yOffset) {
+			if (x >= ICE_WIDTH || x < 0 || y >= VIEW_HEIGHT || y < 0 || (y < ICE_HEIGHT && m_ice[xOffset][yOffset]))
+				return true;
+		}
+	}
+
+	// Did the squirt hit a protester or boulder?
+	bool hitProtester = false;
+	for (auto actor : m_actors) {
+		if (actor == nullptr)
+			continue;
+		if (m_distanceCalc.getDistance(actor->getX(), actor->getY(), x, y) <= 3) {
+			if (actor->getID() == IID_PROTESTER || actor->getID() == IID_HARD_CORE_PROTESTER) {
+				// TODO: should annoy them by 2 points
+				hitProtester = true; // Allows for multiple protesters to be hit by the same squirt
+				cout << "Hit Protester" << endl; // FIXME - test print
+			}
+			else if (actor->getID() == IID_BOULDER) {
+				return true;
+			}
+		}
+	}
+	if (hitProtester)
+		return true;
+	// The squirt did not hit any other actors
+	return false;
+}
+
+// Handles when IceMan uses a SonarKit
+void StudentWorld::useSonarKit() {
+	playSound(SOUND_SONAR);
+	for (auto actor : m_actors) {
+		if (actor == nullptr)
+			continue;
+		if (actor->getDistanceToIceman() <= 12 && actor->canPickupIM()) {
+			actor->setVisible(true);
+		}
+	}
+}
+
+// Handles when IceMan drops a Gold Nugget
+void StudentWorld::dropGold() {
+	try {
+		m_newActors.push_back(make_shared<Gold>(
+			this,
+			m_pIceMan.lock()->getX(),
+			m_pIceMan.lock()->getY(),
+			true, false, true, false));
+	}
+	catch (bad_alloc&) {
+		cout << "Unable to allocate memory for Gold Nugget" << endl;
+	}
+}
+
+
+// Checks if there is ice under a Boulder,
+// or if the Boulder is at the bottom of the ice field
+bool StudentWorld::isGroundUnderBoulder(int x, int y) {
+	// Check gound 1 block below the Boulder
+	y -= 1;
+	if (y < 0)
+		return true;
+	for (int xOffset = x; xOffset < x + 4; ++xOffset) {
+		if (m_ice[xOffset][y]) {
+			return true;
+		}
+	}
+	return false;
+}
+
+// Handles if a boulder hits IceMan, Protester, or another Boulder
+// Pass in coordinates of the Boulder
+// TODO: annoy Protesters by 100 points
+// TODO: annoy IceMan by 100 points
+bool StudentWorld::hitByBoulder(int x, int y) {
+
+	// Did the boulder hit IceMan, a Protester or another Boulder?
+	for (auto actor : m_actors) {
+		if (actor == nullptr)
+			continue;
+		if ((actor->getX() >= x) && (actor->getX() <= x + 4) && (actor->getY() + 4 == y)) {
+			int actorID = actor->getID();
+			if (actorID == IID_PROTESTER || actorID == IID_HARD_CORE_PROTESTER) {
+				// TODO: should annoy them by 100 points
+				cout << "Hit Protester" << endl; // FIXME - test print
+				increaseScore(500);
+			}
+			if (actorID == IID_PLAYER) {
+				// TODO: should annoy player by 100 points
+				cout << "Hit IceMan" << endl; // FIXME - test print
+			}
+			// Stop the boulder if it hits another Boulder
+			else if (actor->getID() == IID_BOULDER) {
+				return true;
+			}
+		}
+	}
+	// Boulder did not hit anything that stops it
+	return false;
 }
 
 
@@ -367,33 +768,23 @@ bool StudentWorld::isBlocked(int x, int y, GraphObject::Direction direction) con
 	if (x < 0 || x > (ICE_WIDTH - PERSON_SIZE) || y < 0 || y > ICE_HEIGHT)
 		return true;
 
-	// TODO: Check for Boulders
+	/*if (isBlockedByBoulder(x, y))
+		return true;*/
+	
+	return y < ICE_HEIGHT && m_ice[x][y] != nullptr && m_ice[x][y]->isAlive();
 
-	// If we're on top of the ice, no need to check for ice
-	if (y == ICE_HEIGHT) {
-		return false;
+}
+bool StudentWorld::isBlockedByBoulder(int x, int y) const {
+	// Check for Boulders
+	for (auto actor : m_actors) {
+		if (actor == nullptr)
+			continue;
+		if (actor->getID() == IID_BOULDER) {
+			if (x > actor->getX() - 4 && x < actor->getX() + 4 && y > actor->getY() - 4 && y < actor->getY() + 4)
+				return true;
+		}
 	}
-
-	int xOffset{};
-	int yOffset{};
-
-	switch (direction) {
-		case GraphObject::Direction::up:
-			//yOffset += PERSON_SIZE;
-			break;
-		case GraphObject::Direction::down:
-		case GraphObject::Direction::left:
-			break;
-		case GraphObject::Direction::right:
-			//xOffset += PERSON_SIZE;
-			break;
-	}
-
-	// Limit to x_,y_ to the boundries of the ice field
-	int x_ = std::max<int>(0, std::min<int>(x + xOffset, ICE_WIDTH - PERSON_SIZE));
-	int y_ = std::max<int>(0, std::min<int>(y + yOffset, ICE_HEIGHT));
-
-	return m_ice[x_][y_] != nullptr && m_ice[x_][y_]->isAlive();
+	return false;
 }
 
 // Compute distances between all actors
@@ -403,7 +794,11 @@ void StudentWorld::computeDistancesBetweenActors() {
 	
 	// Compute distances between each Actor and every other Actor O(n^2)
 	for (auto it1 = cbegin(m_actors); it1 != cend(m_actors); it1++) {
+		if ((*it1) == nullptr)
+			continue;
 		for (auto it2 = cbegin(m_actors); it2 <= it1; it2++) {
+			if ((*it2) == nullptr)
+				continue;
 			// If we're looking at the distance from ourself, it's always zero
 			if (it1 == it2) {
 				m_distances[(*it1)][(*it2)] = 0;

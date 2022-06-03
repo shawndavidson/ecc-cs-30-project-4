@@ -38,16 +38,49 @@ public:
     virtual void doSomething();
 
     // Annoy IceMan
-    virtual void annoy();
+    virtual void annoy(int);
 
-private:
     // Take a step and dig up ice, if necessary
     void takeOneStep(int x, int y);
 
-#if TEST_ICEMAN
     // Handle an Event
     void handleTestEvent(int num, const char* text);
-#endif // TEST_ICEMAN
+
+    // Increases the number of gold nuggets by 1
+    void incGold();
+
+    // Increases the number of sonar kits by 1
+    void incSonarKits();
+
+    // Increases the number of water squirts by 5
+    void incWater();
+
+    // Decreases the number of gold nuggets by 1
+    void decGold();
+
+    // Decreases the number of sonar kits by 1
+    void decSonarKits();
+
+    // Decreases the number of water squirts by 1
+    void decWater();
+
+    // Return Gold
+    int getGold();
+
+    // Return Sonar Kits
+    int getSonarKits();
+
+    // Return Water Squirts
+    int getWater();
+
+
+private:
+    // Inventory counters
+    unsigned int m_iGold;
+    unsigned int m_iSonarKits;
+    unsigned int m_iWater;
+
+
 };
 
 #endif ICEMAN_H_
