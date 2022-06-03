@@ -53,7 +53,6 @@ void Gold::doSomething() {
 			decTicksRemaining();
 		else {
 			setAlive(false);
-			setVisible(false);
 		}
 	}
 
@@ -81,7 +80,6 @@ void Gold::doSomething() {
 void Gold::collect() {
 	setAlive(false);
 	setCollected(true);
-	setVisible(false);
 }
 
 void Gold::collectIM() {

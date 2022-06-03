@@ -5,6 +5,9 @@
 
 #define TEST_HARDCOREPROTESTER 1
 
+const int PICK_UP_GOLD_POINTS_HC = 50;
+const int SQUIRT_ANNOYED_POINTS_HC = 250;
+
 class HardcoreProtester : public Protester
 {
 public:

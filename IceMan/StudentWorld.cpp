@@ -21,6 +21,7 @@
 #include "RegularProtester.h"
 #include "HardcoreProtester.h"
 #include "Event.h"
+#include "ShortestPathFinder.h"
 
 using namespace std;
 
@@ -249,8 +250,6 @@ void StudentWorld::digUpIce(int x, int y)
 		}
 
 	}
-
-	playSound(SOUND_DIG);
 }
 
 // Cleanup game objects (deallocates memory)
@@ -301,16 +300,17 @@ void StudentWorld::removeDeadGameObjects() {
 }
 
 string StudentWorld::getGameStatText() {
+	auto iceMan = m_pIceMan.lock();
 	stringstream ss;
 	ss << setfill(' ') << left;
 	ss <<
 		"Lvl: " << setw(2) << to_string(getLevel()) <<
 		"  Lives: " << setw(1) << to_string(getLives()) <<
-		"  Hlth: " << setw(3) << to_string(100 * m_pIceMan.lock()->getHitPoints() / 10) + "%" <<
-		"  Wtr: " << setw(2) << to_string(m_pIceMan.lock()->getWater()) <<
-		"  Gld: " << to_string(m_pIceMan.lock()->getGold()) <<
+		"  Hlth: " << setw(3) << to_string(100 * iceMan->getHitPoints() / 10) + "%" <<
+		"  Wtr: " << setw(2) << to_string(iceMan->getWater()) <<
+		"  Gld: " << to_string(iceMan->getGold()) <<
 		"  Oil Left: " << to_string(getNumBarrels()) <<
-		"  Sonar: " << to_string(m_pIceMan.lock()->getSonarKits()) <<
+		"  Sonar: " << to_string(iceMan->getSonarKits()) <<
 		"  Scr: " << setfill('0') << right << setw(6) << to_string(getScore());
 	return ss.str();
 }
@@ -366,7 +366,7 @@ void StudentWorld::addNewActors() {
 	
 	// Only add a Protester if there are fewer than the max already in the field
 	// And enough ticks have passed since the last Protester was added
-	bool addNewProtester = getTick() - m_nTickLastProtesterAdded >= max(25, 200 - level);
+	bool addNewProtester = (getTick() - m_nTickLastProtesterAdded) >= max(25, 200 - level);
 	if (addNewProtester) {
 		if (m_nNumProtesters < min(15, int(2 + level * 1.5))) {
 			// Random if it is Hardcore or Regular, gives probability as percentage [30...90]
@@ -618,8 +618,7 @@ bool StudentWorld::hitByBoulder(int x, int y) {
 		if ((actor->getX() >= x) && (actor->getX() <= x + 4) && (actor->getY() + 4 == y)) {
 			int actorID = actor->getID();
 			if (actorID == IID_PROTESTER || actorID == IID_HARD_CORE_PROTESTER) {
-				static_pointer_cast<Protester>(actor)->annoy(100);
-				increaseScore(500);
+				static_pointer_cast<Protester>(actor)->bonkedByBoulder();
 			}
 			if (actorID == IID_PLAYER) {
 				static_pointer_cast<IceMan>(actor)->annoy(100);
@@ -636,7 +635,10 @@ bool StudentWorld::hitByBoulder(int x, int y) {
 
 // Handles when a Protester shouts at IceMan
 void StudentWorld::iceManShoutedAt() {
-	m_pIceMan.lock()->annoy(2);
+	auto iceMan = m_pIceMan.lock();
+	if (iceMan == nullptr)
+		return;
+	iceMan->annoy(2);
 	playSound(SOUND_PROTESTER_YELL);
 }
 

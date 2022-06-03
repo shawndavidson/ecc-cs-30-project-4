@@ -18,8 +18,4 @@ Ice::Ice(StudentWorld* pStudentWorld, int startX, int startY)
 Ice::~Ice() {
 }
 
-// Handle Annoy
-void Ice::annoy() {
-	// You can't annoy ice
-}
 

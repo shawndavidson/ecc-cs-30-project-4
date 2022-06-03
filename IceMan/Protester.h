@@ -42,6 +42,10 @@ public:
 	// Step on a Gold Nugget
 	virtual void	pickUpGold()  = 0;
 
+	// Protester is bonked by a Boulder
+	virtual void	bonkedByBoulder();
+
+
 protected:
 	// Take one step towards the exit 
 	void			moveTowardsExit();
