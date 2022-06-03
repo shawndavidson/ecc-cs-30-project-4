@@ -34,7 +34,6 @@ Gold::Gold(
 	// but they shouldn't be necessary
 	setCanPickupIM(canPickupIM);
 	setCanPickupP(canPickupP);
-
 };
 
 // Destructor
@@ -47,6 +46,7 @@ void Gold::doSomething() {
 	// If gold is not alive, return immediately
 	if (!isAlive())
 		return;
+	
 
 	if (!isPermanent()) {
 		if (getTicksRemaining() > 0)

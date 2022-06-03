@@ -95,10 +95,23 @@ public:
 	int getRandomX();
 
 	// Creates random y coordinate for actors to spawn in
-	int getRandomY();
+	int getRandomY(int minHeight);
 
-	// Regenerates the x value until the object is buried in ice
-	int getCoordinatesWithIce(int, int);
+	// Generates x and y coordinates that fall within ice field
+	// Not within 6 of other actors and not in tunnel
+	pair<int, int> getRandCoordinates(int minHeight);
+
+	// Adds new actors during each tick
+	void addNewActors();
+
+	// Adds new Protesters, either Regular or Hardcore
+	void addProtester(int ID);
+
+	// Initializes and places new WaterPool
+	void addWaterPool();
+
+	// Initializes and places new SonarKit
+	void addSonarKit();
 		
 	// Compute distance to IceMan
 	int getDistanceToIceMan(int x, int y) const;
@@ -113,6 +126,9 @@ public:
 	// Is this location occupied by Ice or a Boulder
 	inline bool isBlocked(int x, int y) const;
 
+	// Is this location occupied by a Boulder
+	bool StudentWorld::isBlockedByBoulder(int x, int y) const;
+
 	// Get the direction that has the shortest path to the exit
 	GraphObject::Direction getShortestPathToExit(int x, int y)		{ return m_shortestPathToExit.getShortestPath(x, y); }
 
@@ -124,6 +140,8 @@ public:
 
 	// Register for an Event
 	void listenForEvent(EventTypes type, EventCallback callback);
+
+	
 
 	/*************************************************************************/
 	/* Goodie Operations												     */
@@ -149,8 +167,7 @@ public:
 	// Lets IceMan place a gold nugget
 	void dropGold();
 
-	// Initializes and places new WaterPools
-	void addWaterPool();
+
 
 	/*************************************************************************/
 	/* Squirt and Boulder Operations									     */
@@ -202,6 +219,10 @@ private:
 	// Time
 	unsigned long m_nTick;
 
+	unsigned int m_nTickLastProtesterAdded = 0;
+
+	unsigned int m_nNumProtesters = 0;
+
 	// Container of Actors
 	std::vector<ActorPtr>	m_actors;
 
@@ -217,7 +238,7 @@ private:
 	IcePtr m_ice[ICE_WIDTH][ICE_HEIGHT];
 	
 	// Number of Oil Barrels in the current level
-	int m_num_barrels;
+	int m_iNumBarrels;
 
 	// Declaration for a Function Object to compare two Events 
 	// in descending order by their tick (time)

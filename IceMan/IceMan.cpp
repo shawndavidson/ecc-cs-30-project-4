@@ -12,7 +12,7 @@ IceMan::IceMan(StudentWorld* pStudentWorld)
             Direction::right,
             10 /* nHitPoints */),
     m_iGold(0),  // FIXME should be 0
-    m_iSonarKits(1),
+    m_iSonarKits(1), // FIXME should be 1
     m_iWater(5)  // FIXME should be 5
 {
     
@@ -56,30 +56,35 @@ void IceMan::doSomething() {
 
         // Handle user keyboard input
         switch (key) {
+            // Check if there is a Boulder before moving in any direction
             case KEY_PRESS_LEFT:
                 // If we're already facing left, move left. Otherwise, just face left;
-                if (getDirection() == Direction::left && x > 0)
+                if (!pStudentWorld->isBlockedByBoulder(x - 1, y) &&
+                    getDirection() == Direction::left && x > 0)
                     takeOneStep(x - 1, y);
                 else
                     setDirection(Direction::left);
                 break;
             case KEY_PRESS_RIGHT:
                 // If we're already facing right, move right. Otherwise, just face right;
-                if (getDirection() == Direction::right && x < (VIEW_WIDTH-(size*ICEMAN_SIZE/ICE_SIZE)))
+                if (!pStudentWorld->isBlockedByBoulder(x + 1, y) &&
+                    getDirection() == Direction::right && x < (VIEW_WIDTH-(size*ICEMAN_SIZE/ICE_SIZE)))
                     takeOneStep(x + 1, y);
                 else
                     setDirection(Direction::right);
                 break;
             case KEY_PRESS_UP:
                 // If we're already facing up, move up. Otherwise, just face up;
-                if (getDirection() == Direction::up && y < ICE_HEIGHT)
+                if (!pStudentWorld->isBlockedByBoulder(x, y + 1) &&
+                    getDirection() == Direction::up && y < ICE_HEIGHT)
                     takeOneStep(x, y + 1);
                 else
                     setDirection(Direction::up);
                 break;
             case KEY_PRESS_DOWN:
                 // If we're already facing down, move down. Otherwise, just face down;
-                if (getDirection() == Direction::down && y > 0)
+                if (!pStudentWorld->isBlockedByBoulder(x, y - 1) &&
+                    getDirection() == Direction::down && y > 0)
                     takeOneStep(x, y - 1);
                 else
                     setDirection(Direction::down);
@@ -93,7 +98,8 @@ void IceMan::doSomething() {
                 }
                 break;
             case KEY_PRESS_ESCAPE:
-                // TODO
+                // Restart level. Lose a life
+                setAlive(false); // FIXME - should be handled by annoying IceMan
                 break;
             case KEY_PRESS_TAB:
                 // Drop Gold Nugget
@@ -111,7 +117,7 @@ void IceMan::doSomething() {
                 }
                 break;
             default:
-                // TODO: what is the behavior if the key is invalid?
+                // Do nothing if input key is invalid
                 break;
         };
     }
