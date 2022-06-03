@@ -5,29 +5,17 @@
 
 // Constructor
 IceMan::IceMan(StudentWorld* pStudentWorld)
-<<<<<<< HEAD
-    : Actor(pStudentWorld,
-        IID_PLAYER,
-        30 /*startX*/,
-        60 /*startY*/,
-        Direction::right,
-        ICEMAN_SIZE /*size*/,
-        0 /*depth*/,
-        true /*visible*/,
-        true /*canAnnoy*/,
-        false /*canPickup*/),
-    m_iGold(1000),  // FIXME should be 0
-    m_iSonarKits(1),
-    m_iWater(1000)  // FIXME should be 5
-=======
     : Person(pStudentWorld, 
             IID_PLAYER, 
             30 /*startX*/,
             60 /*startY*/,
             Direction::right,
-            10 /* nHitPoints */)
->>>>>>> main
+            10 /* nHitPoints */),
+    m_iGold(1000),  // FIXME should be 0
+    m_iSonarKits(1),
+    m_iWater(1000)  // FIXME should be 5
 {
+    
     // TODO: Remove - for testing
 #if TEST_ICEMAN
     getStudentWorld()->listenForEvent(
@@ -192,12 +180,9 @@ void IceMan::handleTestEvent(int num, const char* text) {
         << std::endl;
 #endif // TEST_ICEMAN
 }
-<<<<<<< HEAD
-=======
 
 // Take a step and dig up ice, if necessary
 void IceMan::takeOneStep(int x, int y) {
     moveTo(x, y);
     getStudentWorld()->digUpIce(x, y);
 }
->>>>>>> main

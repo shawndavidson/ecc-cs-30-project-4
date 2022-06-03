@@ -2,11 +2,8 @@
 #include <typeinfo>
 #include <exception>
 #include <assert.h>
-<<<<<<< HEAD
 #include <algorithm>
-=======
 #include <thread>
->>>>>>> main
 
 #include "StudentWorld.h"
 #include "IceMan.h"
@@ -160,11 +157,7 @@ int StudentWorld::init()
 	// TODO: Remove
 	// Initialize a Regular and Hardcore Protester 
 	try {
-<<<<<<< HEAD
-		for (int i = 0; i < 5; i++) {
-=======
 		for (int i = 0; i < 1; i++) {
->>>>>>> main
 			m_actors.push_back(make_shared<RegularProtester>(this, rand() % ICE_WIDTH, ICE_HEIGHT));
 			m_actors.push_back(make_shared<HardcoreProtester>(this, rand() % ICE_WIDTH, ICE_HEIGHT));
 		}
@@ -210,7 +203,6 @@ void StudentWorld::startWorkerThreads()
 
 // Handle movement for all game objects within our world
 int StudentWorld::move()
-<<<<<<< HEAD
 {
 	for (auto newActor : m_newActors) {
 		m_actors.push_back(newActor);
@@ -218,9 +210,6 @@ int StudentWorld::move()
 	m_newActors.clear();
 
 	// Compute the distance between all Actors
-	computeDistances();
-=======
-{	
 	computeDistancesBetweenActors();
 
 	m_shortestPathToExit.compute(60, 60);
@@ -229,7 +218,6 @@ int StudentWorld::move()
 		auto pIceMan = m_pIceMan.lock();
 		m_shortestPathToIceMan.compute(pIceMan->getX(), pIceMan->getY());
 	}
->>>>>>> main
 
 	setGameStatText(getGameStatText());
 	
@@ -245,42 +233,6 @@ int StudentWorld::move()
 	// Handle the next event from the min heap
 	processNextEvent();
 
-<<<<<<< HEAD
-
-	for_each(begin(m_actors), end(m_actors), [](ActorPtr& actor) {
-		if (actor)
-			actor->doSomething();
-		});
-
-	{
-		shared_ptr<IceMan> pIceManShared = m_pIceMan.lock();
-
-		const int x = pIceManShared->getX();
-		const int y = pIceManShared->getY();
-
-		// Is IceMan standing on ice?
-		if (x < ICE_WIDTH && y < ICE_HEIGHT) {
-
-			// Dig through the 4x4 matrix of ice that we're standing on 
-			for (int yOffset = 0; yOffset < ICEMAN_TO_ICE_SIZE_RATIO; yOffset++) {
-				int finalY = y + yOffset;
-
-				for (int xOffset = 0; xOffset < ICEMAN_TO_ICE_SIZE_RATIO && finalY < ICE_HEIGHT; xOffset++) {
-					int finalX = x + xOffset;
-					// If ice is present, kill it
-					if (finalX < ICE_WIDTH && m_ice[finalX][finalY]) {
-						m_ice[finalX][finalY].reset();
-						playSound(SOUND_DIG);
-					}
-				}
-			}
-
-		}
-
-	}
-
-	removeDeadGameObjects();
-=======
 	// Give ALL Actors a chance to do something during this tick
 	for_each(begin(m_actors), end(m_actors), [](ActorPtr& actor) { 
 		if (actor) 
@@ -288,6 +240,8 @@ int StudentWorld::move()
 	});
 
 	// Give the ice a chance to do something during this tick
+	// TODO: check that the Ice is properly destructed
+	// TODO: play sound effect when Ice is dug away
 	for (int x = 0; x < ICE_WIDTH; x++) {
 		for (int y = 0; y < ICE_HEIGHT; y++) {
 			if (m_ice[x][y] != nullptr) {
@@ -295,7 +249,6 @@ int StudentWorld::move()
 			}
 		}
 	}
->>>>>>> main
 
 	// Increment time. Keep this at the end of this method.
 	m_nTick++;
@@ -367,14 +320,15 @@ void StudentWorld::removeDeadGameObjects() {
 }
 
 string StudentWorld::getGameStatText() {
+	// TODO: fix functions that should be called here
 	return
 		"Lvl: " + to_string(getLevel()) +
 		" Lives: " + to_string(getLives()) +
-		" Hlth: " + to_string(0) + // FIXME - should be IceMan Hit Points
-		" Wtr: " + to_string(m_pIceMan.lock()->getWater()) +
-		" Gld : " + to_string(m_pIceMan.lock()->getGold()) +
+		" Hlth: " + to_string(0) + // TODO - should be IceMan Hit Points
+		" Wtr: " + //to_string(m_pIceMan.lock()->getWater()) +
+		" Gld : " + //to_string(m_pIceMan.lock()->getGold()) +
 		" Oil Left: " + to_string(getNumBarrels()) +
-		" Sonar: " + to_string(m_pIceMan.lock()->getSonarKits()) +
+		" Sonar: " + //to_string(m_pIceMan.lock()->getSonarKits()) +
 		" Scr: " + to_string(getScore());
 }
 
@@ -431,18 +385,20 @@ void StudentWorld::pickupGoodieIM(int ID, int points, int SE) {
 	// Depending on the goodie, a different action occurs
 	// Uses the image ID to identify the goodie
 	
+	// TODO: fix functions called here
+
 	switch (ID) {
 	case IID_BARREL:
 		decNumBarrels();
 		break;
 	case IID_GOLD:
-		m_pIceMan.lock()->incGold();
+		// m_pIceMan.lock()->incGold();
 		break;
 	case IID_SONAR:
-		m_pIceMan.lock()->incSonarKits();
+		// m_pIceMan.lock()->incSonarKits();
 		break;
 	case IID_WATER_POOL:
-		m_pIceMan.lock()->incWater();
+		// m_pIceMan.lock()->incWater();
 		break;
 	}
 	increaseScore(points);
@@ -504,7 +460,7 @@ bool StudentWorld::hitBySquirt(int x, int y) {
 			continue;
 		if (m_distanceCalc.getDistance(actor->getX(), actor->getY(), x, y) <= 3) {
 			if (actor->getID() == IID_PROTESTER || actor->getID() == IID_HARD_CORE_PROTESTER) {
-				actor->annoy(); // FIXME should annoy them by 2 points
+				// TODO: should annoy them by 2 points
 				hitProtester = true; // Allows for multiple protesters to be hit by the same squirt
 			}
 			else if (actor->getID() == IID_BOULDER) {
@@ -600,11 +556,11 @@ bool StudentWorld::hitByBoulder(int x, int y) {
 		if ((actor->getX() >= x) && (actor->getX() <= x + 4) && (actor->getY() + 4 == y - 1)) {
 			int actorID = actor->getID();
 			if (actorID == IID_PROTESTER || actorID == IID_HARD_CORE_PROTESTER) {
-				actor->annoy();		// FIXME should annoy them by 100 points
+				// TODO: should annoy them by 100 points
 				increaseScore(500);
 			}
 			if (actorID == IID_PLAYER) {
-				actor->annoy();		// FIXME should annoy player by 100 points
+				// TODO: should annoy player by 100 points
 			}
 			// Stop the boulder if it hits another Boulder
 			else if (actor->getID() == IID_BOULDER) {

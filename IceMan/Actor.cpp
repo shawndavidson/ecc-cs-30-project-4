@@ -64,7 +64,6 @@ void Actor::setAlive(bool alive) {
 	m_bAlive = alive;
 }
 
-<<<<<<< HEAD
 // Get a pointer to StudentWorld
 StudentWorld* Actor::getStudentWorld() 
 { 
@@ -87,8 +86,6 @@ int Actor::getSoundEffect() {
 	return m_iSoundEffect;
 }
 
-=======
->>>>>>> main
 int Actor::getDistanceToIceman() {
 	return getStudentWorld()->getDistanceToIceMan(getX(), getY());
 }

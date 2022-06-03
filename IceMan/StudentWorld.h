@@ -14,10 +14,7 @@
 #include "Event.h"
 #include "DistanceCalculator.h"
 #include "GraphObject.h"
-<<<<<<< HEAD
-=======
 #include "ShortestPathFinder.h"
->>>>>>> main
 
 #define TEST_STUDENTWORLD 0
 
@@ -128,7 +125,6 @@ public:
 	// Register for an Event
 	void listenForEvent(EventTypes type, EventCallback callback);
 
-<<<<<<< HEAD
 	/*************************************************************************/
 	/* Goodie Operations												     */
 	/*************************************************************************/
@@ -176,8 +172,6 @@ public:
 	// Return true if Boulder hits another Boulder
 	bool hitByBoulder(int, int);
 
-=======
->>>>>>> main
 
 private:
 	// Get the Event with the smallest tick
@@ -220,15 +214,10 @@ private:
 	std::unordered_map<ActorPtr, std::unordered_map<ActorPtr, int>> m_distances;
 
 	// 2D Array for ice blocks 
-<<<<<<< HEAD
 	IcePtr m_ice[ICE_WIDTH][ICE_HEIGHT];
 	
 	// Number of Oil Barrels in the current level
 	int m_num_barrels;
-
-=======
-	ActorPtr m_ice[ICE_WIDTH][ICE_HEIGHT];
->>>>>>> main
 
 	// Declaration for a Function Object to compare two Events 
 	// in descending order by their tick (time)

@@ -87,7 +87,6 @@
     <ClCompile Include="HardcoreProtester.cpp" />
     <ClCompile Include="Ice.cpp" />
     <ClCompile Include="IceMan.cpp" />
-<<<<<<< HEAD
     <ClCompile Include="Goodie.cpp" />
     <ClCompile Include="OilBarrel.cpp" />
     <ClCompile Include="Gold.cpp" />
@@ -95,9 +94,7 @@
     <ClCompile Include="Boulder.cpp" />
     <ClCompile Include="Squirt.cpp" />
     <ClCompile Include="WaterPool.cpp" />
-=======
     <ClCompile Include="Person.cpp" />
->>>>>>> main
     <ClCompile Include="Protester.cpp" />
     <ClCompile Include="RegularProtester.cpp" />
     <ClCompile Include="ShortestPathFinder.cpp" />

@@ -1,13 +1,7 @@
 #ifndef ICEMAN_H_
 #define ICEMAN_H_
 
-<<<<<<< HEAD
-#include "Actor.h"
-#include <iostream> // FIXME, just for test prints
-// TODO: REMOVE TEST PRINTS
-=======
 #include "Person.h"
->>>>>>> main
 
 #define TEST_ICEMAN 1
 
@@ -46,15 +40,11 @@ public:
     // Annoy IceMan
     virtual void annoy();
 
-<<<<<<< HEAD
-    #if TEST_ICEMAN
-=======
 private:
     // Take a step and dig up ice, if necessary
     void takeOneStep(int x, int y);
 
 #if TEST_ICEMAN
->>>>>>> main
     // Handle an Event
     void handleTestEvent(int num, const char* text);
     #endif // TEST_ICEMAN
