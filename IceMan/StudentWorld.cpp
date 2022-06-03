@@ -8,6 +8,7 @@
 #include "StudentWorld.h"
 #include "IceMan.h"
 #include "Actor.h"
+#include "Person.h"
 #include "Ice.h"
 #include "OilBarrel.h"
 #include "Gold.h"
@@ -271,7 +272,8 @@ void StudentWorld::digUpIce(int x, int y)
 				int finalX = x + xOffset;
 				// If ice is present, kill it
 				if (finalX < ICE_WIDTH && m_ice[finalX][finalY]) {
-					m_ice[finalX][finalY]->setAlive(false);
+					playSound(SOUND_DIG);
+					m_ice[finalX][finalY].reset();
 				}
 			}
 		}
@@ -313,6 +315,14 @@ void StudentWorld::removeDeadGameObjects() {
 			actor.reset();
 		}
 	}
+
+	for (int x = 0; x < ICE_WIDTH; x++) {
+		for (int y = 0; y < ICE_HEIGHT; y++) {
+			if (!m_ice[x][y]->isAlive()) {
+				m_ice[x][y].reset();
+			}
+		}
+	}
 	remove_if(begin(m_actors), end(m_actors), [](ActorPtr pActor) {
 		return pActor == nullptr || !pActor->isAlive();
 		});
@@ -320,20 +330,18 @@ void StudentWorld::removeDeadGameObjects() {
 }
 
 string StudentWorld::getGameStatText() {
-	// TODO: fix functions that should be called here
 	return
 		"Lvl: " + to_string(getLevel()) +
 		" Lives: " + to_string(getLives()) +
 		" Hlth: " + to_string(0) + // TODO - should be IceMan Hit Points
-		" Wtr: " + //to_string(m_pIceMan.lock()->getWater()) +
-		" Gld : " + //to_string(m_pIceMan.lock()->getGold()) +
+		" Wtr: " + to_string(m_pIceMan.lock()->getWater()) +
+		" Gld : " + to_string(m_pIceMan.lock()->getGold()) +
 		" Oil Left: " + to_string(getNumBarrels()) +
-		" Sonar: " + //to_string(m_pIceMan.lock()->getSonarKits()) +
+		" Sonar: " + to_string(m_pIceMan.lock()->getSonarKits()) +
 		" Scr: " + to_string(getScore());
 }
 
 // Creates random x coordinate for actors to spawn in
-// Will not spawn in tunnel
 int StudentWorld::getRandomX() {
 	return rand() % (ICE_WIDTH - 4);
 }
@@ -380,29 +388,27 @@ void StudentWorld::decNumBarrels() {
 }
 
 // Handles the case where any Goodie is picked up
-void StudentWorld::pickupGoodieIM(int ID, int points, int SE) {
+void StudentWorld::pickupGoodieIM(int ID, int points, int soundEffect) {
 	// If there is a collision (distance <= 3), increase the score and play a sound
 	// Depending on the goodie, a different action occurs
 	// Uses the image ID to identify the goodie
-	
-	// TODO: fix functions called here
 
 	switch (ID) {
 	case IID_BARREL:
 		decNumBarrels();
 		break;
 	case IID_GOLD:
-		// m_pIceMan.lock()->incGold();
+		m_pIceMan.lock()->incGold();
 		break;
 	case IID_SONAR:
-		// m_pIceMan.lock()->incSonarKits();
+		m_pIceMan.lock()->incSonarKits();
 		break;
 	case IID_WATER_POOL:
-		// m_pIceMan.lock()->incWater();
+		m_pIceMan.lock()->incWater();
 		break;
 	}
 	increaseScore(points);
-	playSound(SE);
+	playSound(soundEffect);
 }
 
 // Handles when a Protester picks up Gold
@@ -462,6 +468,7 @@ bool StudentWorld::hitBySquirt(int x, int y) {
 			if (actor->getID() == IID_PROTESTER || actor->getID() == IID_HARD_CORE_PROTESTER) {
 				// TODO: should annoy them by 2 points
 				hitProtester = true; // Allows for multiple protesters to be hit by the same squirt
+				cout << "Hit Protester" << endl; // FIXME - test print
 			}
 			else if (actor->getID() == IID_BOULDER) {
 				return true;
@@ -547,6 +554,7 @@ bool StudentWorld::isGroundUnderBoulder(int x, int y) {
 // Handles if a boulder hits IceMan, Protester, or another Boulder
 // Pass in coordinates of the Boulder
 // TODO: annoy Protesters by 100 points
+// TODO: annoy IceMan by 100 points
 bool StudentWorld::hitByBoulder(int x, int y) {
 
 	// Did the boulder hit IceMan, a Protester or another Boulder?
@@ -557,10 +565,12 @@ bool StudentWorld::hitByBoulder(int x, int y) {
 			int actorID = actor->getID();
 			if (actorID == IID_PROTESTER || actorID == IID_HARD_CORE_PROTESTER) {
 				// TODO: should annoy them by 100 points
+				cout << "Hit protester" << endl; // FIXME - test print
 				increaseScore(500);
 			}
 			if (actorID == IID_PLAYER) {
 				// TODO: should annoy player by 100 points
+				cout << "Hit IceMan" << endl; // FIXME - test print
 			}
 			// Stop the boulder if it hits another Boulder
 			else if (actor->getID() == IID_BOULDER) {

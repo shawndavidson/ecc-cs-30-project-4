@@ -64,12 +64,6 @@ void Actor::setAlive(bool alive) {
 	m_bAlive = alive;
 }
 
-// Get a pointer to StudentWorld
-StudentWorld* Actor::getStudentWorld() 
-{ 
-	return m_pStudentWorld; 
-}
-
 void Actor::setPoints(int points) {
 	m_iPoints = points;
 }

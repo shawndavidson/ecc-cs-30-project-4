@@ -11,9 +11,9 @@ IceMan::IceMan(StudentWorld* pStudentWorld)
             60 /*startY*/,
             Direction::right,
             10 /* nHitPoints */),
-    m_iGold(1000),  // FIXME should be 0
+    m_iGold(0),  // FIXME should be 0
     m_iSonarKits(1),
-    m_iWater(1000)  // FIXME should be 5
+    m_iWater(5)  // FIXME should be 5
 {
     
     // TODO: Remove - for testing
@@ -121,8 +121,9 @@ void IceMan::doSomething() {
 }
 
 // Handle Annoy
-void IceMan::annoy() {
+void IceMan::annoy(int nHitPoints) {
     // TODO
+    Person::annoy(nHitPoints);
     std::cout << "IceMan annoyed" << std::endl;
 }
 
