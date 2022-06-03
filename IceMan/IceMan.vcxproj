@@ -87,6 +87,7 @@
     <ClCompile Include="HardcoreProtester.cpp" />
     <ClCompile Include="Ice.cpp" />
     <ClCompile Include="IceMan.cpp" />
+<<<<<<< HEAD
     <ClCompile Include="Goodie.cpp" />
     <ClCompile Include="OilBarrel.cpp" />
     <ClCompile Include="Gold.cpp" />
@@ -94,8 +95,12 @@
     <ClCompile Include="Boulder.cpp" />
     <ClCompile Include="Squirt.cpp" />
     <ClCompile Include="WaterPool.cpp" />
+=======
+    <ClCompile Include="Person.cpp" />
+>>>>>>> main
     <ClCompile Include="Protester.cpp" />
     <ClCompile Include="RegularProtester.cpp" />
+    <ClCompile Include="ShortestPathFinder.cpp" />
     <ClCompile Include="StudentWorld.cpp" />
     <ClCompile Include="GameController.cpp">
       <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MultiThreaded</RuntimeLibrary>
@@ -117,8 +122,10 @@
     <ClInclude Include="HardcoreProtester.h" />
     <ClInclude Include="Ice.h" />
     <ClInclude Include="IceMan.h" />
+    <ClInclude Include="Person.h" />
     <ClInclude Include="Protester.h" />
     <ClInclude Include="RegularProtester.h" />
+    <ClInclude Include="ShortestPathFinder.h" />
     <ClInclude Include="StudentWorld.h" />
     <ClInclude Include="GameConstants.h" />
     <ClInclude Include="GameController.h" />

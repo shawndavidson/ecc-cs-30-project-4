@@ -17,6 +17,7 @@ Actor::Actor(
 	bool canPickupIM	/*= false*/,
 	bool canPickupP		/*= false*/)
 	: GraphObject(imageID, startX, startY, dir, size, depth),
+	m_bAlive(true),
 	m_bCanAnnoy(canAnnoy),
 	m_bCanPickupIM(canPickupIM),
 	m_bCanPickupP(canPickupP),
@@ -63,6 +64,7 @@ void Actor::setAlive(bool alive) {
 	m_bAlive = alive;
 }
 
+<<<<<<< HEAD
 // Get a pointer to StudentWorld
 StudentWorld* Actor::getStudentWorld() 
 { 
@@ -85,6 +87,8 @@ int Actor::getSoundEffect() {
 	return m_iSoundEffect;
 }
 
+=======
+>>>>>>> main
 int Actor::getDistanceToIceman() {
 	return getStudentWorld()->getDistanceToIceMan(getX(), getY());
 }

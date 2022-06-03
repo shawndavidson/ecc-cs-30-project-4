@@ -47,9 +47,6 @@ public:
 	// Handle a game tick
 	virtual void doSomething()			= 0;
 
-	// Handle annoying this Actor
-	virtual void annoy()				= 0;
-
 	/*************************************************************************/
 	/* Operations														     */
 	/*************************************************************************/
@@ -76,8 +73,9 @@ public:
 	void setAlive(bool alive);
 
 	// Get a pointer to StudentWorld
-	StudentWorld* getStudentWorld();
+	StudentWorld* getStudentWorld() { return m_pStudentWorld; }
 
+<<<<<<< HEAD
 	// Sets the number of points an Actor awards for any given action
 	void setPoints(int);
 
@@ -91,6 +89,9 @@ public:
 	int getSoundEffect();
 
 	// Returns the distance of an Actor to IceMan
+=======
+	// Get the distance between this Actor and IceMan
+>>>>>>> main
 	int getDistanceToIceman();
 
 private:

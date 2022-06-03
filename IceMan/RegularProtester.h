@@ -12,13 +12,13 @@ public:
 	/*************************************************************************/
 	/* Construction														     */
 	/*************************************************************************/
-	// Construction
+	// Constructor
 	RegularProtester(
 		StudentWorld* pStudentWorld,
 		int startX,
 		int startY);
 
-	// Prevent copying 
+	// Copy Constructor (explicitly deleted to prevent copying) 
 	RegularProtester(const RegularProtester&) = delete;
 
 	// Destruction
@@ -34,7 +34,15 @@ public:
 	/* Operations													     */
 	/*************************************************************************/
 	virtual void doSomething();
-	virtual void annoy();
+	virtual void annoy(int nHitPoints);
+
+	// TODO: Resolve in merge
+	// Step on a Gold Nugget 
+	//virtual void stepOnGoldNugget();
+
+	// TODO: Resolve in merge
+	// Squirt the Protester
+	//virtual void waterSquirt(int nHitPoints);
 
 private:
 };

@@ -1,9 +1,13 @@
 #ifndef ICEMAN_H_
 #define ICEMAN_H_
 
+<<<<<<< HEAD
 #include "Actor.h"
 #include <iostream> // FIXME, just for test prints
 // TODO: REMOVE TEST PRINTS
+=======
+#include "Person.h"
+>>>>>>> main
 
 #define TEST_ICEMAN 1
 
@@ -12,7 +16,7 @@ class StudentWorld;
 
 const double ICEMAN_SIZE = 1.0;
 
-class IceMan : public Actor
+class IceMan : public Person
 {
 public:
     /*************************************************************************/
@@ -28,18 +32,29 @@ public:
     virtual ~IceMan();
 
     /*************************************************************************/
-    /* Operators													     */
+    /* Operators													         */
     /*************************************************************************/
     // Prevent assignment 
     IceMan& operator=(const IceMan&) = delete;
 
     /*************************************************************************/
-    /* Operations													     */
+    /* Operations													         */
     /*************************************************************************/
+    // Hanlde Tick
     virtual void doSomething();
+
+    // Annoy IceMan
     virtual void annoy();
 
+<<<<<<< HEAD
     #if TEST_ICEMAN
+=======
+private:
+    // Take a step and dig up ice, if necessary
+    void takeOneStep(int x, int y);
+
+#if TEST_ICEMAN
+>>>>>>> main
     // Handle an Event
     void handleTestEvent(int num, const char* text);
     #endif // TEST_ICEMAN

@@ -18,14 +18,6 @@ Ice::Ice(StudentWorld* pStudentWorld, int startX, int startY)
 Ice::~Ice() {
 }
 
-// Handle tick
-void Ice::doSomething() {
-	// Is we're no longer alive, make ourselves invisible
-	if (!isAlive()) {
-		setVisible(false);
-	}
-}
-
 // Handle Annoy
 void Ice::annoy() {
 	// You can't annoy ice
