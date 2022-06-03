@@ -255,11 +255,14 @@ void StudentWorld::listenForEvent(EventTypes type, EventCallback callback) {
 	m_eventListeners.insert({ type, callback });
 }
 
-// Compute distance to IceMan
+// Compute distance to IceMan. Returns the units to reach IceMan through the maze, avoiding
+// ice and boulder. If there isn't a path, it returns UINT_MAX.
 unsigned int StudentWorld::getDistanceToIceMan(int x, int y) const {
 	shared_ptr<IceMan> pIceMan = m_pIceMan.lock();
 
-	return m_distanceCalc.getDistance(x, y, pIceMan->getX(), pIceMan->getY());
+	DirectionDistance result;
+
+	return m_shortestPathToIceMan.getShortestPath(x, y, result) ? result.distance : UINT_MAX;
 }
 
 // Check if these coordinates and direction are facing IceMan
@@ -311,6 +314,7 @@ bool StudentWorld::hasLineOfSightToIceMan(int x, int y, GraphObject::Direction& 
 			for (int j = y; j < iceY && hasLineOfSight; j++) {
 				hasLineOfSight = !isBlocked(x, j);
 			}
+			// If we have a line of sight, then face IceMan
 			if (hasLineOfSight)
 				direction = GraphObject::Direction::up;
 		}
@@ -318,10 +322,12 @@ bool StudentWorld::hasLineOfSightToIceMan(int x, int y, GraphObject::Direction& 
 			for (int j = y; j > iceY && hasLineOfSight; j--) {
 				hasLineOfSight = !isBlocked(x, j);
 			}
+			// If we have a line of sight, then face IceMan
 			if (hasLineOfSight)
 				direction = GraphObject::Direction::down;
 		}
 		else {
+			// We're in the same spot as IceMan so just face the default direction
 			direction = GraphObject::Direction::left;
 		}
 	}
@@ -332,6 +338,7 @@ bool StudentWorld::hasLineOfSightToIceMan(int x, int y, GraphObject::Direction& 
 			for (int i = x; i < iceX && hasLineOfSight; i++) {
 				hasLineOfSight = !isBlocked(i, y);
 			}
+			// If we have a line of sight, then face IceMan
 			if (hasLineOfSight)
 				direction = GraphObject::Direction::right;
 		}
@@ -339,10 +346,12 @@ bool StudentWorld::hasLineOfSightToIceMan(int x, int y, GraphObject::Direction& 
 			for (int i = x; i > iceX && hasLineOfSight; i--) {
 				hasLineOfSight = !isBlocked(i, y);
 			}
+			// If we have a line of sight, then face IceMan
 			if (hasLineOfSight)
 				direction = GraphObject::Direction::left;
 		}
 		else {
+			// We're in the same spot as IceMan so just face the default direction
 			direction = GraphObject::Direction::left;
 		}
 	}

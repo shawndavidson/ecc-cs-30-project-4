@@ -96,10 +96,10 @@ public:
 	inline bool isBlocked(int x, int y) const;
 
 	// Get the direction that has the shortest path to the exit
-	GraphObject::Direction getShortestPathToExit(int x, int y)		{ return m_shortestPathToExit.getShortestPath(x, y); }
+	bool getShortestPathToExit(int x, int y, DirectionDistance& result)		{ return m_shortestPathToExit.getShortestPath(x, y, result); }
 
 	// Get the direction that has the shortest path to IceMan
-	GraphObject::Direction getShortestPathToIceMan(int x, int y)	{ return m_shortestPathToIceMan.getShortestPath(x, y); }
+	bool getShortestPathToIceMan(int x, int y, DirectionDistance& result)	{ return m_shortestPathToIceMan.getShortestPath(x, y, result); }
 
 	// Schedule a new Event
 	void pushEvent(SharedEventPtr e)			{ m_events.push(e); }

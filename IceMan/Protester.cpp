@@ -161,7 +161,6 @@ void Protester::doSomething() {
     if (!takeOneStep(getDirection())) {
         // Unable to take step so change direction on the next non-resting tick
         m_nNumSquaresToMoveInCurrentDirection = 0;
-        return;
     }
 
     return;
@@ -234,9 +233,10 @@ void Protester::boulderBonk(int nHitPoints) {
 
 // Figure out which direction to move towards the exit 
 void Protester::moveTowardsExit() {
-    Direction direction = getStudentWorld()->getShortestPathToExit(getX(), getY());
+    DirectionDistance directionDistance;
 
-    if (!takeOneStep(direction)) {
+    if (!getStudentWorld()->getShortestPathToExit(getX(), getY(), directionDistance) || 
+        !takeOneStep(directionDistance.direction)) {
         cout << "Unable to move the Protester in the direction towards the exit" << endl;
         // throw?
     }
@@ -244,9 +244,10 @@ void Protester::moveTowardsExit() {
 
 // Figure out which direction to move towards IceMan 
 void Protester::moveTowardsIceMan() {
-    Direction direction = getStudentWorld()->getShortestPathToIceMan(getX(), getY());
+    DirectionDistance directionDistance;
 
-    if (!takeOneStep(direction)) {
+    if (!getStudentWorld()->getShortestPathToIceMan(getX(), getY(), directionDistance) ||
+        !takeOneStep(directionDistance.direction)) {
         cout << "Unable to move the Protester in the direction towards IceMan" << endl;
         // throw?
     }
