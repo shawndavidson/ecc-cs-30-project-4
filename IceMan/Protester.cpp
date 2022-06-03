@@ -36,7 +36,8 @@ Protester::Protester(
     int imageID,
 	int startX,
 	int startY,
-    int nHitPoints)
+    int nHitPoints,
+    bool bCanTrackIceMansCell)
 : Person(pStudentWorld,
     imageID,
     startX,
@@ -50,7 +51,8 @@ Protester::Protester(
     m_nTickOfLastPerpendicularTurn(0),
     m_allDirections{ /*Direction::none,*/ Direction::up, Direction::down, Direction::left, Direction::right},
     m_nTicksStunned(0),
-    m_nIceManCellRange(16 + getStudentWorld()->getLevel() * 2) // know as M on pg. 45
+    m_nIceManCellRange(16 + getStudentWorld()->getLevel() * 2), // know as M on pg. 45
+    m_bCanTrackIceMansCell(bCanTrackIceMansCell)
 {
 }
 
@@ -63,14 +65,18 @@ void Protester::doSomething() {
     if (!isAlive())
         return;
 
+    // If we're fully annoyed, give up by exiting the oil field
+    if (!m_nLeaveTheOilField && isAnnoyed()) {
+        leave();
+
+        getStudentWorld()->playSound(SOUND_PROTESTER_GIVE_UP);
+        m_nTicksStunned = 0;
+    }
+
     // If we're stunned, then rest for N ticks...
     if (m_nTicksStunned > 0) {
         m_nTicksStunned--;
         return;
-    }
-    else {
-        // Exit the stunned state 
-        m_nTicksStunned = 0;
     }
 
     // Rest to give the user a chance to react in human-speed
@@ -92,33 +98,39 @@ void Protester::doSomething() {
         return;
     }
 
-    // If we within shouting distance, facing IceMan, and haven't shouted recently then
+    // If we are within shouting distance, facing IceMan, and haven't shouted recently then
     // shout at him!
     if (canShoutAtIceMan()) {
         shout();
         return;
     }
 
+    // Can we track IceMan's location from his cell phone?
+    if (m_bCanTrackIceMansCell) {
+        unsigned int distance = getStudentWorld()->getPathDistanceToIceMan(getX(), getY());
+
+        if (distance <= m_nIceManCellRange && distance > MAX_SHOUTING_RANGE_UNITS) {
+            moveTowardsIceMan();
+            return;
+        }
+    }
+
     // If we have a line of sight with IceMan, move towards him.
     Direction direction = getDirection();
 
-    if (getStudentWorld()->hasLineOfSightToIceMan(getX(), getY(), direction) &&
-        getStudentWorld()->getDistanceToIceMan(getX(), getY()) > MAX_SHOUTING_RANGE_UNITS) {
-        // Move towards IceMan
-        if (!takeOneStep(direction)) {
-            cout << "Protester unable to take step in direction " << direction << endl;
+    if (getStudentWorld()->hasLineOfSightToIceMan(getX(), getY(), direction)) {
+        if (getStudentWorld()->getDistanceToIceMan(getX(), getY()) > MAX_SHOUTING_RANGE_UNITS) {
+            // Move towards IceMan
+            if (!takeOneStep(direction)) {
+                cout << "Protester unable to take step in direction " << direction << endl;
+            }
+
+            // This will cause us to change direction on subsequent ticks
+            // when IceMan is no longer in sight. Otherwise, we'll keep
+            // taking a step towards him.
+            m_nNumSquaresToMoveInCurrentDirection = 0;
         }
 
-        // This will cause us to change direction on subsequent ticks
-        // when IceMan is no longer in sight. Otherwise, we'll keep
-        // taking a step towards him.
-        m_nNumSquaresToMoveInCurrentDirection = 0;
-        return;
-    }
-
-    // Can we detect IceMan's location from his cell phone?
-    if (getStudentWorld()->getPathDistanceToIceMan(getX(), getY()) <= m_nIceManCellRange) {
-        moveTowardsIceMan();
         return;
     }
 
@@ -208,14 +220,6 @@ void Protester::annoy(int nHitPoints) {
     }
 
     Person::annoy(nHitPoints);
-
-    // If we're fully annoyed, give up by exiting the oil field
-    if (isAnnoyed()) {
-        leave();
-
-        getStudentWorld()->playSound(SOUND_PROTESTER_GIVE_UP);
-        m_nTicksStunned = 0;
-    }
 
     // Sound annoyed and stunned for N ticks, where N = m_nStunnedTicks
     getStudentWorld()->playSound(SOUND_PROTESTER_ANNOYED);
