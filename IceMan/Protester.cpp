@@ -36,7 +36,8 @@ Protester::Protester(
     int imageID,
 	int startX,
 	int startY,
-    int nHitPoints)
+    int nHitPoints,
+    bool bCanTrackIceMansCell)
 : Person(pStudentWorld,
     imageID,
     startX,
@@ -50,7 +51,8 @@ Protester::Protester(
     m_nTickOfLastPerpendicularTurn(0),
     m_allDirections{ /*Direction::none,*/ Direction::up, Direction::down, Direction::left, Direction::right},
     m_nTicksStunned(0),
-    m_nIceManCellRange(16 + getStudentWorld()->getLevel() * 2) // know as M on pg. 45
+    m_nIceManCellRange(16 + getStudentWorld()->getLevel() * 2), // know as M on pg. 45
+    m_bCanTrackIceMansCell(bCanTrackIceMansCell)
 {
 }
 
@@ -63,14 +65,18 @@ void Protester::doSomething() {
     if (!isAlive())
         return;
 
+    // If we're fully annoyed, give up by exiting the oil field
+    if (!m_nLeaveTheOilField && isAnnoyed()) {
+        leave();
+
+        getStudentWorld()->playSound(SOUND_PROTESTER_GIVE_UP);
+        m_nTicksStunned = 0;
+    }
+
     // If we're stunned, then rest for N ticks...
     if (m_nTicksStunned > 0) {
         m_nTicksStunned--;
         return;
-    }
-    else {
-        // Exit the stunned state 
-        m_nTicksStunned = 0;
     }
 
     // Rest to give the user a chance to react in human-speed
@@ -118,9 +124,11 @@ void Protester::doSomething() {
     }
 
     // Can we track IceMan's location from his cell phone?
-    if (getStudentWorld()->getPathDistanceToIceMan(getX(), getY()) <= m_nIceManCellRange) {
-        moveTowardsIceMan();
-        return;
+    if (m_bCanTrackIceMansCell) {
+        if (getStudentWorld()->getPathDistanceToIceMan(getX(), getY()) <= m_nIceManCellRange) {
+            moveTowardsIceMan();
+            return;
+        }
     }
 
     m_nNumSquaresToMoveInCurrentDirection--;
@@ -209,14 +217,6 @@ void Protester::annoy(int nHitPoints) {
     }
 
     Person::annoy(nHitPoints);
-
-    // If we're fully annoyed, give up by exiting the oil field
-    if (isAnnoyed()) {
-        leave();
-
-        getStudentWorld()->playSound(SOUND_PROTESTER_GIVE_UP);
-        m_nTicksStunned = 0;
-    }
 
     // Sound annoyed and stunned for N ticks, where N = m_nStunnedTicks
     getStudentWorld()->playSound(SOUND_PROTESTER_ANNOYED);

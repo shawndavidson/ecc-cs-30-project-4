@@ -14,7 +14,8 @@ HardcoreProtester::HardcoreProtester(
         IID_HARD_CORE_PROTESTER,
         startX,
         startY,
-        20 /* nHitPoints */)
+        20 /* nHitPoints */,
+        true /* bCanTrackIceMansCell */)
 {
 #if TEST_HARDCOREPROTESTER
     getStudentWorld()->listenForEvent(
@@ -39,21 +40,6 @@ HardcoreProtester::~HardcoreProtester() {
 // Handle a tick
 void HardcoreProtester::doSomething() {
     Protester::doSomething();
-
-    /*
-    // If we're dead or resting, then do nothing...
-    // TODO: fix resting tick calculation
-    const bool isRestingTick = getStudentWorld()->getTick() % 1000 == 0;
-
-    if (!isAlive() || isRestingTick) {
-        return;
-    }
-
-    Direction dir = getStudentWorld()->getShortestPathToIceMan(getX(), getY());
-    if (!takeOneStep(dir)) {
-        cout << "HardcoreProtester unable to take one step towards IceMan" << endl;
-    }
-    */
 }
 
 // Annoy the Protester
