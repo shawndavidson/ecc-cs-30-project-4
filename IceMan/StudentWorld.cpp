@@ -255,11 +255,14 @@ void StudentWorld::listenForEvent(EventTypes type, EventCallback callback) {
 	m_eventListeners.insert({ type, callback });
 }
 
-// Compute distance to IceMan
+// Compute distance to IceMan. Returns the units to reach IceMan through the maze, avoiding
+// ice and boulder. If there isn't a path, it returns UINT_MAX.
 unsigned int StudentWorld::getDistanceToIceMan(int x, int y) const {
 	shared_ptr<IceMan> pIceMan = m_pIceMan.lock();
 
-	return m_distanceCalc.getDistance(x, y, pIceMan->getX(), pIceMan->getY());
+	DirectionDistance result;
+
+	return m_shortestPathToIceMan.getShortestPath(x, y, result) ? result.distance : UINT_MAX;
 }
 
 // Check if these coordinates and direction are facing IceMan

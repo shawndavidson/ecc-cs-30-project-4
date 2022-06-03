@@ -7,6 +7,15 @@
 // Forward Declaration
 class StudentWorld;
 
+struct DirectionDistance {
+    // Constructor
+    DirectionDistance(GraphObject::Direction direction = GraphObject::Direction::none, uint8_t distance = 0)
+        : direction(direction), distance(distance) {}
+
+    GraphObject::Direction  direction;
+    uint8_t                 distance;
+};
+
 class ShortestPathFinder
 {
 public:
@@ -25,15 +34,22 @@ public:
     // Get a pointer to StudentWorld
     StudentWorld* getStudentWorld() { return m_pStudentWorld;  }
 
+    // Get the current X location
+    int getX() const    { return m_originX;  }
+
+    // Get the current Y location
+    int getY() const    { return m_originY; }
+
+
     /*************************************************************************/
     /* Operations															 */
     /*************************************************************************/
 
-    // Compute distances from all units to a specific location
+    // Compute distances from all squares relative to location (x,y)
     bool compute(int x, int y);
 
     // Get the direction that has the shortest direction
-    GraphObject::Direction getShortestPath(int x, int y);
+    bool getShortestPath(int x, int y, DirectionDistance& result) const;
 
     /*************************************************************************/
     /* Data Members															 */
@@ -47,9 +63,13 @@ private:
         uint8_t distance;
     };
 
-    uint8_t m_distances[VIEW_WIDTH][VIEW_HEIGHT];
-
     StudentWorld* m_pStudentWorld;
+
+    // The location from which we want to calculate distances
+    uint8_t m_originX;
+    uint8_t m_originY;
+
+    uint8_t m_distances[VIEW_WIDTH][VIEW_HEIGHT];
 };
 
 #endif // SHORTESTPATHFINDER_H_

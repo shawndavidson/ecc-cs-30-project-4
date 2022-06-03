@@ -6,6 +6,8 @@
 // Constructor
 ShortestPathFinder::ShortestPathFinder(StudentWorld* pStudentWorld)
 : m_pStudentWorld(pStudentWorld),
+  m_originX(0), 
+  m_originY(0),
   m_distances{UCHAR_MAX}
 {
 }
@@ -15,6 +17,9 @@ bool ShortestPathFinder::compute(int x, int y) {
     if (x < 0 || x >= VIEW_WIDTH || y < 0 || y >= VIEW_HEIGHT) {
         return false;
     }
+
+    m_originX = x;
+    m_originY = y;
 
     // Reset distances to our representation of infinity
     memset(m_distances, UCHAR_MAX, VIEW_WIDTH * VIEW_HEIGHT * sizeof(uint8_t));
@@ -79,17 +84,9 @@ bool ShortestPathFinder::compute(int x, int y) {
     return true;
 }
 
-// Get the direction that has the shortest direction
-GraphObject::Direction ShortestPathFinder::getShortestPath(int x, int y) {
-
-    struct DirectionDistance {
-        DirectionDistance(GraphObject::Direction direction, uint8_t distance)
-            : direction(direction), distance(distance) {}
-
-        GraphObject::Direction  direction;
-        uint8_t                    distance;
-    };
-
+// Get the direction and distance of the shortest path to the location previously 
+// set by compute()
+bool ShortestPathFinder::getShortestPath(int x, int y, DirectionDistance& result) const {
     std::vector<DirectionDistance> directions;
 
     // Grab the squares around our the location x,y
@@ -121,6 +118,12 @@ GraphObject::Direction ShortestPathFinder::getShortestPath(int x, int y) {
         return dd1.distance < dd2.distance;
     });
 
-    // Return the direction with the shortest distance
-    return directions[0].direction;
+    // Return the object with the shortest distance
+    if (!directions.empty()) {
+        result = directions[0];
+        return true;
+    }
+
+    // Unable to move in any direction
+    return false;
 }
