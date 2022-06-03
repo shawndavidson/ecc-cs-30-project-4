@@ -24,8 +24,11 @@ public:
     /*************************************************************************/
     /* Getters/Setters														     */
     /*************************************************************************/
-    bool    isAnnoyed()     const           { return m_nHitPoints <= 0;  }
-    
+    bool    isAnnoyed()     const           { return m_nHitPoints <= 0; }
+
+    // Return remaining Hit Points
+    int     getHitPoints()  const           { return m_nHitPoints; }
+
     /*************************************************************************/
     /* Operations														     */
     /*************************************************************************/

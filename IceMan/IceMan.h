@@ -79,8 +79,6 @@ private:
     unsigned int m_iGold;
     unsigned int m_iSonarKits;
     unsigned int m_iWater;
-
-
 };
 
 #endif ICEMAN_H_

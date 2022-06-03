@@ -156,10 +156,10 @@ public:
 	void decNumBarrels();
 
 	// Handles when a Goodie is picked up by IceMan
-	void pickupGoodieIM(int, int, int);
+	void pickupGoodieIM(int ID, int points, int soundEffect);
 
-	// handles when a Gold nugget is picked up by a Protester
-	void pickupGoldP(ActorPtr);
+	// Handles when a Gold nugget is picked up by a Protester
+	bool pickupGoldP(int x, int y);
 
 	// Lets IceMan use a Sonar Kit
 	void useSonarKit();
@@ -170,25 +170,26 @@ public:
 
 
 	/*************************************************************************/
-	/* Squirt and Boulder Operations									     */
+	/* Squirt, Boulder, and Shout Operations							     */
 	/*************************************************************************/
 
 	// Handles when a Squirt is fired by IceMan
-	void fireSquirt(int, int, GraphObject::Direction);
+	void fireSquirt(int x, int y, GraphObject::Direction);
 
 	// Handles when a Squirt hits Ice, Boulder, or Protester
 	// Pass in the coordinates of the squirt
-	bool hitBySquirt(int, int);
+	bool hitBySquirt(int x, int y);
 
 	// Checks if there is ice under a Boulder,
 	// or if the Boulder is at the bottom of the ice field
-	bool isGroundUnderBoulder(int, int);
+	bool isGroundUnderBoulder(int x, int y);
 
 	// Handles if a boulder hits IceMan, Protester, or another Boulder
-	// Pass in coordinates of the Boulder
 	// Return true if Boulder hits another Boulder
-	bool hitByBoulder(int, int);
+	bool hitByBoulder(int x, int y);
 
+	// Handles when a Protester shouts at IceMan
+	void iceManShoutedAt();
 
 private:
 	// Get the Event with the smallest tick

@@ -71,9 +71,9 @@ void Gold::doSomething() {
 		return;
 	}
 
-	// TODO: implement when a Protester picks up Gold
-	// Maybe use a StudentWorld function
-	if (canPickupP()) {
+	// Handles when Protester picks up Gold
+	if (canPickupP() && getStudentWorld()->pickupGoldP(getX(), getY())) {
+		collectP();
 		return;
 	}
 }
@@ -92,9 +92,9 @@ void Gold::collectIM() {
 }
 
 void Gold::collectP() {
+	collect();
 	setCanPickupP(false);
 	setSoundEffect(SOUND_PROTESTER_FOUND_GOLD);
-	setPoints(GOLD_PROTESTER_POINTS);
 }
 
 

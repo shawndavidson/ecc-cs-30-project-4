@@ -1,5 +1,20 @@
-﻿  StudentWorld.cpp
-C:\Users\LP-MSI\source\repos\ecc-cs-30-project-4\IceMan\StudentWorld.cpp(290,2): warning C4834: discarding return value of function with 'nodiscard' attribute
-C:\Users\LP-MSI\source\repos\ecc-cs-30-project-4\IceMan\StudentWorld.cpp(356,63): warning C4018: '>=': signed/unsigned mismatch
-C:\Users\LP-MSI\source\repos\ecc-cs-30-project-4\IceMan\StudentWorld.cpp(358,24): warning C4018: '<': signed/unsigned mismatch
+﻿  Actor.cpp
+  Boulder.cpp
+  Gold.cpp
+  Goodie.cpp
+  HardcoreProtester.cpp
+  IceMan.cpp
+  OilBarrel.cpp
+  Person.cpp
+  Protester.cpp
+  RegularProtester.cpp
+  ShortestPathFinder.cpp
+  SonarKit.cpp
+  Squirt.cpp
+  StudentWorld.cpp
+C:\Users\LP-MSI\source\repos\ecc-cs-30-project-4\IceMan\StudentWorld.cpp(281,2): warning C4834: discarding return value of function with 'nodiscard' attribute
+C:\Users\LP-MSI\source\repos\ecc-cs-30-project-4\IceMan\StudentWorld.cpp(354,63): warning C4018: '>=': signed/unsigned mismatch
+C:\Users\LP-MSI\source\repos\ecc-cs-30-project-4\IceMan\StudentWorld.cpp(356,24): warning C4018: '<': signed/unsigned mismatch
+  WaterPool.cpp
+  Generating Code...
   IceMan.vcxproj -> C:\Users\LP-MSI\source\repos\ecc-cs-30-project-4\Debug\IceMan.exe

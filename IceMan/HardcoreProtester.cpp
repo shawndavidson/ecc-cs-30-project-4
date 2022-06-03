@@ -51,25 +51,17 @@ void HardcoreProtester::doSomething() {
 // Annoy the Protester
 void HardcoreProtester::annoy(int nHitPoints) {
     Protester::annoy(nHitPoints);
-    // TODO
 }
 
 // Step on a Gold Nugget 
-// TODO: Resolve in merge
-/*
-void HardcoreProtester::stepOnGoldNugget() {
+
+void HardcoreProtester::pickUpGold() {
     StudentWorld* pStudentWorld = getStudentWorld();
 
     pStudentWorld->playSound(SOUND_PROTESTER_FOUND_GOLD);
     pStudentWorld->increaseScore(50);
     
+    
     // Stare at Nugget for N ticks
     m_nTicksToStare = CALCULATE_TICKS_TO_STARE(getStudentWorld()->getLevel());
 }
-
-// Squirt the Protester
-void HardcoreProtester::waterSquirt(int nHitPoints) {
-    annoy(nHitPoints);
-    getStudentWorld()->increaseScore(250);
-}
-*/
