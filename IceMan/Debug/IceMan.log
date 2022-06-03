@@ -1,3 +1,5 @@
 ﻿  StudentWorld.cpp
-C:\Users\LP-MSI\source\repos\ecc-cs-30-project-4\IceMan\StudentWorld.cpp(326,2): warning C4834: discarding return value of function with 'nodiscard' attribute
+C:\Users\LP-MSI\source\repos\ecc-cs-30-project-4\IceMan\StudentWorld.cpp(290,2): warning C4834: discarding return value of function with 'nodiscard' attribute
+C:\Users\LP-MSI\source\repos\ecc-cs-30-project-4\IceMan\StudentWorld.cpp(356,63): warning C4018: '>=': signed/unsigned mismatch
+C:\Users\LP-MSI\source\repos\ecc-cs-30-project-4\IceMan\StudentWorld.cpp(358,24): warning C4018: '<': signed/unsigned mismatch
   IceMan.vcxproj -> C:\Users\LP-MSI\source\repos\ecc-cs-30-project-4\Debug\IceMan.exe

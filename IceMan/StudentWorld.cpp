@@ -55,8 +55,7 @@ int StudentWorld::init()
 {
 	// Reset time
 	m_nTick = 0;
-
-
+	const int level = getLevel();
 
 	// Initialize ice field - only uses lower 60 squares of screen
 	for (int x = 0; x < ICE_WIDTH; x++) {
@@ -75,13 +74,13 @@ int StudentWorld::init()
 	}
 
 	// Initialize Boulders
-	int NUM_BOULDERS = 20; // TODO: how many should spawn at the start?
+	int NUM_BOULDERS = min(level / 2 + 2, 9);
 	for (int i = 0; i < NUM_BOULDERS; ++i) {
-		
-		int y = getRandomY();
-		if (y < 4)
-			y += 4;
-		int x = getCoordinatesWithIce(getRandomX(), y);
+
+		pair<int, int> coordinates = getRandCoordinates(20);
+		int x = coordinates.first;
+		int y = coordinates.second;
+
 		// Delete ice where the boulder spawns
 		for (int xOffset = x; xOffset < x + 4; ++xOffset) {
 			for (int yOffset = y; yOffset < y + 4; ++yOffset) {
@@ -114,13 +113,13 @@ int StudentWorld::init()
 	}
 
 	// Initialize OilBarrels
-	// Maybe handle this with a helper function?
-	int NUM_OIL_BARRELS = 5; // TODO: how many should spawn at the start?
+	int NUM_OIL_BARRELS = min(2 + level, 21);
 	setNumBarrels(NUM_OIL_BARRELS);
 	for (int i = 0; i < NUM_OIL_BARRELS; ++i) {
 		try {
-			int y = getRandomY();
-			int x = getCoordinatesWithIce(getRandomX(), y);
+			pair<int, int> coordinates = getRandCoordinates(0);
+			int x = coordinates.first;
+			int y = coordinates.second;
 			m_actors.push_back(make_shared<OilBarrel>(this, x, y));
 		}
 		catch (bad_alloc&) {
@@ -130,41 +129,17 @@ int StudentWorld::init()
 
 	// Initialize Gold Nuggets
 	shared_ptr<Gold> pGold;
-	int NUM_GOLD_NUGGETS = 10; // TODO: how many should spawn at the start?
+	int NUM_GOLD_NUGGETS = max(5 - level / 2, 2);
 	for (int i = 0; i < NUM_GOLD_NUGGETS; ++i) {
 		try {
-			int y = getRandomY();
-			int x = getCoordinatesWithIce(getRandomX(), y);
+			pair<int, int> coordinates = getRandCoordinates(0);
+			int x = coordinates.first;
+			int y = coordinates.second;
 			m_actors.push_back(make_shared<Gold>(this, x, y, false, true, false, true));
 		}
 		catch (bad_alloc&) {
 			cout << "Unable to allocate memory for Gold Nugget" << endl;
 		}
-	}
-	
-	// Initialize Sonar Kits
-	int NUM_SONAR_KITS = 1; // TODO: how many should spawn at the start?
-	for (int i = 0; i < NUM_SONAR_KITS; ++i) {
-		try {
-			int y = getRandomY();
-			int x = getCoordinatesWithIce(getRandomX(), y);
-			m_actors.push_back(make_shared<SonarKit>(this, x, y, true));
-		}
-		catch (bad_alloc&) {
-			cout << "Unable to allocate memory for Sonar Kit" << endl;
-		}
-	}
-
-	// TODO: Remove
-	// Initialize a Regular and Hardcore Protester 
-	try {
-		for (int i = 0; i < 1; i++) {
-			m_actors.push_back(make_shared<RegularProtester>(this, rand() % ICE_WIDTH, ICE_HEIGHT));
-			m_actors.push_back(make_shared<HardcoreProtester>(this, rand() % ICE_WIDTH, ICE_HEIGHT));
-		}
-	}
-	catch (bad_alloc& /*ex*/) {
-		cout << "Unable to allocate memory for Regular Protester" << endl;
 	}
  
 	// TODO: make shared data thread safe
@@ -205,10 +180,7 @@ void StudentWorld::startWorkerThreads()
 // Handle movement for all game objects within our world
 int StudentWorld::move()
 {
-	for (auto newActor : m_newActors) {
-		m_actors.push_back(newActor);
-	}
-	m_newActors.clear();
+	addNewActors();
 
 	// Compute the distance between all Actors
 	computeDistancesBetweenActors();
@@ -221,14 +193,6 @@ int StudentWorld::move()
 	}
 
 	setGameStatText(getGameStatText());
-	
-	// REMOVE: for testing adding water pools. None will spawn without this
-	if (getTick() % 50 == 0)
-		addWaterPool();
-
-	// This code is here merely to allow the game to build, run, and terminate after you hit enter a few times.
-	// Notice that the return value GWSTATUS_PLAYER_DIED will cause our framework to end the current level.
-	//decLives();
 
 
 	// Handle the next event from the min heap
@@ -241,8 +205,8 @@ int StudentWorld::move()
 	});
 
 	// Give the ice a chance to do something during this tick
-	// TODO: check that the Ice is properly destructed
-	// TODO: play sound effect when Ice is dug away
+	// Is this code necessary?
+	// Ice doesn't do anything
 	for (int x = 0; x < ICE_WIDTH; x++) {
 		for (int y = 0; y < ICE_HEIGHT; y++) {
 			if (m_ice[x][y] != nullptr) {
@@ -250,6 +214,20 @@ int StudentWorld::move()
 			}
 		}
 	}
+	
+	// Go to next level if all Oil Barrels Collected
+	if (getNumBarrels() == 0) {
+		playSound(SOUND_FINISHED_LEVEL);
+		return GWSTATUS_FINISHED_LEVEL;
+	}
+	// Restart the level if IceMan dies
+	if (!m_pIceMan.lock()->isAlive()) {
+		playSound(SOUND_PLAYER_GIVE_UP);
+		decLives();
+		return GWSTATUS_PLAYER_DIED;
+	}
+	
+	removeDeadGameObjects();
 
 	// Increment time. Keep this at the end of this method.
 	m_nTick++;
@@ -308,21 +286,7 @@ void StudentWorld::cleanUp()
 
 void StudentWorld::removeDeadGameObjects() {
 	// TODO: test
-	for (auto actor : m_actors) {
-		if (actor == nullptr)
-			continue;
-		if (actor == nullptr || !actor->isAlive()) {
-			actor.reset();
-		}
-	}
 
-	for (int x = 0; x < ICE_WIDTH; x++) {
-		for (int y = 0; y < ICE_HEIGHT; y++) {
-			if (!m_ice[x][y]->isAlive()) {
-				m_ice[x][y].reset();
-			}
-		}
-	}
 	remove_if(begin(m_actors), end(m_actors), [](ActorPtr pActor) {
 		return pActor == nullptr || !pActor->isAlive();
 		});
@@ -347,44 +311,140 @@ int StudentWorld::getRandomX() {
 }
 
 // Creates random y coordinate for actors to spawn in
-int StudentWorld::getRandomY() {
-	return rand() % (ICE_HEIGHT - 4);
+int StudentWorld::getRandomY(int minHeight) {
+	return minHeight + rand() % (ICE_HEIGHT - 4 - minHeight);
 }
 
-// Regenerates the x value until the object is buried in ice
-int StudentWorld::getCoordinatesWithIce(int x, int y) {
-	bool overlapsIce = false;
-	while (overlapsIce == false) {
-		overlapsIce = true;
+// Not within 6 of other actors and not in tunnel
+pair<int, int> StudentWorld::getRandCoordinates(int minHeight) {
+	int x = getRandomX();
+	if (x >= 26 && x <= 35)
+		x += 5;
+	int y = getRandomY(minHeight);
+
+	for (auto actor : m_actors) {
+		if (actor == nullptr)
+			continue;
+		while (m_distanceCalc.getDistance(x, y, actor->getX(), actor->getY()) <= 6) {
+			y = getRandomY(minHeight);
+		}
+	}
+	return pair<int, int>(x, y);
+}
+
+/*************************************************************************/
+/* Functions that add actors										     */
+/*************************************************************************/
+
+// Adds new actors during each tick
+void StudentWorld::addNewActors() {
+	// All values are specified on page 20 and 21
+	const int level = getLevel();
+	// Random chance if a new goodie should be added
+	bool addNewGoodie = (0 == rand() % (level * 25 + 300));
+	if (addNewGoodie) {
+		// 1/5 chance it is a SonarKit
+		if (0 == rand() % 5)
+			addSonarKit();
+		// 4/5 chance it is a WaterPool
+		else
+			addWaterPool();
+	}
+	
+	// Only add a Protester if there are fewer than the max already in the field
+	// And enough ticks have passed since the last Protester was added
+	bool addNewProtester = getTick() - m_nTickLastProtesterAdded >= max(25, 200 - level);
+	if (addNewProtester) {
+		if (m_nNumProtesters < min(15, int(2 + level * 1.5))) {
+			// Random if it is Hardcore or Regular
+			int ID = (1 == rand() % min(90, level * 10 + 30)) ? IID_HARD_CORE_PROTESTER : IID_PROTESTER;
+			addProtester(ID);
+		}
+	}
+
+
+	for (auto newActor : m_newActors) {
+		m_actors.push_back(newActor);
+	}
+	m_newActors.clear();
+}
+
+// Adds new Protesters, either Regular or Hardcore
+void StudentWorld::addProtester(int ID) {
+	
+	try {
+		if (ID == IID_HARD_CORE_PROTESTER)
+			m_newActors.emplace_back(make_shared<HardcoreProtester>(this, 60, 60));
+		else
+			m_newActors.emplace_back(make_shared<RegularProtester>(this, 60, 60));
+	}
+	catch (bad_alloc& /*ex*/) {
+		cout << "Unable to allocate memory for Protester" << endl;
+	}
+
+	++m_nNumProtesters;
+	m_nTickLastProtesterAdded = getTick();
+}
+
+// Initializes and places new WaterPool
+void StudentWorld::addWaterPool() {
+	int x = getRandomX();
+	int y = getRandomY(0);
+	bool overlaps = true;
+	while (overlaps == true) {
+		x = getRandomX();
+		y = getRandomY(0);
+		overlaps = false;
 		for (int xOffset = x; xOffset < x + 4; ++xOffset) {
 			for (int yOffset = y; yOffset < y + 4; ++yOffset) {
-				if (!m_ice[xOffset][yOffset]) {
-					overlapsIce = false;
+				if (m_ice[xOffset][yOffset]) {
+					overlaps = true;
 				}
 			}
 		}
-		if (!overlapsIce)
-			x = getRandomX();
+		for (auto actor : m_actors) {
+			if (actor == nullptr)
+				continue;
+			if (m_distanceCalc.getDistance(x, y, actor->getX(), actor->getY()) <= 6)
+				overlaps = true;
+		}
 	}
-	return x;
+	try {
+		m_newActors.emplace_back(make_shared<WaterPool>(this, x, y));
+	}
+	catch (bad_alloc&) {
+		cout << "Unable to allocate memory for Water Pool" << endl;
+	}
+}
+
+// Initializes and places new SonarKits
+void StudentWorld::addSonarKit() {
+	try {
+		m_newActors.emplace_back(make_shared<SonarKit>(this, 0, 60, true));
+	}
+	catch (bad_alloc&) {
+		cout << "Unable to allocate memory for Sonar Kit" << endl;
+	}
 }
 
 
-// GOODIE FUNCTIONS
+/*************************************************************************/
+/* Non-Person Functions												     */
+/*************************************************************************/
 
 // Sets the number of oil barrels in the oil field
 void StudentWorld::setNumBarrels(int barrels) {
-	m_num_barrels = barrels;
+	m_iNumBarrels = barrels;
 }
 
 // Returns the number of oil barrels remaining in the field
 int StudentWorld::getNumBarrels() {
-	return m_num_barrels;
+	return m_iNumBarrels;
 }
 
 // Decrements the number of oil barrels remaining in the field
 void StudentWorld::decNumBarrels() {
-	--m_num_barrels;
+	--m_iNumBarrels;
 }
 
 // Handles the case where any Goodie is picked up
@@ -444,7 +504,6 @@ void StudentWorld::fireSquirt(int x, int y, GraphObject::Direction dir) {
 		}
 	}
 	m_newActors.emplace_back(make_shared<Squirt>(this, x, y, dir));
-
 }
 
 // Handles when a Squirt hits Ice, Boulder, or Protester
@@ -505,36 +564,6 @@ void StudentWorld::dropGold() {
 	}
 }
 
-// Initializes and places new WaterPools
-void StudentWorld::addWaterPool() {
-	int x = getRandomX();
-	int y = getRandomY();
-	bool overlaps = true;
-	while (overlaps == true) {
-		x = getRandomX();
-		y = getRandomY();
-		overlaps = false;
-		for (int xOffset = x; xOffset < x + 4; ++xOffset) {
-			for (int yOffset = y; yOffset < y + 4; ++yOffset) {
-				if (m_ice[xOffset][yOffset]) {
-					overlaps = true;
-				}
-			}
-		}
-		for (auto actor : m_actors) {
-			if (actor == nullptr)
-				continue;
-			if (m_distanceCalc.getDistance(x, y, actor->getX(), actor->getY()) <= 3)
-				overlaps = true;
-		}
-	}
-	try {
-		m_newActors.emplace_back(make_shared<WaterPool>(this, x, y));
-	}
-	catch (bad_alloc&) {
-		cout << "Unable to allocate memory for Water Pool" << endl;
-	}
-}
 
 // Checks if there is ice under a Boulder,
 // or if the Boulder is at the bottom of the ice field
@@ -561,11 +590,11 @@ bool StudentWorld::hitByBoulder(int x, int y) {
 	for (auto actor : m_actors) {
 		if (actor == nullptr)
 			continue;
-		if ((actor->getX() >= x) && (actor->getX() <= x + 4) && (actor->getY() + 4 == y - 1)) {
+		if ((actor->getX() >= x) && (actor->getX() <= x + 4) && (actor->getY() + 4 == y)) {
 			int actorID = actor->getID();
 			if (actorID == IID_PROTESTER || actorID == IID_HARD_CORE_PROTESTER) {
 				// TODO: should annoy them by 100 points
-				cout << "Hit protester" << endl; // FIXME - test print
+				cout << "Hit Protester" << endl; // FIXME - test print
 				increaseScore(500);
 			}
 			if (actorID == IID_PLAYER) {

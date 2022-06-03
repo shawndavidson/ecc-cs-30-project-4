@@ -93,7 +93,8 @@ void IceMan::doSomething() {
                 }
                 break;
             case KEY_PRESS_ESCAPE:
-                // TODO
+                // Restart level. Lose a life
+                setAlive(false); // FIXME - should be handled by annoying IceMan
                 break;
             case KEY_PRESS_TAB:
                 // Drop Gold Nugget
@@ -111,7 +112,7 @@ void IceMan::doSomething() {
                 }
                 break;
             default:
-                // TODO: what is the behavior if the key is invalid?
+                // Do nothing if input key is invalid
                 break;
         };
     }

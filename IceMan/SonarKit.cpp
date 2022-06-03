@@ -15,8 +15,9 @@ SonarKit::SonarKit(StudentWorld* pStudentWorld, int startX, int startY, bool isV
 		false /*canPickupP*/,
 		false /*isPermanent*/)
 {
-	// Must set ticksAlive to
 	// Number of ticks to live T = max(100, 300 - 10 * current_level_number)
+	const int level = getStudentWorld()->getLevel();
+	setTicksRemaining(max(100, 300 - 10 * level));
 };
 
 // Destructor
@@ -29,6 +30,14 @@ void SonarKit::doSomething() {
 
 	// Is we're no longer alive, return
 	if (!isAlive()) {
+		return;
+	}
+	if (getTicksRemaining() > 0) {
+		decTicksRemaining();
+	}
+	else {
+		setAlive(false);
+		setVisible(false);
 		return;
 	}
 	// Get collected if if IceMan is within a radius of 3
