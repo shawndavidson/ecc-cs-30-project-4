@@ -105,6 +105,14 @@ void Protester::doSomething() {
         return;
     }
 
+    // Can we track IceMan's location from his cell phone?
+    if (m_bCanTrackIceMansCell) {
+        if (getStudentWorld()->getPathDistanceToIceMan(getX(), getY()) <= m_nIceManCellRange) {
+            moveTowardsIceMan();
+            return;
+        }
+    }
+
     // If we have a line of sight with IceMan, move towards him.
     Direction direction = getDirection();
 
@@ -122,14 +130,6 @@ void Protester::doSomething() {
         }
 
         return;
-    }
-
-    // Can we track IceMan's location from his cell phone?
-    if (m_bCanTrackIceMansCell) {
-        if (getStudentWorld()->getPathDistanceToIceMan(getX(), getY()) <= m_nIceManCellRange) {
-            moveTowardsIceMan();
-            return;
-        }
     }
 
     m_nNumSquaresToMoveInCurrentDirection--;

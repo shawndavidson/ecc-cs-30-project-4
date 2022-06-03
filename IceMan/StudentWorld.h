@@ -222,11 +222,11 @@ private:
 	/*************************************************************************/
 
 	// Time
-	unsigned long m_nTick;
+	unsigned long			m_nTick;
 
-	unsigned int m_nTickLastProtesterAdded = 0;
+	unsigned long			m_nTickLastProtesterAdded = 0;
 
-	unsigned int m_nNumProtesters = 0;
+	unsigned int			m_nNumProtesters = 0;
 
 	// Container of Actors
 	std::vector<ActorPtr>	m_actors;

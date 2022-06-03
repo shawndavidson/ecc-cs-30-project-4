@@ -243,8 +243,7 @@ void StudentWorld::digUpIce(int x, int y)
 				int finalX = x + xOffset;
 				// If ice is present, kill it
 				if (finalX < ICE_WIDTH && m_ice[finalX][finalY]) {
-					playSound(SOUND_DIG);
-					m_ice[finalX][finalY].reset();
+					m_ice[finalX][finalY]->setAlive(false);
 				}
 			}
 		}
@@ -261,6 +260,8 @@ void StudentWorld::cleanUp()
 	m_actors.clear();
 	m_distances.clear();
 
+	m_nNumProtesters = 0;
+
 	// Release memory for all Ice blocks
 	for (int x = 0; x < ICE_WIDTH; x++) {
 		for (int y = 0; y < ICE_HEIGHT; y++) {
@@ -271,6 +272,7 @@ void StudentWorld::cleanUp()
 	}
 
 	m_distances.clear();
+
 
 	// Terminate the worker threads and reclaim their resources
 	for_each(begin(m_pWorkerThreads), end(m_pWorkerThreads), [](ThreadPtr pThread) {
@@ -284,8 +286,18 @@ void StudentWorld::removeDeadGameObjects() {
 
 	remove_if(begin(m_actors), end(m_actors), [](ActorPtr pActor) {
 		return pActor == nullptr || !pActor->isAlive();
-		});
+	});
+
+	// Clear distances, this will be regenerated on the next tick
 	m_distances.clear();
+
+	// Clear dead ice
+	for (int x = 0; x < ICE_WIDTH; x++) {
+		for (int y = 0; y < ICE_HEIGHT; y++) {
+			if (m_ice[x][y] && !m_ice[x][y]->isAlive())
+				m_ice[x][y].reset();
+		}
+	}
 }
 
 string StudentWorld::getGameStatText() {
@@ -357,12 +369,15 @@ void StudentWorld::addNewActors() {
 	bool addNewProtester = getTick() - m_nTickLastProtesterAdded >= max(25, 200 - level);
 	if (addNewProtester) {
 		if (m_nNumProtesters < min(15, int(2 + level * 1.5))) {
-			// Random if it is Hardcore or Regular
-			int ID = (1 == rand() % min(90, level * 10 + 30)) ? IID_HARD_CORE_PROTESTER : IID_PROTESTER;
+			// Random if it is Hardcore or Regular, gives probability as percentage [30...90]
+			int probabilityOfHardcore = min(90, level * 10 + 30);
+
+			// Keep in mind, rand() doesn't give a uniform distribution but it's good enough.
+			// https://stackoverflow.com/questions/12885356/random-numbers-with-different-probabilities
+			int ID = (rand() % (100+1) < probabilityOfHardcore) ? IID_HARD_CORE_PROTESTER : IID_PROTESTER;
 			addProtester(ID);
 		}
 	}
-
 
 	for (auto newActor : m_newActors) {
 		m_actors.push_back(newActor);
@@ -796,25 +811,32 @@ bool StudentWorld::isBlocked(int x, int y, GraphObject::Direction direction) con
 		case GraphObject::Direction::up:
 			xEnd	+= PERSON_SIZE;
 			yBegin	+= PERSON_SIZE;
-			yEnd	= yBegin;
+			yEnd	= yBegin + 1;
 			break;
 		case GraphObject::Direction::down:
 			xEnd	+= PERSON_SIZE;
-			yEnd	= yBegin;
+			yEnd	= yBegin + 1;
 			break;
 		case GraphObject::Direction::left:
+			xEnd	= xBegin + 1;
 			yEnd	+= PERSON_SIZE;
 			break;
 		case GraphObject::Direction::right:
 			xBegin	+= PERSON_SIZE;
-			xEnd	= xBegin;
+			xEnd	= xBegin + 1;
 			yEnd	+= PERSON_SIZE;
 			break;
 	};
 
+	
+	xBegin	= std::max<int>(0, std::min<int>(ICE_WIDTH, xBegin));
+	xEnd	= std::max<int>(0, std::min<int>(ICE_WIDTH, xEnd));
+	yBegin	= std::max<int>(0, std::min<int>(ICE_HEIGHT, yBegin));
+	yEnd	= std::max<int>(0, std::min<int>(ICE_HEIGHT, yEnd));
+
 	for (int x_ = xBegin; x_ < xEnd; x_++) {
 		for (int y_ = yBegin; y_ < yEnd; y_++) {
-			if (y_ < ICE_HEIGHT && m_ice[x_][y_] != nullptr && m_ice[x_][y_]->isAlive()) {
+			if (m_ice[x_][y_] != nullptr && m_ice[x_][y_]->isAlive()) {
 				return true;
 			}
 		}
