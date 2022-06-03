@@ -233,7 +233,7 @@ void StudentWorld::digUpIce(int x, int y)
 {
 	// Is IceMan standing on ice?
 	if (x < ICE_WIDTH && y < ICE_HEIGHT) {
-
+		bool hitIce = false;
 		// Dig through the 4x4 matrix of ice that we're standing on 
 		for (int yOffset = 0; yOffset < ICEMAN_TO_ICE_SIZE_RATIO; yOffset++) {
 			int finalY = y + yOffset;
@@ -245,9 +245,12 @@ void StudentWorld::digUpIce(int x, int y)
 				// If ice is present, kill it
 				if (finalX < ICE_WIDTH && m_ice[finalX][finalY]) {
 					m_ice[finalX][finalY]->setAlive(false);
+					hitIce = true;
 				}
 			}
 		}
+		if (hitIce)
+			playSound(SOUND_DIG);
 
 	}
 }
@@ -551,8 +554,11 @@ bool StudentWorld::hitBySquirt(int x, int y) {
 			continue;
 		if (m_distanceCalc.getDistance(actor->getX(), actor->getY(), x, y) <= 3) {
 			if (actor->getID() == IID_PROTESTER || actor->getID() == IID_HARD_CORE_PROTESTER) {
-				hitProtester = true; // Allows for multiple protesters to be hit by the same squirt
-				static_pointer_cast<Protester>(actor)->annoy(2);
+				// Allows for multiple protesters to be hit by the same squirt
+				hitProtester = true; 
+				// Prevents an annoyed protester from awarding points mutliple times
+				if (!static_pointer_cast<Protester>(actor)->isAnnoyed())
+					static_pointer_cast<Protester>(actor)->squirtedByIceMan();
 			}
 			else if (actor->getID() == IID_BOULDER) {
 				return true;

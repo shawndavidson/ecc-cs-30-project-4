@@ -39,6 +39,9 @@ public:
 
 	virtual void annoy(int nHitPoints);
 
+	// Get squirted by IceMan
+	virtual void squirtedByIceMan();
+
 	// Step on a Gold Nugget
 	void pickUpGold();
 

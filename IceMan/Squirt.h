@@ -5,7 +5,6 @@
 
 const double	SQUIRT_SIZE = 1.00;
 const int		SQUIRT_DEPTH = 1;
-const int		SQUIRT_DAMAGE = 2;		// Amount that squirts annoy Protesters
 
 class Squirt : public Actor
 {

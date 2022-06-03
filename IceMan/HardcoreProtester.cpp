@@ -45,6 +45,10 @@ void HardcoreProtester::doSomething() {
 // Annoy the Protester
 void HardcoreProtester::annoy(int nHitPoints) {
     Protester::annoy(nHitPoints);
+}
+
+void HardcoreProtester::squirtedByIceMan() {
+    Protester::squirtedByIceMan();
     if (isAnnoyed())
         getStudentWorld()->increaseScore(SQUIRT_ANNOYED_POINTS_HC);
 }
