@@ -21,7 +21,7 @@ const int           EXIT_POSITION_X                     = 60;
 const int           EXIT_POSITION_Y                     = 60;
 const double        PROTESTER_SIZE                      = 1.0;
 const unsigned int  NON_RESTING_TICKS_BETWEEN_SHOUTS    = 15;
-const int           MAX_SHOUTING_RANGE_UNITS            = 4*4; // 4 units * ICEMAN_SIZE
+const int           MAX_SHOUTING_RANGE_UNITS            = 4; 
 const int           NON_RESTING_TICKS_BETWEEN_TURNING   = 200;
 
 /*************************************************************************/
@@ -48,8 +48,9 @@ Protester::Protester(
     m_nLastShoutedTick(0),
     m_nNumSquaresToMoveInCurrentDirection(GET_RANDOM_NUM_SQUARES_TO_MOVE()),
     m_nTickOfLastPerpendicularTurn(0),
-    m_allDirections{ Direction::none, Direction::up, Direction::down, Direction::left, Direction::right },
-    m_nTicksStunned(CALCULATE_STUNNED_TICKS(getStudentWorld()->getLevel()))
+    m_allDirections{ /*Direction::none,*/ Direction::up, Direction::down, Direction::left, Direction::right},
+    m_nTicksStunned(0),
+    m_nIceManCellRange(16 + getStudentWorld()->getLevel() * 2) // know as M on pg. 45
 {
 }
 
@@ -59,6 +60,9 @@ Protester::~Protester() {
 
 // Handle a tick
 void Protester::doSomething() {
+    if (!isAlive())
+        return;
+
     // If we're stunned, then rest for N ticks...
     if (m_nTicksStunned > 0) {
         m_nTicksStunned--;
@@ -69,14 +73,9 @@ void Protester::doSomething() {
         m_nTicksStunned = 0;
     }
 
-    // Resting ticks throttle speed of movement to give the user
-    // a chance to react in human-speed
-    const bool isRestingTick = 
-        getStudentWorld()->getTick() % m_nTicksToWaitBetweenMoves == 0 && 
-        !m_nLeaveTheOilField;
-    
-    // If we're dead or resting, then do nothing...
-    if (!isAlive() || isRestingTick) {
+    // Rest to give the user a chance to react in human-speed
+    if (!m_nLeaveTheOilField &&
+        getStudentWorld()->getTick() % m_nTicksToWaitBetweenMoves == 0) {
         return;
     }
 
@@ -92,36 +91,40 @@ void Protester::doSomething() {
         }
         return;
     }
-    
+
     // If we within shouting distance, facing IceMan, and haven't shouted recently then
     // shout at him!
     if (canShoutAtIceMan()) {
         shout();
         return;
     }
-    
+
     // If we have a line of sight with IceMan, move towards him.
-    {
-        Direction direction = this->getDirection();
+    Direction direction = getDirection();
 
-        if (getStudentWorld()->hasPathToIceMan(getX(), getY(), direction) &&
-            getStudentWorld()->getDistanceToIceMan(getX(), getY()) <= MAX_SHOUTING_RANGE_UNITS) {
-            // Move towards IceMan
-            if (!takeOneStep(direction)) {
-                cout << "Protester unable to take step in direction " << direction << endl;
-            }
-
-            // This will cause us to change direction on subsequent ticks
-            // when IceMan is no longer in sight. Otherwise, we'll keep
-            // taking a step towards him.
-            m_nNumSquaresToMoveInCurrentDirection = 0;
-            return;
+    if (getStudentWorld()->hasLineOfSightToIceMan(getX(), getY(), direction) &&
+        getStudentWorld()->getDistanceToIceMan(getX(), getY()) > MAX_SHOUTING_RANGE_UNITS) {
+        // Move towards IceMan
+        if (!takeOneStep(direction)) {
+            cout << "Protester unable to take step in direction " << direction << endl;
         }
+
+        // This will cause us to change direction on subsequent ticks
+        // when IceMan is no longer in sight. Otherwise, we'll keep
+        // taking a step towards him.
+        m_nNumSquaresToMoveInCurrentDirection = 0;
+        return;
     }
 
-    // Check if it's time to change direction
+    // Can we detect IceMan's location from his cell phone?
+    if (getStudentWorld()->getPathDistanceToIceMan(getX(), getY()) <= m_nIceManCellRange) {
+        moveTowardsIceMan();
+        return;
+    }
+
     m_nNumSquaresToMoveInCurrentDirection--;
 
+    // Check if it's time to change direction
     if (m_nNumSquaresToMoveInCurrentDirection <= 0) {
         // Move in a new random direction. If we're not able to, then pick another direction.
         std::shuffle(begin(m_allDirections), end(m_allDirections), m_randomGenerator);
@@ -139,8 +142,7 @@ void Protester::doSomething() {
     }
 
     // If we haven't made a perpendicular turn in the last 200 ticks, let's make a turn
-    if (m_nTickOfLastPerpendicularTurn > 0 &&
-        m_nTickOfLastPerpendicularTurn - getStudentWorld()->getTick() >= NON_RESTING_TICKS_BETWEEN_TURNING * m_nTicksToWaitBetweenMoves) {
+    if (getStudentWorld()->getTick() - m_nTickOfLastPerpendicularTurn >= NON_RESTING_TICKS_BETWEEN_TURNING * m_nTicksToWaitBetweenMoves) {
         std::vector<Direction> directions;
 
         if (getPossiblePerpendicularDirections(directions)) {
@@ -160,7 +162,6 @@ void Protester::doSomething() {
     if (!takeOneStep(getDirection())) {
         // Unable to take step so change direction on the next non-resting tick
         m_nNumSquaresToMoveInCurrentDirection = 0;
-        return;
     }
 
     return;
@@ -174,27 +175,26 @@ bool Protester::getPossiblePerpendicularDirections(std::vector<GraphObject::Dire
 
     const int x = getX();
     const int y = getY();
+    const Direction direction = getDirection();
 
-    switch (getDirection()) {
-        case Direction::up:
-        case Direction::down:
-            // Check if we can move left or right
-            if (!getStudentWorld()->isBlocked(x - 1, y))
-                directions.push_back(Direction::left);
-            if (!getStudentWorld()->isBlocked(x + 1, y))
-                directions.push_back(Direction::right);
-            break;
-        case Direction::left:
-        case Direction::right:
-            // Check if we can move up or down?
-            if (!getStudentWorld()->isBlocked(x, y - 1))
-                directions.push_back(Direction::down);
-            if (!getStudentWorld()->isBlocked(x, y + 1))
-                directions.push_back(Direction::up);
-            break;
-        case Direction::none:
-        default:
-            break;
+    if (direction == Direction::up    || 
+        direction == Direction::down  || 
+        direction == Direction::none) {
+        // Check if we can move left or right
+        if (!getStudentWorld()->isBlocked(x - 1, y, direction))
+            directions.push_back(Direction::left);
+        if (!getStudentWorld()->isBlocked(x + 1, y, direction))
+            directions.push_back(Direction::right);
+    }
+    if (direction == Direction::left  || 
+        direction == Direction::right || 
+        direction == Direction::none) {
+
+        // Check if we can move up or down?
+        if (!getStudentWorld()->isBlocked(x, y - 1, direction))
+            directions.push_back(Direction::down);
+        if (!getStudentWorld()->isBlocked(x, y + 1, direction))
+            directions.push_back(Direction::up);
     }
 
     return directions.size() > 0;
@@ -226,9 +226,10 @@ void Protester::annoy(int nHitPoints) {
 
 // Figure out which direction to move towards the exit 
 void Protester::moveTowardsExit() {
-    Direction direction = getStudentWorld()->getShortestPathToExit(getX(), getY());
+    DirectionDistance directionDistance;
 
-    if (!takeOneStep(direction)) {
+    if (!getStudentWorld()->getShortestPathToExit(getX(), getY(), directionDistance) || 
+        !takeOneStep(directionDistance.direction)) {
         cout << "Unable to move the Protester in the direction towards the exit" << endl;
         // throw?
     }
@@ -236,9 +237,10 @@ void Protester::moveTowardsExit() {
 
 // Figure out which direction to move towards IceMan 
 void Protester::moveTowardsIceMan() {
-    Direction direction = getStudentWorld()->getShortestPathToIceMan(getX(), getY());
+    DirectionDistance directionDistance;
 
-    if (!takeOneStep(direction)) {
+    if (!getStudentWorld()->getShortestPathToIceMan(getX(), getY(), directionDistance) ||
+        !takeOneStep(directionDistance.direction)) {
         cout << "Unable to move the Protester in the direction towards IceMan" << endl;
         // throw?
     }
@@ -254,33 +256,34 @@ bool Protester::takeOneStep(Direction direction) {
 
     switch (direction) {
         case Direction::none:
+            cout << "Protester::takeOneStep Direction is none" << endl;
             break;
         case Direction::up:
-            if (y < ICE_HEIGHT && !getStudentWorld()->isBlocked(x, y + 1))
+            if (y < ICE_HEIGHT && !getStudentWorld()->isBlocked(x, y + 1, direction))
                 moveTo(x, y + 1);
             else
                 result = false;
             break;
         case Direction::down:
-            if (y > 0 && !getStudentWorld()->isBlocked(x, y - 1))
+            if (y > 0 && !getStudentWorld()->isBlocked(x, y - 1, direction))
                 moveTo(x, y - 1);
             else
                 result = false;
             break;
         case Direction::left:
-            if (x > 0 && !getStudentWorld()->isBlocked(x - 1, y))
+            if (x > 0 && !getStudentWorld()->isBlocked(x - 1, y, direction))
                 moveTo(x - 1, y);
             else
                 result = false;
             break;
         case Direction::right:
-            if (x < (VIEW_WIDTH - (size * PROTESTER_SIZE / ICE_SIZE)) && !getStudentWorld()->isBlocked(x + 1, y))
+            if (x < (VIEW_WIDTH - PERSON_SIZE) && !getStudentWorld()->isBlocked(x + 1, y, direction))
                 moveTo(x + 1, y);
             else
                 result = false;
             break;
         default:
-            assert(!"Invalid direction");
+            cout << "Protester attempted to move in an invalid direction" << endl;
             result = false;
     }
 

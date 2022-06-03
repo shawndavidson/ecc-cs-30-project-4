@@ -3,6 +3,8 @@
 
 #include "Actor.h"
 
+#define PERSON_SIZE     4
+
 
 class Person : public Actor
 {

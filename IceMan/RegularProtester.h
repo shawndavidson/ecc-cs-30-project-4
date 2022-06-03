@@ -4,7 +4,7 @@
 #include "Protester.h"
 #include <iostream>
 
-#define TEST_REGULARPROTESTER 0
+#define TEST_REGULARPROTESTER 1
 
 class RegularProtester : public Protester
 {

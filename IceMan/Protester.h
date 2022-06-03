@@ -66,6 +66,9 @@ protected:
 	// Check if we're leaving the oil field
 	bool			isLeaving() const	{ return m_nLeaveTheOilField;  }
 
+	// Pause the Protester for N ticks
+	void			pause(int nTicks)	{ m_nTicksStunned = nTicks; }
+
 private:
 	/*************************************************************************/
 	/* Data Members													     */
@@ -82,6 +85,7 @@ private:
 	static std::mt19937			m_randomGenerator;
 
 	size_t			m_nTicksStunned;
+	const size_t	m_nIceManCellRange;
 };
 
 

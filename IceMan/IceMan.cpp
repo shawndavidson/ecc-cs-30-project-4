@@ -176,15 +176,15 @@ int IceMan::getWater() {
     return m_iWater;
 }
 
+#if TEST_ICEMAN
 // Handle an Event
 void IceMan::handleTestEvent(int num, const char* text) {
-#if TEST_ICEMAN
     std::cout << "Tick: " << getStudentWorld()->getTick()
         << ", RegularProtester::handleTestEvent, num: " << num
         << ", text: " << text
         << std::endl;
-#endif // TEST_ICEMAN
 }
+#endif // TEST_ICEMAN
 
 // Take a step and dig up ice, if necessary
 void IceMan::takeOneStep(int x, int y) {

@@ -236,8 +236,10 @@ void StudentWorld::digUpIce(int x, int y)
 		// Dig through the 4x4 matrix of ice that we're standing on 
 		for (int yOffset = 0; yOffset < ICEMAN_TO_ICE_SIZE_RATIO; yOffset++) {
 			int finalY = y + yOffset;
+			if (finalY > ICE_HEIGHT)
+				continue;
 
-			for (int xOffset = 0; xOffset < ICEMAN_TO_ICE_SIZE_RATIO && finalY < ICE_HEIGHT; xOffset++) {
+			for (int xOffset = 0; xOffset < ICEMAN_TO_ICE_SIZE_RATIO; xOffset++) {
 				int finalX = x + xOffset;
 				// If ice is present, kill it
 				if (finalX < ICE_WIDTH && m_ice[finalX][finalY]) {
@@ -248,6 +250,8 @@ void StudentWorld::digUpIce(int x, int y)
 		}
 
 	}
+
+	playSound(SOUND_DIG);
 }
 
 // Cleanup game objects (deallocates memory)
@@ -664,6 +668,16 @@ int StudentWorld::getDistanceToIceMan(int x, int y) const {
 	return m_distanceCalc.getDistance(x, y, pIceMan->getX(), pIceMan->getY());
 }
 
+// Compute distance to IceMan. Returns the units to reach IceMan through the maze, avoiding
+// ice and boulder. If there isn't a path, it returns UINT_MAX.
+unsigned int StudentWorld::getPathDistanceToIceMan(int x, int y) const {
+	shared_ptr<IceMan> pIceMan = m_pIceMan.lock();
+
+	DirectionDistance result;
+
+	return m_shortestPathToIceMan.getShortestPath(x, y, result) ? result.distance : UINT_MAX;
+}
+
 // Check if these coordinates and direction are facing IceMan
 bool StudentWorld::isFacingIceMan(int x, int y, GraphObject::Direction direction) const {
 	shared_ptr<IceMan> pIceMan = m_pIceMan.lock();
@@ -693,10 +707,12 @@ bool StudentWorld::isFacingIceMan(int x, int y, GraphObject::Direction direction
 
 // Do we have a direct line of sight with IceMan, i.e. we're on 
 // the same horizontal or vertical axis and no ice or boulders are
-// between us. Return true, if so and set direction (by reference)
+// between us.
+// Must pass in the current direction.  
+// Returns true and changes direction (by reference), if needed towards IceMan
 // to face IceMan. Otherwise, false.
-bool StudentWorld::hasPathToIceMan(int x, int y, GraphObject::Direction& direction) const {
-	bool hasLineOfSight = false;
+bool StudentWorld::hasLineOfSightToIceMan(int x, int y, GraphObject::Direction& direction) const {
+	bool hasLineOfSight = true;
 
 	shared_ptr<IceMan> pIceMan = m_pIceMan.lock();
 	
@@ -708,60 +724,58 @@ bool StudentWorld::hasPathToIceMan(int x, int y, GraphObject::Direction& directi
 	if (x == iceX) {
 		// Are we below IceMan's?
 		if (y < iceY) {
-			for (int j = y; j < iceY && !hasLineOfSight; j++) {
-				if (isBlocked(x, j)) 
-					hasLineOfSight = false;
+			for (int j = y; j < iceY && hasLineOfSight; j++) {
+				hasLineOfSight = !isBlocked(x, j, direction);
 			}
+			// If we have a line of sight, then face IceMan
 			if (hasLineOfSight)
 				direction = GraphObject::Direction::up;
 		}
 		else if (y > iceY) { // Are we above IceMan?
-			for (int j = y; j > iceY && !hasLineOfSight; j--) {
-				if (isBlocked(x, j))
-					hasLineOfSight = false;
+			for (int j = y; j > iceY && hasLineOfSight; j--) {
+				hasLineOfSight = !isBlocked(x, j, direction);
 			}
+			// If we have a line of sight, then face IceMan
 			if (hasLineOfSight)
 				direction = GraphObject::Direction::down;
 		}
 		else {
-			direction = GraphObject::Direction::none;
+			// We're in the same spot as IceMan so just face the default direction
+			direction = GraphObject::Direction::left;
 		}
-
-		hasLineOfSight = true;
 	}
 	else if (y == iceY) {
 		// Check for ice or boulders in the way on the vertical axis
 		// Are we on IceMan's left?
 		if (x < iceX) {
-			for (int i = x; i < iceX && !hasLineOfSight; i++) {
-				if (isBlocked(i, y))
-					hasLineOfSight = false;
+			for (int i = x; i < iceX && hasLineOfSight; i++) {
+				hasLineOfSight = !isBlocked(i, y, direction);
 			}
-			if (hasLineOfSight)
-				direction = GraphObject::Direction::left;
-		}
-		else if (x > iceX) { // Are we on IceMan's right?
-			for (int i = x; i > iceX && !hasLineOfSight; i--) {
-				if (isBlocked(i, y))
-					hasLineOfSight = false;
-			}
+			// If we have a line of sight, then face IceMan
 			if (hasLineOfSight)
 				direction = GraphObject::Direction::right;
 		}
-		else {
-			direction = GraphObject::Direction::none;
+		else if (x > iceX) { // Are we on IceMan's right?
+			for (int i = x; i > iceX && hasLineOfSight; i--) {
+				hasLineOfSight = !isBlocked(i, y, direction);
+			}
+			// If we have a line of sight, then face IceMan
+			if (hasLineOfSight)
+				direction = GraphObject::Direction::left;
 		}
-
-		hasLineOfSight = true;
+		else {
+			// We're in the same spot as IceMan so just face the default direction
+			direction = GraphObject::Direction::left;
+		}
 	}
 
 	return hasLineOfSight;
 }
 
 // Is this location occupied by Ice, Boulder, or is out of bounds
-bool StudentWorld::isBlocked(int x, int y) const {
+bool StudentWorld::isBlocked(int x, int y, GraphObject::Direction direction) const {
 	// Check boundries
-	if (x < 0 || x >= VIEW_WIDTH || y < 0 || y > ICE_HEIGHT)
+	if (x < 0 || x > (ICE_WIDTH - PERSON_SIZE) || y < 0 || y > ICE_HEIGHT)
 		return true;
 
 	if (isBlockedByBoulder(x, y))

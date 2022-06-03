@@ -60,8 +60,12 @@ bool Actor::isAlive() const {
 }
 
 // Update our alive status
-void Actor::setAlive(bool alive) {
+void Actor::setAlive(bool alive, bool changeVisibility /*= true*/) {
 	m_bAlive = alive;
+
+	// Update the visibility so dead objects aren't visible, by default
+	if (changeVisibility) 
+		setVisible(alive);
 }
 
 void Actor::setPoints(int points) {

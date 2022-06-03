@@ -14,9 +14,22 @@ HardcoreProtester::HardcoreProtester(
         IID_HARD_CORE_PROTESTER,
         startX,
         startY,
-        20 /* nHitPoints */),
-    m_nTicksToStare(0)
+        20 /* nHitPoints */)
 {
+#if TEST_HARDCOREPROTESTER
+    getStudentWorld()->listenForEvent(
+        EventTypes::EVENT_TEST,
+        [&](SharedEventPtr pEvent) {
+            // TODO: Is capturing "this" safe or could it cause an access violation? 
+            // happens if this object is removed before the callback is invoked?
+
+            // This is a little dangerous but it works. Try to find a better way! 
+            Event<EventTestData>* pData = (Event<EventTestData>*)pEvent.get();
+
+            this->annoy(10);
+            cout << "Event received: HardcoreProtester leaving the oil field." << endl;
+        });
+#endif
 }
 
 // Destructor
@@ -25,15 +38,9 @@ HardcoreProtester::~HardcoreProtester() {
 
 // Handle a tick
 void HardcoreProtester::doSomething() {
-    // Are we staring at a Gold Nugget?
-    if (m_nTicksToStare > 0) {
-        m_nTicksToStare--;
-        return;
-    }
-    else {
-        m_nTicksToStare = 0;
-    }
+    Protester::doSomething();
 
+    /*
     // If we're dead or resting, then do nothing...
     // TODO: fix resting tick calculation
     const bool isRestingTick = getStudentWorld()->getTick() % 1000 == 0;
@@ -46,6 +53,7 @@ void HardcoreProtester::doSomething() {
     if (!takeOneStep(dir)) {
         cout << "HardcoreProtester unable to take one step towards IceMan" << endl;
     }
+    */
 }
 
 // Annoy the Protester
@@ -63,5 +71,5 @@ void HardcoreProtester::pickUpGold() {
     
     
     // Stare at Nugget for N ticks
-    m_nTicksToStare = CALCULATE_TICKS_TO_STARE(getStudentWorld()->getLevel());
+    pause(CALCULATE_TICKS_TO_STARE(getStudentWorld()->getLevel()));
 }

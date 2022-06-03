@@ -16,6 +16,20 @@ RegularProtester::RegularProtester(
         startY,
         5 /* nHitPoints */)
 {
+#if TEST_REGULARPROTESTER
+    getStudentWorld()->listenForEvent(
+        EventTypes::EVENT_TEST,
+        [&](SharedEventPtr pEvent) {
+            // TODO: Is capturing "this" safe or could it cause an access violation? 
+            // happens if this object is removed before the callback is invoked?
+
+            // This is a little dangerous but it works. Try to find a better way! 
+            Event<EventTestData>* pData = (Event<EventTestData>*)pEvent.get();
+
+            this->annoy(5);
+            cout << "Event received: RegularProtester leaving the oil field." << endl;
+        });
+#endif
 }
 
 // Destructor

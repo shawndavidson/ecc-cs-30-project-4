@@ -3,6 +3,8 @@
 
 #include "Protester.h"
 
+#define TEST_HARDCOREPROTESTER 1
+
 class HardcoreProtester : public Protester
 {
 public:
@@ -38,8 +40,6 @@ public:
 	void pickUpGold();
 
 private:
-	// Number of ticks to stare at Gold Nugget when found 
-	int m_nTicksToStare;
 };
 
 #endif // HARDCOREPROTESTER_H_
