@@ -48,7 +48,7 @@ bool ShortestPathFinder::compute(int x, int y) {
             switch (direction) {
                 case GraphObject::Direction::up:
                     // If there's a path above that isn't blocked AND the distance is still unknown
-                    if (y + 1 < ICE_HEIGHT && 
+                    if (unit.y + 1 < ICE_HEIGHT && 
                         m_distances[unit.x][unit.y + 1] == UCHAR_MAX &&
                         !getStudentWorld()->isBlocked(unit.x, unit.y + 1, (GraphObject::Direction)direction)) {
                         queue.emplace(unit.x, unit.y + 1, unit.distance + 1);
@@ -56,7 +56,7 @@ bool ShortestPathFinder::compute(int x, int y) {
                     break; 
                 case GraphObject::Direction::down:
                     // If there's a path below that isn't blocked AND the distance is still unknown
-                    if (y - 1 >= 0 && 
+                    if (unit.y - 1 >= 0 && 
                         m_distances[unit.x][unit.y - 1] == UCHAR_MAX &&
                         !getStudentWorld()->isBlocked(unit.x, unit.y - 1, (GraphObject::Direction)direction)) {
                         queue.emplace(unit.x, unit.y - 1, unit.distance + 1);
@@ -64,7 +64,7 @@ bool ShortestPathFinder::compute(int x, int y) {
                     break;
                 case GraphObject::Direction::left:
                     // If there's a path on the left that isn't blocked AND the distance is still unknown
-                    if (x - 1 >= 0 &&
+                    if (unit.x - 1 >= 0 &&
                         m_distances[unit.x - 1][unit.y] == UCHAR_MAX &&
                         !getStudentWorld()->isBlocked(unit.x - 1, unit.y, (GraphObject::Direction)direction)) {
                         queue.emplace(unit.x - 1, unit.y, unit.distance + 1);
@@ -72,7 +72,7 @@ bool ShortestPathFinder::compute(int x, int y) {
                     break;
                 case GraphObject::Direction::right:
                     // If there's a path on the right that isn't blocked AND the distance is still unknown
-                    if (x + 1 < VIEW_WIDTH &&
+                    if (unit.x + 1 < VIEW_WIDTH &&
                         m_distances[unit.x + 1][unit.y] == UCHAR_MAX &&
                         !getStudentWorld()->isBlocked(unit.x + 1, unit.y, (GraphObject::Direction)direction)) {
                         queue.emplace(unit.x + 1, unit.y, unit.distance + 1);
