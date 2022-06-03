@@ -116,7 +116,7 @@ void Protester::doSomething() {
     }
 
     // Can we detect IceMan's location from his cell phone?
-    if (getStudentWorld()->getDistanceToIceMan(getX(), getY()) <= m_nIceManCellRange) {
+    if (getStudentWorld()->getPathDistanceToIceMan(getX(), getY()) <= m_nIceManCellRange) {
         moveTowardsIceMan();
         return;
     }

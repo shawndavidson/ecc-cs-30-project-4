@@ -113,8 +113,12 @@ public:
 	// Initializes and places new SonarKit
 	void addSonarKit();
 		
-	// Compute distance to IceMan
-	unsigned int getDistanceToIceMan(int x, int y) const;
+	// Compute straight-line distance to IceMan
+	int getDistanceToIceMan(int x, int y) const;
+
+	// Compute shortest path distance to IceMan, i.e. through the maze avoiding
+	// ice and boulders
+	unsigned int getPathDistanceToIceMan(int x, int y) const;
 
 	// Check if these coordinates and direction are facing IceMan
 	bool isFacingIceMan(int x, int y, GraphObject::Direction direction) const;
