@@ -107,7 +107,9 @@ void Protester::doSomething() {
 
     // Can we track IceMan's location from his cell phone?
     if (m_bCanTrackIceMansCell) {
-        if (getStudentWorld()->getPathDistanceToIceMan(getX(), getY()) <= m_nIceManCellRange) {
+        unsigned int distance = getStudentWorld()->getPathDistanceToIceMan(getX(), getY());
+
+        if (distance <= m_nIceManCellRange && distance > MAX_SHOUTING_RANGE_UNITS) {
             moveTowardsIceMan();
             return;
         }
