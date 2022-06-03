@@ -47,20 +47,9 @@ void RegularProtester::annoy(int nHitPoints) {
     Protester::annoy(nHitPoints);
 }
 
-// Step on a Gold Nugget
-// TODO: Resolve in merge
-/*
-void RegularProtester::stepOnGoldNugget() {
+void RegularProtester::pickUpGold() {
     StudentWorld* pStudentWorld = getStudentWorld();
-    
     pStudentWorld->playSound(SOUND_PROTESTER_FOUND_GOLD);
     pStudentWorld->increaseScore(25);
     leave();
 }
-
-// Squirt the Protester
-void RegularProtester::waterSquirt(int nHitPoints) {
-    annoy(nHitPoints);
-    getStudentWorld()->increaseScore(100);
-}
-*/

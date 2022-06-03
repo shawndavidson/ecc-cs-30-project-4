@@ -4,6 +4,8 @@
 #include <assert.h>
 #include <algorithm>
 #include <thread>
+#include <sstream>
+#include <iomanip>
 
 #include "StudentWorld.h"
 #include "IceMan.h"
@@ -203,17 +205,6 @@ int StudentWorld::move()
 		if (actor) 
 			actor->doSomething();  
 	});
-
-	// Give the ice a chance to do something during this tick
-	// Is this code necessary?
-	// Ice doesn't do anything
-	for (int x = 0; x < ICE_WIDTH; x++) {
-		for (int y = 0; y < ICE_HEIGHT; y++) {
-			if (m_ice[x][y] != nullptr) {
-				m_ice[x][y]->doSomething();
-			}
-		}
-	}
 	
 	// Go to next level if all Oil Barrels Collected
 	if (getNumBarrels() == 0) {
@@ -298,15 +289,18 @@ void StudentWorld::removeDeadGameObjects() {
 }
 
 string StudentWorld::getGameStatText() {
-	return
-		"Lvl: " + to_string(getLevel()) +
-		" Lives: " + to_string(getLives()) +
-		" Hlth: " + to_string(0) + // TODO - should be IceMan Hit Points
-		" Wtr: " + to_string(m_pIceMan.lock()->getWater()) +
-		" Gld : " + to_string(m_pIceMan.lock()->getGold()) +
-		" Oil Left: " + to_string(getNumBarrels()) +
-		" Sonar: " + to_string(m_pIceMan.lock()->getSonarKits()) +
-		" Scr: " + to_string(getScore());
+	stringstream ss;
+	ss << setfill(' ') << left;
+	ss <<
+		"Lvl: " << setw(2) << to_string(getLevel()) <<
+		"  Lives: " << setw(1) << to_string(getLives()) <<
+		"  Hlth: " << setw(3) << to_string(100 * m_pIceMan.lock()->getHitPoints() / 10) + "%" <<
+		"  Wtr: " << setw(2) << to_string(m_pIceMan.lock()->getWater()) <<
+		"  Gld: " << to_string(m_pIceMan.lock()->getGold()) <<
+		"  Oil Left: " << to_string(getNumBarrels()) <<
+		"  Sonar: " << to_string(m_pIceMan.lock()->getSonarKits()) <<
+		"  Scr: " << setfill('0') << right << setw(6) << to_string(getScore());
+	return ss.str();
 }
 
 // Creates random x coordinate for actors to spawn in
@@ -334,7 +328,6 @@ pair<int, int> StudentWorld::getRandCoordinates(int minHeight) {
 			x = getRandomX();
 			if (x >= 26 && x < 35)
 				x += 10;
-			cout << "Too close!" << endl;
 		}
 	}
 	return pair<int, int>(x, y);
@@ -480,8 +473,18 @@ void StudentWorld::pickupGoodieIM(int ID, int points, int soundEffect) {
 }
 
 // Handles when a Protester picks up Gold
-void StudentWorld::pickupGoldP(ActorPtr gold) {
-	// TODO: implement this
+bool StudentWorld::pickupGoldP(int x, int y) {
+	for (auto actor : m_actors) {
+		if (actor == nullptr)
+			continue;
+		if (m_distanceCalc.getDistance(actor->getX(), actor->getY(), x, y) <= 3) {
+			if (actor->getID() == IID_PROTESTER || actor->getID() == IID_HARD_CORE_PROTESTER) {
+				static_pointer_cast<Protester>(actor)->pickUpGold();
+				return true;
+			}
+		}
+	}
+	return false;
 }
 // Handles when a Squirt is fired by IceMan
 void StudentWorld::fireSquirt(int x, int y, GraphObject::Direction dir) {
@@ -533,9 +536,8 @@ bool StudentWorld::hitBySquirt(int x, int y) {
 			continue;
 		if (m_distanceCalc.getDistance(actor->getX(), actor->getY(), x, y) <= 3) {
 			if (actor->getID() == IID_PROTESTER || actor->getID() == IID_HARD_CORE_PROTESTER) {
-				// TODO: should annoy them by 2 points
 				hitProtester = true; // Allows for multiple protesters to be hit by the same squirt
-				cout << "Hit Protester" << endl; // FIXME - test print
+				static_pointer_cast<Protester>(actor)->annoy(2);
 			}
 			else if (actor->getID() == IID_BOULDER) {
 				return true;
@@ -592,8 +594,6 @@ bool StudentWorld::isGroundUnderBoulder(int x, int y) {
 
 // Handles if a boulder hits IceMan, Protester, or another Boulder
 // Pass in coordinates of the Boulder
-// TODO: annoy Protesters by 100 points
-// TODO: annoy IceMan by 100 points
 bool StudentWorld::hitByBoulder(int x, int y) {
 
 	// Did the boulder hit IceMan, a Protester or another Boulder?
@@ -603,13 +603,11 @@ bool StudentWorld::hitByBoulder(int x, int y) {
 		if ((actor->getX() >= x) && (actor->getX() <= x + 4) && (actor->getY() + 4 == y)) {
 			int actorID = actor->getID();
 			if (actorID == IID_PROTESTER || actorID == IID_HARD_CORE_PROTESTER) {
-				// TODO: should annoy them by 100 points
-				cout << "Hit Protester" << endl; // FIXME - test print
+				static_pointer_cast<Protester>(actor)->annoy(100);
 				increaseScore(500);
 			}
 			if (actorID == IID_PLAYER) {
-				// TODO: should annoy player by 100 points
-				cout << "Hit IceMan" << endl; // FIXME - test print
+				static_pointer_cast<IceMan>(actor)->annoy(100);
 			}
 			// Stop the boulder if it hits another Boulder
 			else if (actor->getID() == IID_BOULDER) {
@@ -621,6 +619,11 @@ bool StudentWorld::hitByBoulder(int x, int y) {
 	return false;
 }
 
+// Handles when a Protester shouts at IceMan
+void StudentWorld::iceManShoutedAt() {
+	m_pIceMan.lock()->annoy(2);
+	playSound(SOUND_PROTESTER_YELL);
+}
 
 // Process the next Event
 void StudentWorld::processNextEvent() {

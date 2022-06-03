@@ -121,16 +121,14 @@ void IceMan::doSomething() {
                 break;
         };
     }
-
-
-    // TODO
 }
 
 // Handle Annoy
 void IceMan::annoy(int nHitPoints) {
-    // TODO
     Person::annoy(nHitPoints);
-    std::cout << "IceMan annoyed" << std::endl;
+    if (isAnnoyed()) {
+        setAlive(false);
+    }
 }
 
 // Increments the gold counter by 1
