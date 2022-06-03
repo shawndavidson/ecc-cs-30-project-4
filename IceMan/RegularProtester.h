@@ -4,6 +4,9 @@
 #include "Protester.h"
 #include <iostream>
 
+const int PICK_UP_GOLD_POINTS_R	= 25;
+const int SQUIRT_ANNOYED_POINTS_R = 100;
+
 #define TEST_REGULARPROTESTER 1
 
 class RegularProtester : public Protester
@@ -37,7 +40,7 @@ public:
 	virtual void annoy(int nHitPoints);
 
 	// Step on a Gold Nugget
-	void pickUpGold();
+	virtual void pickUpGold();
 
 private:
 };

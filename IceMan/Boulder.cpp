@@ -63,7 +63,6 @@ void Boulder::doSomething() {
 		// If collides with another Boulder, return
 		if (pStudentWorld->StudentWorld::hitByBoulder(getX(), getY())) {
 			setAlive(false);
-			setVisible(false);
 			return;
 		}
 		
@@ -76,7 +75,6 @@ void Boulder::doSomething() {
 			moveTo(getX(), getY() - 1);
 		else {
 			setAlive(false);
-			setVisible(false);
 		}
 	}
 }

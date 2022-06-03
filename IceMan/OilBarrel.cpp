@@ -46,7 +46,6 @@ void OilBarrel::doSomething() {
 void OilBarrel::collect() {
 	setAlive(false);
 	setCollected(true);
-	setVisible(false);
 	setSoundEffect(SOUND_FOUND_OIL);
 	setPoints(OIL_BARREL_POINTS);
 }

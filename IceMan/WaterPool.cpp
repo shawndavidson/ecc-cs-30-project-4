@@ -34,7 +34,6 @@ void WaterPool::doSomething() {
 	}
 	else {
 		setAlive(false);
-		setVisible(false);
 		return;
 	}
 	// If IceMan is within a radius of 3
@@ -48,7 +47,6 @@ void WaterPool::doSomething() {
 void WaterPool::collect() {
 	setAlive(false);
 	setCollected(true);
-	setVisible(false);
 	setSoundEffect(SOUND_GOT_GOODIE);
 	setPoints(WATER_POOL_POINTS);
 }

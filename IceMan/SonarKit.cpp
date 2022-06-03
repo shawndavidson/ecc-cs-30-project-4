@@ -37,7 +37,6 @@ void SonarKit::doSomething() {
 	}
 	else {
 		setAlive(false);
-		setVisible(false);
 		return;
 	}
 	// Get collected if if IceMan is within a radius of 3
@@ -53,7 +52,6 @@ void SonarKit::doSomething() {
 void SonarKit::collect() {
 	setAlive(false);
 	setCollected(true);
-	setVisible(false);
 	setSoundEffect(SOUND_GOT_GOODIE);
 	setPoints(SONAR_KIT_POINTS);
 }
