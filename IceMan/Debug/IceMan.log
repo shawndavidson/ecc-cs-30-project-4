@@ -1,6 +1,3 @@
-﻿  HardcoreProtester.cpp
-  Protester.cpp
-  RegularProtester.cpp
-  StudentWorld.cpp
-  Generating Code...
-  IceMan.vcxproj -> C:\Users\Shawn Davidson\source\repos\ecc-cs-30-project-4\Debug\IceMan.exe
+﻿  StudentWorld.cpp
+C:\Users\LP-MSI\source\repos\ecc-cs-30-project-4\IceMan\StudentWorld.cpp(326,2): warning C4834: discarding return value of function with 'nodiscard' attribute
+  IceMan.vcxproj -> C:\Users\LP-MSI\source\repos\ecc-cs-30-project-4\Debug\IceMan.exe

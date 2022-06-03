@@ -4,6 +4,7 @@
 #include "Actor.h"
 
 const double ICE_SIZE = 0.25;
+const int ICE_DEPTH = 3;
 
 class Ice : public Actor
 {
