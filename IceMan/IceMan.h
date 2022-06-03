@@ -3,7 +3,7 @@
 
 #include "Person.h"
 
-#define TEST_ICEMAN 1
+#define TEST_ICEMAN 0
 
 // Forward Declaration
 class StudentWorld;

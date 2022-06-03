@@ -47,7 +47,7 @@ public:
 	//virtual void waterSquirt(int nHitPoints) = 0;
 
 	// Bonk the Protester with a Boulder
-	virtual void boulderBonk(int nHitPoints);
+	//virtual void boulderBonk(int nHitPoints);
 
 protected:
 	// Take one step towards the exit 
@@ -74,6 +74,9 @@ protected:
 	// Check if we're leaving the oil field
 	bool			isLeaving() const	{ return m_nLeaveTheOilField;  }
 
+	// Pause the Protester for N ticks
+	void			pause(int nTicks)	{ m_nTicksStunned = nTicks; }
+
 private:
 	/*************************************************************************/
 	/* Data Members													     */
@@ -90,6 +93,7 @@ private:
 	static std::mt19937			m_randomGenerator;
 
 	size_t			m_nTicksStunned;
+	const size_t	m_nIceManCellRange;
 };
 
 

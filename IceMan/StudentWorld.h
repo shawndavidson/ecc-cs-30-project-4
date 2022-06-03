@@ -15,6 +15,7 @@
 #include "DistanceCalculator.h"
 #include "GraphObject.h"
 #include "ShortestPathFinder.h"
+#include "Person.h"
 
 #define TEST_STUDENTWORLD 0
 
@@ -38,9 +39,8 @@ typedef shared_ptr<thread>					ThreadPtr;
 /*************************************************************************/
 /* Constants														     */
 /*************************************************************************/
-const int ICE_ROW_BEGIN = 4;
 const int ICE_WIDTH		= VIEW_WIDTH;
-const int ICE_HEIGHT	= VIEW_HEIGHT - ICE_ROW_BEGIN;
+const int ICE_HEIGHT	= VIEW_HEIGHT - PERSON_SIZE;
 
 class StudentWorld : public GameWorld
 {
@@ -83,14 +83,14 @@ public:
 	virtual void cleanUp();
 
 	// Compute distance to IceMan
-	int getDistanceToIceMan(int x, int y) const;
+	unsigned int getDistanceToIceMan(int x, int y) const;
 
 	// Check if these coordinates and direction are facing IceMan
 	bool isFacingIceMan(int x, int y, GraphObject::Direction direction) const;
 
 	// Check if a Protester standing in this location and facing this direction has
 	// a direct line of sight to IceMan 
-	bool hasPathToIceMan(int x, int y, GraphObject::Direction& direction) const;
+	bool hasLineOfSightToIceMan(int x, int y, GraphObject::Direction& direction) const;
 
 	// Is this location occupied by Ice or a Boulder
 	inline bool isBlocked(int x, int y) const;

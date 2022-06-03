@@ -84,8 +84,8 @@ int StudentWorld::init()
 	// Initialize a Regular and Hardcore Protester 
 	try {
 		for (int i = 0; i < 1; i++) {
-			m_actors.push_back(make_shared<RegularProtester>(this, rand() % ICE_WIDTH, ICE_HEIGHT));
-			m_actors.push_back(make_shared<HardcoreProtester>(this, rand() % ICE_WIDTH, ICE_HEIGHT));
+			m_actors.push_back(make_shared<RegularProtester>(this, rand() % (ICE_WIDTH - PERSON_SIZE), ICE_HEIGHT));
+			m_actors.push_back(make_shared<HardcoreProtester>(this, rand() % (ICE_WIDTH - PERSON_SIZE), ICE_HEIGHT));
 		}
 	}
 	catch (bad_alloc& /*ex*/) {
@@ -188,6 +188,8 @@ void StudentWorld::digUpIce(int x, int y)
 		}
 
 	}
+
+	playSound(SOUND_DIG);
 }
 
 // Cleanup game objects (deallocates memory)
@@ -254,7 +256,7 @@ void StudentWorld::listenForEvent(EventTypes type, EventCallback callback) {
 }
 
 // Compute distance to IceMan
-int StudentWorld::getDistanceToIceMan(int x, int y) const {
+unsigned int StudentWorld::getDistanceToIceMan(int x, int y) const {
 	shared_ptr<IceMan> pIceMan = m_pIceMan.lock();
 
 	return m_distanceCalc.getDistance(x, y, pIceMan->getX(), pIceMan->getY());
@@ -289,10 +291,12 @@ bool StudentWorld::isFacingIceMan(int x, int y, GraphObject::Direction direction
 
 // Do we have a direct line of sight with IceMan, i.e. we're on 
 // the same horizontal or vertical axis and no ice or boulders are
-// between us. Return true, if so and set direction (by reference)
+// between us.
+// Must pass in the current direction.  
+// Returns true and changes direction (by reference), if needed towards IceMan
 // to face IceMan. Otherwise, false.
-bool StudentWorld::hasPathToIceMan(int x, int y, GraphObject::Direction& direction) const {
-	bool hasLineOfSight = false;
+bool StudentWorld::hasLineOfSightToIceMan(int x, int y, GraphObject::Direction& direction) const {
+	bool hasLineOfSight = true;
 
 	shared_ptr<IceMan> pIceMan = m_pIceMan.lock();
 	
@@ -304,51 +308,43 @@ bool StudentWorld::hasPathToIceMan(int x, int y, GraphObject::Direction& directi
 	if (x == iceX) {
 		// Are we below IceMan's?
 		if (y < iceY) {
-			for (int j = y; j < iceY && !hasLineOfSight; j++) {
-				if (isBlocked(x, j)) 
-					hasLineOfSight = false;
+			for (int j = y; j < iceY && hasLineOfSight; j++) {
+				hasLineOfSight = !isBlocked(x, j);
 			}
 			if (hasLineOfSight)
 				direction = GraphObject::Direction::up;
 		}
 		else if (y > iceY) { // Are we above IceMan?
-			for (int j = y; j > iceY && !hasLineOfSight; j--) {
-				if (isBlocked(x, j))
-					hasLineOfSight = false;
+			for (int j = y; j > iceY && hasLineOfSight; j--) {
+				hasLineOfSight = !isBlocked(x, j);
 			}
 			if (hasLineOfSight)
 				direction = GraphObject::Direction::down;
 		}
 		else {
-			direction = GraphObject::Direction::none;
+			direction = GraphObject::Direction::left;
 		}
-
-		hasLineOfSight = true;
 	}
 	else if (y == iceY) {
 		// Check for ice or boulders in the way on the vertical axis
 		// Are we on IceMan's left?
 		if (x < iceX) {
-			for (int i = x; i < iceX && !hasLineOfSight; i++) {
-				if (isBlocked(i, y))
-					hasLineOfSight = false;
-			}
-			if (hasLineOfSight)
-				direction = GraphObject::Direction::left;
-		}
-		else if (x > iceX) { // Are we on IceMan's right?
-			for (int i = x; i > iceX && !hasLineOfSight; i--) {
-				if (isBlocked(i, y))
-					hasLineOfSight = false;
+			for (int i = x; i < iceX && hasLineOfSight; i++) {
+				hasLineOfSight = !isBlocked(i, y);
 			}
 			if (hasLineOfSight)
 				direction = GraphObject::Direction::right;
 		}
-		else {
-			direction = GraphObject::Direction::none;
+		else if (x > iceX) { // Are we on IceMan's right?
+			for (int i = x; i > iceX && hasLineOfSight; i--) {
+				hasLineOfSight = !isBlocked(i, y);
+			}
+			if (hasLineOfSight)
+				direction = GraphObject::Direction::left;
 		}
-
-		hasLineOfSight = true;
+		else {
+			direction = GraphObject::Direction::left;
+		}
 	}
 
 	return hasLineOfSight;
@@ -357,11 +353,27 @@ bool StudentWorld::hasPathToIceMan(int x, int y, GraphObject::Direction& directi
 // Is this location occupied by Ice, Boulder, or is out of bounds
 bool StudentWorld::isBlocked(int x, int y) const {
 	// Check boundries
-	if (x < 0 || x >= VIEW_WIDTH || y < 0 || y > ICE_HEIGHT)
+	if (x < 0 || x > (VIEW_WIDTH - PERSON_SIZE) || y < 0 || y > ICE_HEIGHT)
 		return true;
 
 	// TODO: Check for Boulders
-	return y < ICE_HEIGHT && m_ice[x][y] != nullptr && m_ice[x][y]->isAlive();
+
+	// If we're on top of the ice, no need to check for ice
+	if (y == ICE_HEIGHT) {
+		return false;
+	}
+
+	//const int xStop = std::max<int>(x + PERSON_SIZE, ICE_WIDTH);
+	//const int yStop = std::max<int>(y + PERSON_SIZE, ICE_HEIGHT);
+
+	//for (int i = x; i < xStop; i++) {
+	//	for (int j = y; j < yStop; j--) {
+	//		if (m_ice[i][j] != nullptr && m_ice[i][j]->isAlive())
+	//			return true;
+	//	}
+	//}
+
+	return m_ice[x][y] != nullptr && m_ice[x][y]->isAlive();
 }
 
 // Compute distances between all actors
