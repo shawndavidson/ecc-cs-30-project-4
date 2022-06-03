@@ -245,7 +245,7 @@ void StudentWorld::digUpIce(int x, int y)
 		// Dig through the 4x4 matrix of ice that we're standing on 
 		for (int yOffset = 0; yOffset < ICEMAN_TO_ICE_SIZE_RATIO; yOffset++) {
 			int finalY = y + yOffset;
-			if (finalY > ICE_HEIGHT)
+			if (finalY >= ICE_HEIGHT)
 				continue;
 
 			for (int xOffset = 0; xOffset < ICEMAN_TO_ICE_SIZE_RATIO; xOffset++) {
