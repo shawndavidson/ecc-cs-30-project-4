@@ -3,7 +3,7 @@
 
 #include "Protester.h"
 
-#define TEST_HARDCOREPROTESTER 1
+#define TEST_HARDCOREPROTESTER 0
 
 const int PICK_UP_GOLD_POINTS_HC = 50;
 const int SQUIRT_ANNOYED_POINTS_HC = 250;
