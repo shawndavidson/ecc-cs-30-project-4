@@ -241,25 +241,29 @@ void StudentWorld::digUpIce(int x, int y)
 
 	// Is IceMan standing on ice?
 	if (x < ICE_WIDTH && y < ICE_HEIGHT) {
+		bool hitIce = false;
+
 		// Dig through the 4x4 matrix of ice that we're standing on 
 		for (int yOffset = 0; yOffset < ICEMAN_TO_ICE_SIZE_RATIO; yOffset++) {
 			int finalY = y + yOffset;
-			if (finalY >= ICE_HEIGHT)
+
+			if (finalY >= ICE_HEIGHT) {
 				continue;
+			}
 
 			for (int xOffset = 0; xOffset < ICEMAN_TO_ICE_SIZE_RATIO; xOffset++) {
 				int finalX = x + xOffset;
 				// If ice is present, kill it
 				if (finalX < ICE_WIDTH && m_ice[finalX][finalY]) {
 					m_ice[finalX][finalY].reset();
-					foundIce = true;
+					hitIce = true;
 				}
 			}
 		}
-	}
 
-	if (foundIce) {
-		playSound(SOUND_DIG);
+		if (hitIce) {
+			playSound(SOUND_DIG);
+		}
 	}
 }
 
@@ -295,6 +299,10 @@ void StudentWorld::removeDeadGameObjects() {
 	auto endIter = remove_if(begin(m_actors), end(m_actors), [](ActorPtr pActor) {
 		if (pActor == nullptr || !pActor->isAlive())
 		{
+			// Ensure shared pointers are released because remove_if shifts the items
+			// that don't satisfy the predicate to the end of the container, then returns
+			// an iterator that represents the truncated end (excluding items). However,
+			// it's unspecified what happens with the truncated items so they could linger.
 			pActor.reset();
 			return true;
 		}
