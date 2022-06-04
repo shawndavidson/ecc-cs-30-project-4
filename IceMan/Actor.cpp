@@ -930,7 +930,7 @@ RegularProtester::RegularProtester(
 			Event<EventTestData>* pData = (Event<EventTestData>*)pEvent.get();
 
 			this->annoy(5);
-			cout << "Event received: RegularProtester leaving the oil field." << endl;
+			cout << "Event received: RegularProtester leaving the oil field." << endl;RegularProtester
 		});
 #endif
 }

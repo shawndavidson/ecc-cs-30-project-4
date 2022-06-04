@@ -82,9 +82,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Actor.cpp" />
-    <ClCompile Include="DistanceCalculator.cpp" />
-    <ClCompile Include="Event.cpp" />
-    <ClCompile Include="ShortestPathFinder.cpp" />
     <ClCompile Include="StudentWorld.cpp" />
     <ClCompile Include="GameController.cpp">
       <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MultiThreaded</RuntimeLibrary>
@@ -94,9 +91,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Actor.h" />
-    <ClInclude Include="DistanceCalculator.h" />
     <ClInclude Include="Event.h" />
-    <ClInclude Include="ShortestPathFinder.h" />
     <ClInclude Include="StudentWorld.h" />
     <ClInclude Include="GameConstants.h" />
     <ClInclude Include="GameController.h" />

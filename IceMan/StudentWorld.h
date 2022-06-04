@@ -9,13 +9,16 @@
 #include <unordered_map>
 #include <thread>
 
+#include <functional>
+#include <iostream>
+
 #include "GameWorld.h"
 #include "GameConstants.h"
-#include "Event.h"
-#include "DistanceCalculator.h"
 #include "GraphObject.h"
-#include "ShortestPathFinder.h"
-#include "Person.h"
+
+#include "Event.h"
+//#include "DistanceCalculator.h"
+//#include "ShortestPathFinder.h"
 
 #define TEST_STUDENTWORLD			0
 #define TEST_WORKER_MULTITHREADS	0
@@ -35,8 +38,10 @@ class OilBarrel;
 class Squirt;
 class Boulder;
 
+class DistanceCalculator;
+
 /*************************************************************************/
-/* Type Declaration(s)														     */
+/* Type Declaration(s)													 */
 /*************************************************************************/
 typedef shared_ptr<Actor>					ActorPtr;
 typedef shared_ptr<Ice>						IcePtr;
@@ -48,6 +53,173 @@ typedef shared_ptr<thread>					ThreadPtr;
 /*************************************************************************/
 const int ICE_WIDTH		= VIEW_WIDTH;
 const int ICE_HEIGHT	= VIEW_HEIGHT - PERSON_SIZE;
+
+
+
+
+
+
+
+
+
+/************************************************************************************************/
+/*																								*/
+/* DISTANCE CALCULATOR																		    */
+/*																								*/
+/************************************************************************************************/
+
+#ifndef DISTANCECALCULATOR_H_
+#define DISTANCECALCULATOR_H_
+
+#include <cstdint>
+
+// Set to 1 to ensure optimizations generate the correct results.
+#define TEST_DISTANCECALCULATOR 0
+
+
+class DistanceCalculator
+{
+public:
+	/*************************************************************************/
+	/* Construction														     */
+	/*************************************************************************/
+	// Constructor
+	DistanceCalculator();
+
+	// Copy Constructor (deleted - too expensive)
+	DistanceCalculator(const DistanceCalculator& rhs) = delete;
+
+	// Destructor
+	~DistanceCalculator();
+
+	/*************************************************************************/
+	/* Operators														     */
+	/*************************************************************************/
+	// Assignment Operator (deleted - too expensive)
+	DistanceCalculator& operator=(const DistanceCalculator&) = delete;
+
+	/*************************************************************************/
+	/* Operations														     */
+	/*************************************************************************/
+#if TEST_DISTANCECALCULATOR
+	// Test optimized table - debug only
+	void Test();
+#endif //UNIT_TEST
+
+	// Get distance between two squares
+	inline uint8_t getDistance(int x0, int y0, int x1, int y1) const
+	{
+		return m_table[x0][y0][x1][y1];
+	}
+
+private:
+	uint8_t m_table[VIEW_WIDTH][VIEW_HEIGHT][VIEW_WIDTH][VIEW_HEIGHT];
+};
+
+#endif // DISTANCECALCULATOR_H_
+
+
+/************************************************************************************************/
+/*																								*/
+/*SHORTEST PATH FINDER																		    */
+/*																								*/
+/************************************************************************************************/
+
+#ifndef SHORTESTPATHFINDER_H_
+#define SHORTESTPATHFINDER_H_
+
+#include "GameConstants.h"
+#include "GraphObject.h"
+
+#define TEST_SHORTESTPATHFINDER 0
+
+// Forward Declaration
+class StudentWorld;
+
+struct DirectionDistance {
+	// Constructor
+	DirectionDistance(GraphObject::Direction direction = GraphObject::Direction::none, size_t distance = 0)
+		: direction(direction), distance(distance) {}
+
+	GraphObject::Direction  direction;
+	size_t                  distance;
+};
+
+class ShortestPathFinder
+{
+public:
+	/*************************************************************************/
+	/* Construction															 */
+	/*************************************************************************/
+	// Constructor
+	ShortestPathFinder(StudentWorld* pStudentWorld);
+
+	// Destructor
+	~ShortestPathFinder() {};
+
+	/*************************************************************************/
+	/* Getters/Setters															 */
+	/*************************************************************************/
+	// Get a pointer to StudentWorld
+	StudentWorld* getStudentWorld() { return m_pStudentWorld; }
+
+	// Get the current X location
+	int getX() const { return m_originX; }
+
+	// Get the current Y location
+	int getY() const { return m_originY; }
+
+
+	/*************************************************************************/
+	/* Operations															 */
+	/*************************************************************************/
+
+	// Compute distances from all squares relative to location (x,y)
+	bool compute(int x, int y);
+
+	// Get the direction that has the shortest direction
+	bool getShortestPath(int x, int y, DirectionDistance& result) const;
+
+	void dump() const;
+
+	/*************************************************************************/
+	/* Data Members															 */
+	/*************************************************************************/
+private:
+	struct Coordinates {
+		// Constructor
+		Coordinates(uint8_t x, uint8_t y, size_t distance) : x(x), y(y), distance(distance) {}
+
+		uint8_t x, y;
+		size_t  distance;
+	};
+
+	StudentWorld* m_pStudentWorld;
+
+	// The location from which we want to calculate distances
+	uint8_t m_originX;
+	uint8_t m_originY;
+
+	size_t m_distances[VIEW_WIDTH][VIEW_HEIGHT];
+};
+
+#endif // SHORTESTPATHFINDER_H_
+
+
+
+
+
+
+
+/************************************************************************************************************/
+/*																											*/
+/************************************************************************************************************/
+/*																											*/
+/* STUDENT WORLD																						    */
+/*																											*/
+/************************************************************************************************************/
+/*																											*/
+/************************************************************************************************************/
 
 class StudentWorld : public GameWorld
 {
@@ -63,7 +235,7 @@ public:
 	virtual ~StudentWorld();
 
 	/*************************************************************************/
-	/* Operators													     */
+	/* Operators															 */
 	/*************************************************************************/
 	// Prevent assignment 
 	StudentWorld& operator=(const StudentWorld&) = delete;
@@ -280,3 +452,5 @@ private:
 };
 
 #endif // STUDENTWORLD_H_
+
+
