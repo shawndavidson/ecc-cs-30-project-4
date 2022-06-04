@@ -111,7 +111,7 @@ void IceMan::doSomething() {
                 break;
             case 'z':
             case 'Z': 
-                // Use SonarKitd
+                // Use SonarKits
                 if (m_iSonarKits > 0) {
                     pStudentWorld->StudentWorld::useSonarKit();
                     --m_iSonarKits;

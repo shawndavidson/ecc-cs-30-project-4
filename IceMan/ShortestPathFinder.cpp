@@ -52,9 +52,6 @@ bool ShortestPathFinder::compute(int x, int y) {
         if (m_distances[unit.x][unit.y] != UINT_MAX)
             continue;
 
-        if (m_distances[unit.x][unit.y] != UINT_MAX)
-            continue;
-
         // Store distance
         m_distances[unit.x][unit.y] = unit.distance;
 

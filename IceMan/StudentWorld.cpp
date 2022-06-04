@@ -241,7 +241,6 @@ void StudentWorld::digUpIce(int x, int y)
 
 	// Is IceMan standing on ice?
 	if (x < ICE_WIDTH && y < ICE_HEIGHT) {
-		bool hitIce = false;
 		// Dig through the 4x4 matrix of ice that we're standing on 
 		for (int yOffset = 0; yOffset < ICEMAN_TO_ICE_SIZE_RATIO; yOffset++) {
 			int finalY = y + yOffset;
@@ -257,9 +256,6 @@ void StudentWorld::digUpIce(int x, int y)
 				}
 			}
 		}
-		if (hitIce)
-			playSound(SOUND_DIG);
-
 	}
 
 	if (foundIce) {
@@ -299,7 +295,7 @@ void StudentWorld::removeDeadGameObjects() {
 	auto endIter = remove_if(begin(m_actors), end(m_actors), [](ActorPtr pActor) {
 		if (pActor == nullptr || !pActor->isAlive())
 		{
-			//pActor.reset();
+			pActor.reset();
 			return true;
 		}
 		return false;
