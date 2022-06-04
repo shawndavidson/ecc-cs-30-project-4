@@ -59,10 +59,10 @@ public:
 private:
     struct Coordinates {
         // Constructor
-        Coordinates(uint8_t x, uint8_t y, uint8_t distance) : x(x), y(y), distance(distance) {}
+        Coordinates(uint8_t x, uint8_t y, unsigned int /*uint8_t*/ distance) : x(x), y(y), distance(distance) {}
 
         uint8_t x, y;
-        uint8_t distance;
+        unsigned int /*uint8_t*/ distance;
     };
 
     StudentWorld* m_pStudentWorld;
@@ -71,7 +71,7 @@ private:
     uint8_t m_originX;
     uint8_t m_originY;
 
-    uint8_t m_distances[VIEW_WIDTH][VIEW_HEIGHT];
+    unsigned int /*uint8_t*/ m_distances[VIEW_WIDTH][VIEW_HEIGHT];
 };
 
 #endif // SHORTESTPATHFINDER_H_

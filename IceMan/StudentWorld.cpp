@@ -287,7 +287,7 @@ void StudentWorld::removeDeadGameObjects() {
 	auto endIter = remove_if(begin(m_actors), end(m_actors), [](ActorPtr pActor) {
 		if (pActor == nullptr || !pActor->isAlive())
 		{
-			pActor.reset();
+			//pActor.reset();
 			return true;
 		}
 		return false;
@@ -376,9 +376,6 @@ void StudentWorld::addNewActors() {
 		if (m_nNumProtesters < std::min<unsigned int>(15, int(2 + level * 1.5))) {
 			// Random if it is Hardcore or Regular, gives probability as percentage [30...90]
 			unsigned int probabilityOfHardcore = std::min<unsigned int>(90, level * 10 + 30);
-
-			// TODO: remove
-			probabilityOfHardcore = 100;
 
 			// Keep in mind, rand() doesn't give a uniform distribution but it's good enough.
 			// https://stackoverflow.com/questions/12885356/random-numbers-with-different-probabilities
@@ -837,11 +834,6 @@ bool StudentWorld::isBlocked(int x, int y, GraphObject::Direction direction) con
 		break;
 	};
 
-	// Is this location occupied by a boulder?
-	if (isBlockedByBoulder(x, y, direction)) {
-		return true;
-	}
-
 	// Is this location occupied by ice?
 	int xBegin{ x }, xEnd{ x };
 	int yBegin{ y }, yEnd{ y };
@@ -885,6 +877,11 @@ bool StudentWorld::isBlocked(int x, int y, GraphObject::Direction direction) con
 				return true;
 			}
 		}
+	}
+
+	// Is this location occupied by a boulder?
+	if (isBlockedByBoulder(x, y, direction)) {
+		return true;
 	}
 
 	return false;

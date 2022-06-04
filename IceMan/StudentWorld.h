@@ -131,7 +131,7 @@ public:
 	inline bool isBlocked(int x, int y, GraphObject::Direction direction) const;
 
 	// Is this location occupied by a Boulder
-	bool StudentWorld::isBlockedByBoulder(int x, int y, GraphObject::Direction direction) const;
+	inline bool StudentWorld::isBlockedByBoulder(int x, int y, GraphObject::Direction direction) const;
 
 	// Get the direction that has the shortest path to the exit
 	bool getShortestPathToExit(int x, int y, DirectionDistance& result)		{ return m_shortestPathToExit.getShortestPath(x, y, result); }
