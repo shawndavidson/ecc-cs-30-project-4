@@ -4,10 +4,10 @@
 #include "Protester.h"
 #include <iostream>
 
-const int PICK_UP_GOLD_POINTS_R	= 25;
-const int SQUIRT_ANNOYED_POINTS_R = 100;
+const int PICK_UP_GOLD_POINTS_R		= 25;
+const int SQUIRT_ANNOYED_POINTS_R	= 100;
 
-#define TEST_REGULARPROTESTER 1
+#define TEST_REGULARPROTESTER	0
 
 class RegularProtester : public Protester
 {
