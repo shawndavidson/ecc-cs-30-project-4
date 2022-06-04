@@ -17,7 +17,7 @@ IceMan::IceMan(StudentWorld* pStudentWorld)
 {
     
     // TODO: Remove - for testing
-#if TEST_ICEMAN
+#if TEST_EVENTS
     getStudentWorld()->listenForEvent(
         EventTypes::EVENT_TEST,
         [&](SharedEventPtr pEvent) {
@@ -124,7 +124,9 @@ void IceMan::doSomething() {
                     getStudentWorld()->dump();
                 }
                 break;
-            case 'e': // TODO: Remove
+#endif
+#if TEST_EVENTS
+            case 'e': 
                 {
                     const int tick = getStudentWorld()->getTick() + 100;
                     

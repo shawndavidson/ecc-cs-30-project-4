@@ -4,6 +4,8 @@
 #include "GameConstants.h"
 #include "GraphObject.h"
 
+#define TEST_SHORTESTPATHFINDER 0
+
 // Forward Declaration
 class StudentWorld;
 
@@ -59,10 +61,10 @@ public:
 private:
     struct Coordinates {
         // Constructor
-        Coordinates(uint8_t x, uint8_t y, uint8_t distance) : x(x), y(y), distance(distance) {}
+        Coordinates(uint8_t x, uint8_t y, size_t distance) : x(x), y(y), distance(distance) {}
 
         uint8_t x, y;
-        uint8_t distance;
+        size_t  distance;
     };
 
     StudentWorld* m_pStudentWorld;
@@ -71,7 +73,7 @@ private:
     uint8_t m_originX;
     uint8_t m_originY;
 
-    uint8_t m_distances[VIEW_WIDTH][VIEW_HEIGHT];
+    size_t m_distances[VIEW_WIDTH][VIEW_HEIGHT];
 };
 
 #endif // SHORTESTPATHFINDER_H_

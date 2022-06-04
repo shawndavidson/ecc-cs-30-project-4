@@ -48,9 +48,9 @@ Protester::Protester(
     m_nLastShoutedTick(0),
     m_nNumSquaresToMoveInCurrentDirection(GET_RANDOM_NUM_SQUARES_TO_MOVE()),
     m_nTickOfLastPerpendicularTurn(0),
-    m_allDirections{ /*Direction::none,*/ Direction::up, Direction::down, Direction::left, Direction::right},
+    m_allDirections{ Direction::up, Direction::down, Direction::left, Direction::right },
     m_nTicksStunned(0),
-    m_nIceManCellRange(1000),//TODO: should be => (16 + getStudentWorld()->getLevel() * 2), // know as M on pg. 45
+    m_nIceManCellRange(16 + getStudentWorld()->getLevel() * 2), // know as M on pg. 45
     m_bCanTrackIceMansCell(bCanTrackIceMansCell)
 {
 }

@@ -63,8 +63,9 @@ int StudentWorld::init()
 	for (int x = 0; x < ICE_WIDTH; x++) {
 		for (int y = 0; y < ICE_HEIGHT; y++) {
 			// If we're within the tunnel, skip laying ice
-			if (y > 0 && x >= 30 && x <= 33)
+			if (y > 3 && x >= 30 && x <= 33)
 				continue;
+
 			try {
 				// Instantiate an ice block
 				m_ice[x][y] = make_shared<Ice>(this, x, y);
@@ -144,12 +145,15 @@ int StudentWorld::init()
 		}
 	}
  
+#if TEST_WORKER_MULTITHREADS
 	// TODO: make shared data thread safe
-	//startWorkerThreads();
+	startWorkerThreads();
+#endif
 
 	return GWSTATUS_CONTINUE_GAME;
 }
 
+#if TEST_WORKER_MULTITHREADS
 // Start worker threads to perform expensive calculations
 void StudentWorld::startWorkerThreads()
 {
@@ -178,6 +182,7 @@ void StudentWorld::startWorkerThreads()
 		}
 	}));
 }
+#endif
 
 // Handle movement for all game objects within our world
 int StudentWorld::move()
@@ -187,15 +192,16 @@ int StudentWorld::move()
 	// Compute the distance between all Actors
 	computeDistancesBetweenActors();
 
+	// Compute shortest path to exit (used by Protesters)
 	m_shortestPathToExit.compute(60, 60);
 
+	// Compute shortest path to IceMan (also used by Protesters)
 	{
 		auto pIceMan = m_pIceMan.lock();
 		m_shortestPathToIceMan.compute(pIceMan->getX(), pIceMan->getY());
 	}
 
 	setGameStatText(getGameStatText());
-
 
 	// Handle the next event from the min heap
 	processNextEvent();
@@ -230,6 +236,8 @@ int StudentWorld::move()
 // Dig up the ice at this location
 void StudentWorld::digUpIce(int x, int y)
 {
+	bool foundIce = false;
+
 	// Is IceMan standing on ice?
 	if (x < ICE_WIDTH && y < ICE_HEIGHT) {
 
@@ -244,13 +252,16 @@ void StudentWorld::digUpIce(int x, int y)
 				// If ice is present, kill it
 				if (finalX < ICE_WIDTH && m_ice[finalX][finalY]) {
 					m_ice[finalX][finalY].reset();
+					foundIce = true;
 				}
 			}
 		}
 
 	}
 
-	playSound(SOUND_DIG);
+	if (foundIce) {
+		playSound(SOUND_DIG);
+	}
 }
 
 // Cleanup game objects (deallocates memory)
@@ -282,8 +293,6 @@ void StudentWorld::cleanUp()
 }
 
 void StudentWorld::removeDeadGameObjects() {
-	// TODO: test
-
 	auto endIter = remove_if(begin(m_actors), end(m_actors), [](ActorPtr pActor) {
 		if (pActor == nullptr || !pActor->isAlive())
 		{
@@ -296,13 +305,7 @@ void StudentWorld::removeDeadGameObjects() {
 	// Clear distances, this will be regenerated on the next tick
 	m_distances.clear();
 
-	// Clear dead ice
-	for (int x = 0; x < ICE_WIDTH; x++) {
-		for (int y = 0; y < ICE_HEIGHT; y++) {
-			if (m_ice[x][y] && !m_ice[x][y]->isAlive())
-				m_ice[x][y].reset();
-		}
-	}
+	// Clearing ice as we go in digUpIce()
 }
 
 string StudentWorld::getGameStatText() {
@@ -376,9 +379,6 @@ void StudentWorld::addNewActors() {
 		if (m_nNumProtesters < std::min<unsigned int>(15, int(2 + level * 1.5))) {
 			// Random if it is Hardcore or Regular, gives probability as percentage [30...90]
 			unsigned int probabilityOfHardcore = std::min<unsigned int>(90, level * 10 + 30);
-
-			// TODO: remove
-			probabilityOfHardcore = 100;
 
 			// Keep in mind, rand() doesn't give a uniform distribution but it's good enough.
 			// https://stackoverflow.com/questions/12885356/random-numbers-with-different-probabilities
@@ -837,11 +837,6 @@ bool StudentWorld::isBlocked(int x, int y, GraphObject::Direction direction) con
 		break;
 	};
 
-	// Is this location occupied by a boulder?
-	if (isBlockedByBoulder(x, y, direction)) {
-		return true;
-	}
-
 	// Is this location occupied by ice?
 	int xBegin{ x }, xEnd{ x };
 	int yBegin{ y }, yEnd{ y };
@@ -885,6 +880,11 @@ bool StudentWorld::isBlocked(int x, int y, GraphObject::Direction direction) con
 				return true;
 			}
 		}
+	}
+
+	// Is this location occupied by a boulder?
+	if (isBlockedByBoulder(x, y, direction)) {
+		return true;
 	}
 
 	return false;
