@@ -37,7 +37,6 @@ void Squirt::doSomething() {
 	// Handles if Squirt hit something
 	if (getStudentWorld()->StudentWorld::hitBySquirt(getX(), getY())) {
 		setAlive(false);
-		setVisible(false);
 		return;
 	}
 
@@ -63,7 +62,6 @@ void Squirt::doSomething() {
 		return;
 	}
 	else {
-		setVisible(false);
 		setAlive(false);
 	}
 }

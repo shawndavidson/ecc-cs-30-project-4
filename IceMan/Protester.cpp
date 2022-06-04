@@ -89,7 +89,6 @@ void Protester::doSomething() {
         // Have we reached the exit?
         if (getX() == EXIT_POSITION_X && getY() == EXIT_POSITION_Y) {
             setAlive(false);
-            setVisible(false);
         }
         else {
             moveTowardsExit();
@@ -224,6 +223,17 @@ void Protester::annoy(int nHitPoints) {
     getStudentWorld()->playSound(SOUND_PROTESTER_ANNOYED);
 
     m_nTicksStunned = CALCULATE_STUNNED_TICKS(getStudentWorld()->getLevel());
+}
+
+// Protester is bonked by a Boulder
+void Protester::bonkedByBoulder() {
+    annoy(100);
+    // Being hit by a boulder always kills the Protester
+    getStudentWorld()->increaseScore(500);
+}
+
+void Protester::squirtedByIceMan() {
+    annoy(SQUIRT_DAMAGE);
 }
 
 
