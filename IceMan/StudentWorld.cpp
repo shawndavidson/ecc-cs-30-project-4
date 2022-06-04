@@ -21,6 +21,7 @@
 #include "RegularProtester.h"
 #include "HardcoreProtester.h"
 #include "Event.h"
+#include "ShortestPathFinder.h"
 
 using namespace std;
 
@@ -63,8 +64,9 @@ int StudentWorld::init()
 	for (int x = 0; x < ICE_WIDTH; x++) {
 		for (int y = 0; y < ICE_HEIGHT; y++) {
 			// If we're within the tunnel, skip laying ice
-			if (y > 0 && x >= 30 && x <= 33)
+			if (y > 3 && x >= 30 && x <= 33)
 				continue;
+
 			try {
 				// Instantiate an ice block
 				m_ice[x][y] = make_shared<Ice>(this, x, y);
@@ -144,12 +146,15 @@ int StudentWorld::init()
 		}
 	}
  
+#if TEST_WORKER_MULTITHREADS
 	// TODO: make shared data thread safe
-	//startWorkerThreads();
+	startWorkerThreads();
+#endif
 
 	return GWSTATUS_CONTINUE_GAME;
 }
 
+#if TEST_WORKER_MULTITHREADS
 // Start worker threads to perform expensive calculations
 void StudentWorld::startWorkerThreads()
 {
@@ -178,6 +183,7 @@ void StudentWorld::startWorkerThreads()
 		}
 	}));
 }
+#endif
 
 // Handle movement for all game objects within our world
 int StudentWorld::move()
@@ -187,15 +193,16 @@ int StudentWorld::move()
 	// Compute the distance between all Actors
 	computeDistancesBetweenActors();
 
+	// Compute shortest path to exit (used by Protesters)
 	m_shortestPathToExit.compute(60, 60);
 
+	// Compute shortest path to IceMan (also used by Protesters)
 	{
 		auto pIceMan = m_pIceMan.lock();
 		m_shortestPathToIceMan.compute(pIceMan->getX(), pIceMan->getY());
 	}
 
 	setGameStatText(getGameStatText());
-
 
 	// Handle the next event from the min heap
 	processNextEvent();
@@ -230,9 +237,11 @@ int StudentWorld::move()
 // Dig up the ice at this location
 void StudentWorld::digUpIce(int x, int y)
 {
+	bool foundIce = false;
+
 	// Is IceMan standing on ice?
 	if (x < ICE_WIDTH && y < ICE_HEIGHT) {
-
+		bool hitIce = false;
 		// Dig through the 4x4 matrix of ice that we're standing on 
 		for (int yOffset = 0; yOffset < ICEMAN_TO_ICE_SIZE_RATIO; yOffset++) {
 			int finalY = y + yOffset;
@@ -244,13 +253,18 @@ void StudentWorld::digUpIce(int x, int y)
 				// If ice is present, kill it
 				if (finalX < ICE_WIDTH && m_ice[finalX][finalY]) {
 					m_ice[finalX][finalY].reset();
+					foundIce = true;
 				}
 			}
 		}
+		if (hitIce)
+			playSound(SOUND_DIG);
 
 	}
 
-	playSound(SOUND_DIG);
+	if (foundIce) {
+		playSound(SOUND_DIG);
+	}
 }
 
 // Cleanup game objects (deallocates memory)
@@ -282,8 +296,6 @@ void StudentWorld::cleanUp()
 }
 
 void StudentWorld::removeDeadGameObjects() {
-	// TODO: test
-
 	auto endIter = remove_if(begin(m_actors), end(m_actors), [](ActorPtr pActor) {
 		if (pActor == nullptr || !pActor->isAlive())
 		{
@@ -296,26 +308,21 @@ void StudentWorld::removeDeadGameObjects() {
 	// Clear distances, this will be regenerated on the next tick
 	m_distances.clear();
 
-	// Clear dead ice
-	for (int x = 0; x < ICE_WIDTH; x++) {
-		for (int y = 0; y < ICE_HEIGHT; y++) {
-			if (m_ice[x][y] && !m_ice[x][y]->isAlive())
-				m_ice[x][y].reset();
-		}
-	}
+	// Clearing ice as we go in digUpIce()
 }
 
 string StudentWorld::getGameStatText() {
+	auto iceMan = m_pIceMan.lock();
 	stringstream ss;
 	ss << setfill(' ') << left;
 	ss <<
 		"Lvl: " << setw(2) << to_string(getLevel()) <<
 		"  Lives: " << setw(1) << to_string(getLives()) <<
-		"  Hlth: " << setw(3) << to_string(100 * m_pIceMan.lock()->getHitPoints() / 10) + "%" <<
-		"  Wtr: " << setw(2) << to_string(m_pIceMan.lock()->getWater()) <<
-		"  Gld: " << to_string(m_pIceMan.lock()->getGold()) <<
+		"  Hlth: " << setw(3) << to_string(100 * iceMan->getHitPoints() / 10) + "%" <<
+		"  Wtr: " << setw(2) << to_string(iceMan->getWater()) <<
+		"  Gld: " << to_string(iceMan->getGold()) <<
 		"  Oil Left: " << to_string(getNumBarrels()) <<
-		"  Sonar: " << to_string(m_pIceMan.lock()->getSonarKits()) <<
+		"  Sonar: " << to_string(iceMan->getSonarKits()) <<
 		"  Scr: " << setfill('0') << right << setw(6) << to_string(getScore());
 	return ss.str();
 }
@@ -556,8 +563,11 @@ bool StudentWorld::hitBySquirt(int x, int y) {
 			continue;
 		if (m_distanceCalc.getDistance(actor->getX(), actor->getY(), x, y) <= 3) {
 			if (actor->getID() == IID_PROTESTER || actor->getID() == IID_HARD_CORE_PROTESTER) {
-				hitProtester = true; // Allows for multiple protesters to be hit by the same squirt
-				static_pointer_cast<Protester>(actor)->annoy(2);
+				// Allows for multiple protesters to be hit by the same squirt
+				hitProtester = true; 
+				// Prevents an annoyed protester from awarding points mutliple times
+				if (!static_pointer_cast<Protester>(actor)->isAnnoyed())
+					static_pointer_cast<Protester>(actor)->squirtedByIceMan();
 			}
 			else if (actor->getID() == IID_BOULDER) {
 				return true;
@@ -623,8 +633,7 @@ bool StudentWorld::hitByBoulder(int x, int y) {
 		if ((actor->getX() >= x) && (actor->getX() <= x + 4) && (actor->getY() + 4 == y)) {
 			int actorID = actor->getID();
 			if (actorID == IID_PROTESTER || actorID == IID_HARD_CORE_PROTESTER) {
-				static_pointer_cast<Protester>(actor)->annoy(100);
-				increaseScore(500);
+				static_pointer_cast<Protester>(actor)->bonkedByBoulder();
 			}
 			if (actorID == IID_PLAYER) {
 				static_pointer_cast<IceMan>(actor)->annoy(100);
@@ -641,7 +650,10 @@ bool StudentWorld::hitByBoulder(int x, int y) {
 
 // Handles when a Protester shouts at IceMan
 void StudentWorld::iceManShoutedAt() {
-	m_pIceMan.lock()->annoy(2);
+	auto iceMan = m_pIceMan.lock();
+	if (iceMan == nullptr)
+		return;
+	iceMan->annoy(2);
 	playSound(SOUND_PROTESTER_YELL);
 }
 

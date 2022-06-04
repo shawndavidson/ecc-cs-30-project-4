@@ -17,7 +17,8 @@
 #include "ShortestPathFinder.h"
 #include "Person.h"
 
-#define TEST_STUDENTWORLD 0
+#define TEST_STUDENTWORLD			0
+#define TEST_WORKER_MULTITHREADS	0
 
 // Students:  Add code to this file, StudentWorld.cpp, Actor.h, and Actor.cpp
 

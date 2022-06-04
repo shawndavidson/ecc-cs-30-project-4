@@ -23,26 +23,34 @@ bool ShortestPathFinder::compute(int x, int y) {
     m_originY = y;
 
     // Reset distances to our representation of infinity
-    memset(m_distances, UINT_MAX/*UCHAR_MAX*/, VIEW_WIDTH * VIEW_HEIGHT * sizeof(unsigned int /*uint8_t */));
+    memset(m_distances, UINT_MAX, VIEW_WIDTH * VIEW_HEIGHT * sizeof(size_t));
 
     std::queue<Coordinates> queue;
 
     // Add the initial location which is our reference when measuring distance
     queue.emplace(x, y, 0);
 
+#if TEST_SHORTESTPATHFINDER
     size_t maxQueueSize = 0;
     size_t minX{}, maxX{}, minY{}, maxY{};
+#endif
 
     // Perform a BFS (Breadth First Search)
     while (!queue.empty()) {
         Coordinates unit = queue.front();
         queue.pop();
 
-        // TODO: remove
+#if TEST_SHORTESTPATHFINDER
         minX = std::min<uint8_t>(minX, unit.x);
         maxX = std::max<uint8_t>(maxX, unit.x);
         minY = std::min<uint8_t>(minY, unit.y);
         maxY = std::max<uint8_t>(maxY, unit.y);
+#endif
+        // KLUDGE: Without this statement, the queue grows larger than it should 
+        // >4096 (64*64) causing a progressive slow down to game play that seems
+        // to be correlated to how many tunnels IceMan digs.
+        if (m_distances[unit.x][unit.y] != UINT_MAX)
+            continue;
 
         if (m_distances[unit.x][unit.y] != UINT_MAX)
             continue;
@@ -93,36 +101,38 @@ bool ShortestPathFinder::compute(int x, int y) {
             switch (direction) {
                 case GraphObject::Direction::up:
                     // If there's a path above that isn't blocked AND the distance is still unknown
-                    if (unit.distance + 1 < m_distances[unit.x][unit.y + 1] &&
-                        !getStudentWorld()->isBlocked(unit.x, unit.y, (GraphObject::Direction)direction)) {
+                    if (!getStudentWorld()->isBlocked(unit.x, unit.y, (GraphObject::Direction)direction) &&
+                        unit.distance + 1 < m_distances[unit.x][unit.y + 1]) {
                         queue.emplace(unit.x, unit.y + 1, unit.distance + 1);
                     }
                     break; 
                 case GraphObject::Direction::down:
                     // If there's a path below that isn't blocked AND the distance is still unknown
-                    if (unit.distance + 1 < m_distances[unit.x][unit.y - 1] &&
-                        !getStudentWorld()->isBlocked(unit.x, unit.y, (GraphObject::Direction)direction)) {
+                    if (!getStudentWorld()->isBlocked(unit.x, unit.y, (GraphObject::Direction)direction) &&
+                        unit.distance + 1 < m_distances[unit.x][unit.y - 1]) {
                         queue.emplace(unit.x, unit.y - 1, unit.distance + 1);
                     }
                     break;
                 case GraphObject::Direction::left:
                     // If there's a path on the left that isn't blocked AND the distance is still unknown
-                    if (unit.distance + 1 < m_distances[unit.x - 1][unit.y] &&
-                        !getStudentWorld()->isBlocked(unit.x, unit.y, (GraphObject::Direction)direction)) {
+                    if (!getStudentWorld()->isBlocked(unit.x, unit.y, (GraphObject::Direction)direction) &&
+                        unit.distance + 1 < m_distances[unit.x - 1][unit.y]) {
                         queue.emplace(unit.x - 1, unit.y, unit.distance + 1);
                     }
                     break;
                 case GraphObject::Direction::right:
                     // If there's a path on the right that isn't blocked AND the distance is still unknown
-                    if (unit.distance + 1 < m_distances[unit.x + 1][unit.y] &&
-                        !getStudentWorld()->isBlocked(unit.x, unit.y, (GraphObject::Direction)direction)) {
+                    if (!getStudentWorld()->isBlocked(unit.x, unit.y, (GraphObject::Direction)direction) &&
+                        unit.distance + 1 < m_distances[unit.x + 1][unit.y]) {
                         queue.emplace(unit.x + 1, unit.y, unit.distance + 1);
                     }
                     break;
             }
         }
 
+#if TEST_SHORTESTPATHFINDER
         maxQueueSize = std::max<unsigned int>(maxQueueSize, queue.size());
+#endif
     }
 
     return true;

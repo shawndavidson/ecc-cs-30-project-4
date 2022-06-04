@@ -11,9 +11,9 @@ IceMan::IceMan(StudentWorld* pStudentWorld)
             60 /*startY*/,
             Direction::right,
             10 /* nHitPoints */),
-    m_iGold(0),  // FIXME should be 0
-    m_iSonarKits(1), // FIXME should be 1
-    m_iWater(5)  // FIXME should be 5
+    m_iGold(0),         // start with 0
+    m_iSonarKits(1),    // start with 1
+    m_iWater(5)         // start with 5
 {
     
     // TODO: Remove - for testing
@@ -100,7 +100,7 @@ void IceMan::doSomething() {
                 break;
             case KEY_PRESS_ESCAPE:
                 // Restart level. Lose a life
-                setAlive(false); // FIXME - should be handled by annoying IceMan
+                setAlive(false);
                 break;
             case KEY_PRESS_TAB:
                 // Drop Gold Nugget
@@ -137,6 +137,10 @@ void IceMan::doSomething() {
                 }
                 break;
 #endif
+            case 'q':
+                // Quit game
+                pStudentWorld->cleanUp();
+                break;
             default:
                 // Do nothing if input key is invalid
                 break;

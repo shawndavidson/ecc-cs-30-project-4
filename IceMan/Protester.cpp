@@ -48,7 +48,7 @@ Protester::Protester(
     m_nLastShoutedTick(0),
     m_nNumSquaresToMoveInCurrentDirection(GET_RANDOM_NUM_SQUARES_TO_MOVE()),
     m_nTickOfLastPerpendicularTurn(0),
-    m_allDirections{ /*Direction::none,*/ Direction::up, Direction::down, Direction::left, Direction::right},
+    m_allDirections{ Direction::up, Direction::down, Direction::left, Direction::right },
     m_nTicksStunned(0),
     m_nIceManCellRange(16 + getStudentWorld()->getLevel() * 2), // know as M on pg. 45
     m_bCanTrackIceMansCell(bCanTrackIceMansCell)
@@ -89,7 +89,6 @@ void Protester::doSomething() {
         // Have we reached the exit?
         if (getX() == EXIT_POSITION_X && getY() == EXIT_POSITION_Y) {
             setAlive(false);
-            setVisible(false);
         }
         else {
             moveTowardsExit();
@@ -224,6 +223,17 @@ void Protester::annoy(int nHitPoints) {
     getStudentWorld()->playSound(SOUND_PROTESTER_ANNOYED);
 
     m_nTicksStunned = CALCULATE_STUNNED_TICKS(getStudentWorld()->getLevel());
+}
+
+// Protester is bonked by a Boulder
+void Protester::bonkedByBoulder() {
+    annoy(100);
+    // Being hit by a boulder always kills the Protester
+    getStudentWorld()->increaseScore(500);
+}
+
+void Protester::squirtedByIceMan() {
+    annoy(SQUIRT_DAMAGE);
 }
 
 
