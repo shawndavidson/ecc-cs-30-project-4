@@ -243,7 +243,7 @@ void StudentWorld::digUpIce(int x, int y)
 				int finalX = x + xOffset;
 				// If ice is present, kill it
 				if (finalX < ICE_WIDTH && m_ice[finalX][finalY]) {
-					m_ice[finalX][finalY]->setAlive(false);
+					m_ice[finalX][finalY].reset();
 				}
 			}
 		}
@@ -802,11 +802,43 @@ bool StudentWorld::hasLineOfSightToIceMan(int x, int y, GraphObject::Direction& 
 // Is this location occupied by Ice, Boulder, or is out of bounds
 bool StudentWorld::isBlocked(int x, int y, GraphObject::Direction direction) const {
 	// Is this location outside of the ice field's boundries?
-	if (x < 0 || x > (ICE_WIDTH - PERSON_SIZE) || y < 0 || y > ICE_HEIGHT)
-		return true;
+	switch (direction) {
+	case GraphObject::Direction::up:
+		{
+			if (x < 0 || x > (ICE_WIDTH - PERSON_SIZE) ||
+				y < 0 || y + 1 > ICE_HEIGHT) {
+				return true;
+			}
+		}
+		break;
+	case GraphObject::Direction::down:
+		{
+			if (x < 0 || x > (ICE_WIDTH - PERSON_SIZE) ||
+				y - 1 < 0 || y > ICE_HEIGHT) {
+				return true;
+			}
+		}
+		break;
+	case GraphObject::Direction::left:
+		{
+			if (x - 1 < 0 || x > (ICE_WIDTH - PERSON_SIZE) ||
+				y < 0 || y > ICE_HEIGHT) {
+				return true;
+			}
+		}
+		break;
+	case GraphObject::Direction::right:
+		{
+			if (x < 0 || x + 1 > (ICE_WIDTH - PERSON_SIZE) ||
+				y < 0 || y > ICE_HEIGHT) {
+				return true;
+			}
+		}
+		break;
+	};
 
 	// Is this location occupied by a boulder?
-	if (isBlockedByBoulder(x, y)) {
+	if (isBlockedByBoulder(x, y, direction)) {
 		return true;
 	}
 
@@ -859,17 +891,50 @@ bool StudentWorld::isBlocked(int x, int y, GraphObject::Direction direction) con
 }
 
 // Is this location occupied by a Boulder?
-bool StudentWorld::isBlockedByBoulder(int x, int y) const {
+bool StudentWorld::isBlockedByBoulder(int x, int y, GraphObject::Direction direction) const {
 	// Check for Boulders
-	for (const auto& actor : m_actors) {
-		if (actor == nullptr)
+	for (const auto& pBoulder : m_actors) {
+		// Is this a boulder?
+		if (pBoulder == nullptr || pBoulder->getID() != IID_BOULDER)
 			continue;
 
-		if (actor->getID() == IID_BOULDER) {
-			if (x > actor->getX() - 4 && x < actor->getX() + 4 && y > actor->getY() - 4 && y < actor->getY() + 4)
-				return true;
-		}
+		int boulderX = pBoulder->getX();
+		int boulderY = pBoulder->getY();
+
+		switch (direction) {
+		case GraphObject::Direction::none:
+			{
+			}
+			break;
+		case GraphObject::Direction::up:
+			{
+				if (std::abs(boulderX - x) <= 3 && boulderY == y + 4)
+					return true;
+			}
+			break;
+		case GraphObject::Direction::down:
+			{
+				if (std::abs(boulderX - x) <= 3 && boulderY == y - 4)
+					return true;
+			}
+			break;
+		case GraphObject::Direction::left:
+			{
+				if (boulderX == x - 4 && std::abs(boulderY - y) <= 3)
+					return true;
+			}
+			break;
+		case GraphObject::Direction::right:
+			{
+				if (boulderX == x + 4 && std::abs(boulderY - y) <= 3)
+					return true;
+			}
+			break;
+		default:
+			break;
+		};
 	}
+
 	return false;
 }
 

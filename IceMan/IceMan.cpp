@@ -45,6 +45,7 @@ void IceMan::doSomething() {
 
     // Cache a pointer to StudentWorld, for the sake of convenience
     StudentWorld* const pStudentWorld = getStudentWorld();
+    Direction direction = getDirection();
 
     int key;
 
@@ -59,32 +60,32 @@ void IceMan::doSomething() {
             // Check if there is a Boulder before moving in any direction
             case KEY_PRESS_LEFT:
                 // If we're already facing left, move left. Otherwise, just face left;
-                if (!pStudentWorld->isBlockedByBoulder(x - 1, y) &&
-                    getDirection() == Direction::left && x > 0)
+                if (!pStudentWorld->isBlockedByBoulder(x, y, direction) &&
+                    direction == Direction::left && x > 0)
                     takeOneStep(x - 1, y);
                 else
                     setDirection(Direction::left);
                 break;
             case KEY_PRESS_RIGHT:
                 // If we're already facing right, move right. Otherwise, just face right;
-                if (!pStudentWorld->isBlockedByBoulder(x + 1, y) &&
-                    getDirection() == Direction::right && x < (VIEW_WIDTH-(size*ICEMAN_SIZE/ICE_SIZE)))
+                if (!pStudentWorld->isBlockedByBoulder(x, y, direction) &&
+                    direction == Direction::right && x < (VIEW_WIDTH-(size*ICEMAN_SIZE/ICE_SIZE)))
                     takeOneStep(x + 1, y);
                 else
                     setDirection(Direction::right);
                 break;
             case KEY_PRESS_UP:
                 // If we're already facing up, move up. Otherwise, just face up;
-                if (!pStudentWorld->isBlockedByBoulder(x, y + 1) &&
-                    getDirection() == Direction::up && y < ICE_HEIGHT)
+                if (!pStudentWorld->isBlockedByBoulder(x, y, direction) &&
+                    direction == Direction::up && y < ICE_HEIGHT)
                     takeOneStep(x, y + 1);
                 else
                     setDirection(Direction::up);
                 break;
             case KEY_PRESS_DOWN:
                 // If we're already facing down, move down. Otherwise, just face down;
-                if (!pStudentWorld->isBlockedByBoulder(x, y - 1) &&
-                    getDirection() == Direction::down && y > 0)
+                if (!pStudentWorld->isBlockedByBoulder(x, y, direction) &&
+                    direction == Direction::down && y > 0)
                     takeOneStep(x, y - 1);
                 else
                     setDirection(Direction::down);
