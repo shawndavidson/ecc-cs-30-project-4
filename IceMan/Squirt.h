@@ -42,4 +42,4 @@ private:
 
 };
 
-#endif GOLD_H_
+#endif SQUIRT_H_
