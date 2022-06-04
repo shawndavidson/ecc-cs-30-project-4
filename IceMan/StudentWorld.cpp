@@ -3,9 +3,9 @@
 #include <exception>
 #include <assert.h>
 #include <algorithm>
-#include <thread>
 #include <sstream>
 #include <iomanip>
+#include <future>
 
 #include "StudentWorld.h"
 #include "IceMan.h"
@@ -44,8 +44,7 @@ StudentWorld::StudentWorld(std::string assetDir)
 	m_eventListeners(),
 	m_distanceCalc(),
 	m_shortestPathToExit(this),
-	m_shortestPathToIceMan(this),
-	m_pWorkerThreads{}
+	m_shortestPathToIceMan(this)
 {
 }
 
@@ -145,63 +144,48 @@ int StudentWorld::init()
 			cout << "Unable to allocate memory for Gold Nugget" << endl;
 		}
 	}
- 
-#if TEST_WORKER_MULTITHREADS
-	// TODO: make shared data thread safe
-	startWorkerThreads();
-#endif
 
 	return GWSTATUS_CONTINUE_GAME;
 }
-
-#if TEST_WORKER_MULTITHREADS
-// Start worker threads to perform expensive calculations
-void StudentWorld::startWorkerThreads()
-{
-	// Create worker to computer distances between actors
-	m_pWorkerThreads.push_back(make_shared<thread>([&]() {
-		while (true) {
-			// TODO: must make thread-safe
-			computeDistancesBetweenActors();
-		}
-	}));
-
-	// Create worker to map shortest path to exit 
-	m_pWorkerThreads.push_back(make_shared<thread>([&]() {
-		while (true) {
-			// TODO: must make thread-safe
-			m_shortestPathToExit.compute(60, 60);
-		}
-	}));
-
-	// Create worker to map shortest path to IceMan
-	m_pWorkerThreads.push_back(make_shared<thread>([&]() {
-		while (true) {
-			auto pIceMan = m_pIceMan.lock();
-			// TODO: must make thread-safe
-			m_shortestPathToIceMan.compute(pIceMan->getX(), pIceMan->getY());
-		}
-	}));
-}
-#endif
 
 // Handle movement for all game objects within our world
 int StudentWorld::move()
 {
 	addNewActors();
 
+	//************************************************************
+	// Make sure that any methods that are called from this point
+	// is THREAD-SAFE (see isBlocked())
+	//************************************************************
+
+	// Perform expensive operations asynchronously as tasks 
+	
 	// Compute the distance between all Actors
-	computeDistancesBetweenActors();
+	auto task1 = async(std::launch::async, [&]() {
+		computeDistancesBetweenActors();		
+	});
 
 	// Compute shortest path to exit (used by Protesters)
-	m_shortestPathToExit.compute(60, 60);
+	auto task2 = async(std::launch::async, [&]() {
+		m_shortestPathToExit.compute(60, 60);
+	});
 
 	// Compute shortest path to IceMan (also used by Protesters)
-	{
+	auto task3 = async(std::launch::async, [&]() {
 		auto pIceMan = m_pIceMan.lock();
-		m_shortestPathToIceMan.compute(pIceMan->getX(), pIceMan->getY());
-	}
 
+		m_shortestPathToIceMan.compute(pIceMan->getX(), pIceMan->getY());
+	});
+
+	// Wait for tasks to complete so we can use the data while handling ticks
+	task1.wait();
+	task2.wait();
+	task3.wait();
+
+	//************************************************************
+	// WE CAN CALL NON-THREAD-SAFE METHODS NOW
+	//************************************************************	
+	
 	setGameStatText(getGameStatText());
 
 	// Handle the next event from the min heap
@@ -286,13 +270,6 @@ void StudentWorld::cleanUp()
 	}
 
 	m_distances.clear();
-
-
-	// Terminate the worker threads and reclaim their resources
-	for_each(begin(m_pWorkerThreads), end(m_pWorkerThreads), [](ThreadPtr pThread) {
-			pThread->join();
-		});
-	m_pWorkerThreads.resize(0);
 }
 
 void StudentWorld::removeDeadGameObjects() {
@@ -315,8 +292,10 @@ void StudentWorld::removeDeadGameObjects() {
 	// Clearing ice as we go in digUpIce()
 }
 
+// Get formatted text for game statistics 
 string StudentWorld::getGameStatText() {
 	auto iceMan = m_pIceMan.lock();
+
 	stringstream ss;
 	ss << setfill(' ') << left;
 	ss <<
@@ -813,7 +792,11 @@ bool StudentWorld::hasLineOfSightToIceMan(int x, int y, GraphObject::Direction& 
 }
 
 // Is this location occupied by Ice, Boulder, or is out of bounds
+// This method is thread-safe with respect to shortest path calculations
+// for tasks 2 & 3
 bool StudentWorld::isBlocked(int x, int y, GraphObject::Direction direction) const {
+	std::unique_lock<std::mutex> lock(m_shortestPathMutex);
+
 	// Is this location outside of the ice field's boundries?
 	switch (direction) {
 	case GraphObject::Direction::up:
@@ -952,8 +935,10 @@ bool StudentWorld::isBlockedByBoulder(int x, int y, GraphObject::Direction direc
 }
 
 // Compute distances between all actors
+// This method is thread-safe for task1 with respect to distance calculations)
 void StudentWorld::computeDistancesBetweenActors() {
-	// TODO: make thread-safe
+	std::unique_lock<std::mutex> lock(m_distanceCalcMutex);
+
 	m_distances.clear();
 	
 	// Compute distances between each Actor and every other Actor O(n^2)
@@ -1002,6 +987,10 @@ void StudentWorld::computeDistancesBetweenActors() {
 #endif // TEST_STUDENTWORLD
 }
 
+// Dump the state to the console
+// This method is thread-safe
 void StudentWorld::dump() const {
+	std::unique_lock<std::mutex> lock(m_shortestPathMutex);
+
 	m_shortestPathToIceMan.dump();
 }

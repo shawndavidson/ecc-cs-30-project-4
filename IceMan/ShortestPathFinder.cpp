@@ -5,7 +5,7 @@
 #include "ShortestPathFinder.h"
 
 // Constructor
-ShortestPathFinder::ShortestPathFinder(StudentWorld* pStudentWorld)
+ShortestPathFinder::ShortestPathFinder(const StudentWorld* pStudentWorld)
 : m_pStudentWorld(pStudentWorld),
   m_originX(0), 
   m_originY(0),
