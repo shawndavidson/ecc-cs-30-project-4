@@ -20,6 +20,8 @@
 #define TEST_STUDENTWORLD			0
 #define TEST_WORKER_MULTITHREADS	0
 
+#define PERSON_SIZE					4
+
 // Students:  Add code to this file, StudentWorld.cpp, Actor.h, and Actor.cpp
 
 using namespace std;
