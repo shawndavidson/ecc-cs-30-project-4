@@ -1,5 +1,4 @@
 #include <algorithm>
-#include <assert.h>
 
 #include "Protester.h"
 #include "StudentWorld.h"
@@ -70,7 +69,7 @@ void Protester::doSomething() {
         leave();
 
         getStudentWorld()->playSound(SOUND_PROTESTER_GIVE_UP);
-        m_nTicksStunned = 0;
+        m_nTicksStunned = 0; 
     }
 
     // If we're stunned, then rest for N ticks...
@@ -109,7 +108,7 @@ void Protester::doSomething() {
     if (m_bCanTrackIceMansCell) {
         unsigned int distance = getStudentWorld()->getPathDistanceToIceMan(getX(), getY());
 
-        if (distance <= m_nIceManCellRange && distance > MAX_SHOUTING_RANGE_UNITS) {
+        if (distance <= m_nIceManCellRange && distance > MAX_SHOUTING_RANGE_UNITS - 1) {
             moveTowardsIceMan();
             return;
         }
@@ -193,9 +192,9 @@ bool Protester::getPossiblePerpendicularDirections(std::vector<GraphObject::Dire
         direction == Direction::down  || 
         direction == Direction::none) {
         // Check if we can move left or right
-        if (!getStudentWorld()->isBlocked(x - 1, y, direction))
+        if (!getStudentWorld()->isBlocked(x, y, direction))
             directions.push_back(Direction::left);
-        if (!getStudentWorld()->isBlocked(x + 1, y, direction))
+        if (!getStudentWorld()->isBlocked(x, y, direction))
             directions.push_back(Direction::right);
     }
     if (direction == Direction::left  || 
@@ -203,9 +202,9 @@ bool Protester::getPossiblePerpendicularDirections(std::vector<GraphObject::Dire
         direction == Direction::none) {
 
         // Check if we can move up or down?
-        if (!getStudentWorld()->isBlocked(x, y - 1, direction))
+        if (!getStudentWorld()->isBlocked(x, y, direction))
             directions.push_back(Direction::down);
-        if (!getStudentWorld()->isBlocked(x, y + 1, direction))
+        if (!getStudentWorld()->isBlocked(x, y, direction))
             directions.push_back(Direction::up);
     }
 
@@ -263,25 +262,25 @@ bool Protester::takeOneStep(Direction direction) {
             cout << "Protester::takeOneStep Direction is none" << endl;
             break;
         case Direction::up:
-            if (y < ICE_HEIGHT && !getStudentWorld()->isBlocked(x, y + 1, direction))
+            if (y < ICE_HEIGHT && !getStudentWorld()->isBlocked(x, y, direction))
                 moveTo(x, y + 1);
             else
                 result = false;
             break;
         case Direction::down:
-            if (y > 0 && !getStudentWorld()->isBlocked(x, y - 1, direction))
+            if (y > 0 && !getStudentWorld()->isBlocked(x, y, direction))
                 moveTo(x, y - 1);
             else
                 result = false;
             break;
         case Direction::left:
-            if (x > 0 && !getStudentWorld()->isBlocked(x - 1, y, direction))
+            if (x > 0 && !getStudentWorld()->isBlocked(x, y, direction))
                 moveTo(x - 1, y);
             else
                 result = false;
             break;
         case Direction::right:
-            if (x < (VIEW_WIDTH - PERSON_SIZE) && !getStudentWorld()->isBlocked(x + 1, y, direction))
+            if (x < (VIEW_WIDTH - PERSON_SIZE) && !getStudentWorld()->isBlocked(x, y, direction))
                 moveTo(x + 1, y);
             else
                 result = false;

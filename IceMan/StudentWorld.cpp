@@ -243,7 +243,7 @@ void StudentWorld::digUpIce(int x, int y)
 				int finalX = x + xOffset;
 				// If ice is present, kill it
 				if (finalX < ICE_WIDTH && m_ice[finalX][finalY]) {
-					m_ice[finalX][finalY]->setAlive(false);
+					m_ice[finalX][finalY].reset();
 				}
 			}
 		}
@@ -284,8 +284,13 @@ void StudentWorld::cleanUp()
 void StudentWorld::removeDeadGameObjects() {
 	// TODO: test
 
-	remove_if(begin(m_actors), end(m_actors), [](ActorPtr pActor) {
-		return pActor == nullptr || !pActor->isAlive();
+	auto endIter = remove_if(begin(m_actors), end(m_actors), [](ActorPtr pActor) {
+		if (pActor == nullptr || !pActor->isAlive())
+		{
+			//pActor.reset();
+			return true;
+		}
+		return false;
 	});
 
 	// Clear distances, this will be regenerated on the next tick
@@ -352,7 +357,7 @@ pair<int, int> StudentWorld::getRandCoordinates(int minHeight) {
 // Adds new actors during each tick
 void StudentWorld::addNewActors() {
 	// All values are specified on page 20 and 21
-	const int level = getLevel();
+	const unsigned int level = getLevel();
 	// Random chance if a new goodie should be added
 	bool addNewGoodie = (0 == rand() % (level * 25 + 300));
 	if (addNewGoodie) {
@@ -366,15 +371,15 @@ void StudentWorld::addNewActors() {
 	
 	// Only add a Protester if there are fewer than the max already in the field
 	// And enough ticks have passed since the last Protester was added
-	bool addNewProtester = getTick() - m_nTickLastProtesterAdded >= max(25, 200 - level);
+	bool addNewProtester = getTick() - m_nTickLastProtesterAdded >= std::max<unsigned int>(25, 200 - level);
 	if (addNewProtester) {
-		if (m_nNumProtesters < min(15, int(2 + level * 1.5))) {
+		if (m_nNumProtesters < std::min<unsigned int>(15, int(2 + level * 1.5))) {
 			// Random if it is Hardcore or Regular, gives probability as percentage [30...90]
-			int probabilityOfHardcore = min(90, level * 10 + 30);
+			unsigned int probabilityOfHardcore = std::min<unsigned int>(90, level * 10 + 30);
 
 			// Keep in mind, rand() doesn't give a uniform distribution but it's good enough.
 			// https://stackoverflow.com/questions/12885356/random-numbers-with-different-probabilities
-			int ID = (rand() % (100+1) < probabilityOfHardcore) ? IID_HARD_CORE_PROTESTER : IID_PROTESTER;
+			int ID = (rand() % (100+1) < (int)probabilityOfHardcore) ? IID_HARD_CORE_PROTESTER : IID_PROTESTER;
 			addProtester(ID);
 		}
 	}
@@ -794,13 +799,40 @@ bool StudentWorld::hasLineOfSightToIceMan(int x, int y, GraphObject::Direction& 
 // Is this location occupied by Ice, Boulder, or is out of bounds
 bool StudentWorld::isBlocked(int x, int y, GraphObject::Direction direction) const {
 	// Is this location outside of the ice field's boundries?
-	if (x < 0 || x > (ICE_WIDTH - PERSON_SIZE) || y < 0 || y > ICE_HEIGHT)
-		return true;
-
-	// Is this location occupied by a boulder?
-	if (isBlockedByBoulder(x, y)) {
-		return true;
-	}
+	switch (direction) {
+	case GraphObject::Direction::up:
+		{
+			if (x < 0 || x > (ICE_WIDTH - PERSON_SIZE) ||
+				y < 0 || y + 1 > ICE_HEIGHT) {
+				return true;
+			}
+		}
+		break;
+	case GraphObject::Direction::down:
+		{
+			if (x < 0 || x > (ICE_WIDTH - PERSON_SIZE) ||
+				y - 1 < 0 || y > ICE_HEIGHT) {
+				return true;
+			}
+		}
+		break;
+	case GraphObject::Direction::left:
+		{
+			if (x - 1 < 0 || x > (ICE_WIDTH - PERSON_SIZE) ||
+				y < 0 || y > ICE_HEIGHT) {
+				return true;
+			}
+		}
+		break;
+	case GraphObject::Direction::right:
+		{
+			if (x < 0 || x + 1 > (ICE_WIDTH - PERSON_SIZE) ||
+				y < 0 || y > ICE_HEIGHT) {
+				return true;
+			}
+		}
+		break;
+	};
 
 	// Is this location occupied by ice?
 	int xBegin{ x }, xEnd{ x };
@@ -819,10 +851,12 @@ bool StudentWorld::isBlocked(int x, int y, GraphObject::Direction direction) con
 			break;
 		case GraphObject::Direction::down:
 			xEnd	+= PERSON_SIZE;
-			yEnd	= yBegin + 1;
+			yEnd	= yBegin;			
+			yBegin  -= 1;
 			break;
 		case GraphObject::Direction::left:
-			xEnd	= xBegin + 1;
+			xEnd	= xBegin;			
+			xBegin  -= 1;
 			yEnd	+= PERSON_SIZE;
 			break;
 		case GraphObject::Direction::right:
@@ -832,7 +866,6 @@ bool StudentWorld::isBlocked(int x, int y, GraphObject::Direction direction) con
 			break;
 	};
 
-	
 	xBegin	= std::max<int>(0, std::min<int>(ICE_WIDTH, xBegin));
 	xEnd	= std::max<int>(0, std::min<int>(ICE_WIDTH, xEnd));
 	yBegin	= std::max<int>(0, std::min<int>(ICE_HEIGHT, yBegin));
@@ -846,21 +879,59 @@ bool StudentWorld::isBlocked(int x, int y, GraphObject::Direction direction) con
 		}
 	}
 
+	// Is this location occupied by a boulder?
+	if (isBlockedByBoulder(x, y, direction)) {
+		return true;
+	}
+
 	return false;
 }
 
 // Is this location occupied by a Boulder?
-bool StudentWorld::isBlockedByBoulder(int x, int y) const {
+bool StudentWorld::isBlockedByBoulder(int x, int y, GraphObject::Direction direction) const {
 	// Check for Boulders
-	for (const auto& actor : m_actors) {
-		if (actor == nullptr)
+	for (const auto& pBoulder : m_actors) {
+		// Is this a boulder?
+		if (pBoulder == nullptr || pBoulder->getID() != IID_BOULDER)
 			continue;
 
-		if (actor->getID() == IID_BOULDER) {
-			if (x > actor->getX() - 4 && x < actor->getX() + 4 && y > actor->getY() - 4 && y < actor->getY() + 4)
-				return true;
-		}
+		int boulderX = pBoulder->getX();
+		int boulderY = pBoulder->getY();
+
+		switch (direction) {
+		case GraphObject::Direction::none:
+			{
+			}
+			break;
+		case GraphObject::Direction::up:
+			{
+				if (std::abs(boulderX - x) <= 3 && boulderY == y + 4)
+					return true;
+			}
+			break;
+		case GraphObject::Direction::down:
+			{
+				if (std::abs(boulderX - x) <= 3 && boulderY == y - 4)
+					return true;
+			}
+			break;
+		case GraphObject::Direction::left:
+			{
+				if (boulderX == x - 4 && std::abs(boulderY - y) <= 3)
+					return true;
+			}
+			break;
+		case GraphObject::Direction::right:
+			{
+				if (boulderX == x + 4 && std::abs(boulderY - y) <= 3)
+					return true;
+			}
+			break;
+		default:
+			break;
+		};
 	}
+
 	return false;
 }
 
@@ -913,4 +984,8 @@ void StudentWorld::computeDistancesBetweenActors() {
 		}
 	}
 #endif // TEST_STUDENTWORLD
+}
+
+void StudentWorld::dump() const {
+	m_shortestPathToIceMan.dump();
 }
