@@ -827,10 +827,12 @@ bool StudentWorld::isBlocked(int x, int y, GraphObject::Direction direction) con
 			break;
 		case GraphObject::Direction::down:
 			xEnd	+= PERSON_SIZE;
-			yEnd	= yBegin + 1;
+			yEnd	= yBegin;			
+			yBegin  -= 1;
 			break;
 		case GraphObject::Direction::left:
-			xEnd	= xBegin + 1;
+			xEnd	= xBegin;			
+			xBegin  -= 1;
 			yEnd	+= PERSON_SIZE;
 			break;
 		case GraphObject::Direction::right:
@@ -840,7 +842,6 @@ bool StudentWorld::isBlocked(int x, int y, GraphObject::Direction direction) con
 			break;
 	};
 
-	
 	xBegin	= std::max<int>(0, std::min<int>(ICE_WIDTH, xBegin));
 	xEnd	= std::max<int>(0, std::min<int>(ICE_WIDTH, xEnd));
 	yBegin	= std::max<int>(0, std::min<int>(ICE_HEIGHT, yBegin));
