@@ -18,6 +18,10 @@ struct DirectionDistance {
     size_t                  distance;
 };
 
+/*************************************************************************/
+/* The purpose of this class is to help us find the distance from a given*/
+/* location to all other locations in a maze                             */      
+/*************************************************************************/
 class ShortestPathFinder
 {
 public:
@@ -25,7 +29,10 @@ public:
     /* Construction															 */
     /*************************************************************************/
     // Constructor
-    ShortestPathFinder(StudentWorld* pStudentWorld);
+    ShortestPathFinder(const StudentWorld* pStudentWorld);
+
+    // Disallow the Copy Constructor (expensive)
+    ShortestPathFinder(const ShortestPathFinder& rhs) = delete;
 
     // Destructor
     ~ShortestPathFinder() {};
@@ -34,18 +41,20 @@ public:
     /* Getters/Setters															 */
     /*************************************************************************/
     // Get a pointer to StudentWorld
-    StudentWorld* getStudentWorld() { return m_pStudentWorld;  }
+    const StudentWorld* getStudentWorld()   { return m_pStudentWorld;  }
 
     // Get the current X location
-    int getX() const    { return m_originX;  }
+    int getX() const                        { return m_originX;  }
 
     // Get the current Y location
-    int getY() const    { return m_originY; }
+    int getY() const                        { return m_originY; }
 
 
     /*************************************************************************/
     /* Operations															 */
     /*************************************************************************/
+    // Disallow the Assignment Operator (expensive)
+    ShortestPathFinder& operator=(const ShortestPathFinder&) = delete;
 
     // Compute distances from all squares relative to location (x,y)
     bool compute(int x, int y);
@@ -67,13 +76,13 @@ private:
         size_t  distance;
     };
 
-    StudentWorld* m_pStudentWorld;
+    const StudentWorld*   m_pStudentWorld;
 
     // The location from which we want to calculate distances
-    uint8_t m_originX;
-    uint8_t m_originY;
+    uint8_t         m_originX;
+    uint8_t         m_originY;
 
-    size_t m_distances[VIEW_WIDTH][VIEW_HEIGHT];
+    size_t          m_distances[VIEW_WIDTH][VIEW_HEIGHT];
 };
 
 #endif // SHORTESTPATHFINDER_H_

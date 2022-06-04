@@ -7,7 +7,7 @@
 #include <queue>
 #include <map>
 #include <unordered_map>
-#include <thread>
+#include <mutex>
 
 #include "GameWorld.h"
 #include "GameConstants.h"
@@ -18,7 +18,6 @@
 #include "Person.h"
 
 #define TEST_STUDENTWORLD			0
-#define TEST_WORKER_MULTITHREADS	0
 
 // Students:  Add code to this file, StudentWorld.cpp, Actor.h, and Actor.cpp
 
@@ -260,7 +259,6 @@ private:
 	};
 
 	// Event Queue (Min Heap)
-	// TODO: Make it thread-safe
 	std::priority_queue<SharedEventPtr, vector<SharedEventPtr>, StudentWorld::EventComparator> m_events;
 
 	// Registry of Event Listeners
@@ -268,13 +266,12 @@ private:
 
 	// Tool for fast distance calculations between units
 	DistanceCalculator m_distanceCalc;
+	mutable std::mutex m_distanceCalcMutex;
 
 	// Tools for computing shortest paths to the Exit and IceMan
 	ShortestPathFinder m_shortestPathToExit;
 	ShortestPathFinder m_shortestPathToIceMan;
-
-	// Threads for performing computations 
-	std::vector<ThreadPtr> m_pWorkerThreads;
+	mutable std::mutex m_shortestPathMutex;
 };
 
 #endif // STUDENTWORLD_H_
