@@ -11,11 +11,11 @@ class StudentWorld;
 
 struct DirectionDistance {
     // Constructor
-    DirectionDistance(GraphObject::Direction direction = GraphObject::Direction::none, uint8_t distance = 0)
+    DirectionDistance(GraphObject::Direction direction = GraphObject::Direction::none, size_t distance = 0)
         : direction(direction), distance(distance) {}
 
     GraphObject::Direction  direction;
-    uint8_t                 distance;
+    size_t                  distance;
 };
 
 class ShortestPathFinder
