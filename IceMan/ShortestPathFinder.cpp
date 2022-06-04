@@ -52,6 +52,9 @@ bool ShortestPathFinder::compute(int x, int y) {
         if (m_distances[unit.x][unit.y] != UINT_MAX)
             continue;
 
+        if (m_distances[unit.x][unit.y] != UINT_MAX)
+            continue;
+
         // Store distance
         m_distances[unit.x][unit.y] = unit.distance;
 
@@ -59,6 +62,42 @@ bool ShortestPathFinder::compute(int x, int y) {
         for (int direction = GraphObject::Direction::up; 
             direction <= GraphObject::Direction::right; 
             direction++) {
+
+            switch (direction) {
+            case GraphObject::Direction::up:
+            {
+                if (x < 0 || x >(ICE_WIDTH - PERSON_SIZE) ||
+                    y < 0 || y + 1 > ICE_HEIGHT) {
+                    continue;
+                }
+            }
+            break;
+            case GraphObject::Direction::down:
+            {
+                if (x < 0 || x >(ICE_WIDTH - PERSON_SIZE) ||
+                    y - 1 < 0 || y > ICE_HEIGHT) {
+                    continue;
+                }
+            }
+            break;
+            case GraphObject::Direction::left:
+            {
+                if (x - 1 < 0 || x > (ICE_WIDTH - PERSON_SIZE) ||
+                    y < 0 || y > ICE_HEIGHT) {
+                    continue;
+                }
+            }
+            break;
+            case GraphObject::Direction::right:
+            {
+                if (x < 0 || x + 1 >(ICE_WIDTH - PERSON_SIZE) ||
+                    y < 0 || y > ICE_HEIGHT) {
+                    continue;
+                }
+            }
+            break;
+            };
+
             switch (direction) {
                 case GraphObject::Direction::up:
                     // If there's a path above that isn't blocked AND the distance is still unknown

@@ -296,7 +296,7 @@ void StudentWorld::removeDeadGameObjects() {
 	auto endIter = remove_if(begin(m_actors), end(m_actors), [](ActorPtr pActor) {
 		if (pActor == nullptr || !pActor->isAlive())
 		{
-			pActor.reset();
+			//pActor.reset();
 			return true;
 		}
 		return false;
