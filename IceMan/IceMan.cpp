@@ -110,12 +110,30 @@ void IceMan::doSomething() {
                 break;
             case 'z':
             case 'Z': 
-                // Use SonarKit
+                // Use SonarKitd
                 if (m_iSonarKits > 0) {
                     pStudentWorld->StudentWorld::useSonarKit();
                     --m_iSonarKits;
                 }
                 break;
+                
+#if TEST_ICEMAN
+            case 'p':
+                {
+                    getStudentWorld()->dump();
+                }
+                break;
+            case 'e': // TODO: Remove
+                {
+                    const int tick = getStudentWorld()->getTick() + 100;
+                    
+                    // Pass along this data with the Event
+                    struct EventTestData data { 1234, "Hello World!" };
+
+                    getStudentWorld()->pushEvent(make_shared<Event<EventTestData>>(tick, EventTypes::EVENT_TEST, data));
+                }
+                break;
+#endif
             default:
                 // Do nothing if input key is invalid
                 break;
@@ -183,6 +201,8 @@ void IceMan::handleTestEvent(int num, const char* text) {
         << ", RegularProtester::handleTestEvent, num: " << num
         << ", text: " << text
         << std::endl;
+
+
 }
 #endif // TEST_ICEMAN
 

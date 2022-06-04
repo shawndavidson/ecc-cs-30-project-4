@@ -51,6 +51,8 @@ public:
     // Get the direction that has the shortest direction
     bool getShortestPath(int x, int y, DirectionDistance& result) const;
 
+    void dump() const;
+
     /*************************************************************************/
     /* Data Members															 */
     /*************************************************************************/

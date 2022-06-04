@@ -1,5 +1,4 @@
 #include <algorithm>
-#include <assert.h>
 
 #include "Protester.h"
 #include "StudentWorld.h"
@@ -51,7 +50,7 @@ Protester::Protester(
     m_nTickOfLastPerpendicularTurn(0),
     m_allDirections{ /*Direction::none,*/ Direction::up, Direction::down, Direction::left, Direction::right},
     m_nTicksStunned(0),
-    m_nIceManCellRange(16 + getStudentWorld()->getLevel() * 2), // know as M on pg. 45
+    m_nIceManCellRange(1000),//TODO: restore(16 + getStudentWorld()->getLevel() * 2), // know as M on pg. 45
     m_bCanTrackIceMansCell(bCanTrackIceMansCell)
 {
 }
@@ -70,7 +69,7 @@ void Protester::doSomething() {
         leave();
 
         getStudentWorld()->playSound(SOUND_PROTESTER_GIVE_UP);
-        m_nTicksStunned = 0;
+        m_nTicksStunned = 0; 
     }
 
     // If we're stunned, then rest for N ticks...
@@ -109,7 +108,7 @@ void Protester::doSomething() {
     if (m_bCanTrackIceMansCell) {
         unsigned int distance = getStudentWorld()->getPathDistanceToIceMan(getX(), getY());
 
-        if (distance <= m_nIceManCellRange && distance > MAX_SHOUTING_RANGE_UNITS) {
+        if (distance <= m_nIceManCellRange && distance > MAX_SHOUTING_RANGE_UNITS - 1) {
             moveTowardsIceMan();
             return;
         }

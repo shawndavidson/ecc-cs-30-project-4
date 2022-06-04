@@ -145,7 +145,8 @@ public:
 	// Register for an Event
 	void listenForEvent(EventTypes type, EventCallback callback);
 
-	
+	// Dump debugging out to the console
+	void dump() const;
 
 	/*************************************************************************/
 	/* Goodie Operations												     */

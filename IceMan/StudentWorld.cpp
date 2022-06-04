@@ -377,6 +377,9 @@ void StudentWorld::addNewActors() {
 			// Random if it is Hardcore or Regular, gives probability as percentage [30...90]
 			unsigned int probabilityOfHardcore = std::min<unsigned int>(90, level * 10 + 30);
 
+			// TODO: remove
+			probabilityOfHardcore = 100;
+
 			// Keep in mind, rand() doesn't give a uniform distribution but it's good enough.
 			// https://stackoverflow.com/questions/12885356/random-numbers-with-different-probabilities
 			int ID = (rand() % (100+1) < (int)probabilityOfHardcore) ? IID_HARD_CORE_PROTESTER : IID_PROTESTER;
@@ -918,4 +921,8 @@ void StudentWorld::computeDistancesBetweenActors() {
 		}
 	}
 #endif // TEST_STUDENTWORLD
+}
+
+void StudentWorld::dump() const {
+	m_shortestPathToIceMan.dump();
 }
