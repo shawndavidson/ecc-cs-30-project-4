@@ -697,14 +697,19 @@ void Protester::doSomething() {
 		if (getStudentWorld()->getDistanceToIceMan(getX(), getY()) > MAX_SHOUTING_RANGE_UNITS) {
 			// Move towards IceMan
 			if (!takeOneStep(direction)) {
-				cout << "Protester unable to take step in direction " << direction << endl;
+				cout << "Protester has line of sight but is unable to take step towards IceMan (direction="
+					<< direction << ")" << endl;
 			}
-
-			// This will cause us to change direction on subsequent ticks
-			// when IceMan is no longer in sight. Otherwise, we'll keep
-			// taking a step towards him.
-			m_nNumSquaresToMoveInCurrentDirection = 0;
 		}
+		else if (direction != getDirection()) {
+			// Allows us to stop moving, since we're within shouting distance
+			setDirection(direction);
+		}
+
+		// This will cause us to change direction on subsequent ticks
+		// when IceMan is no longer in sight. Otherwise, we'll keep
+		// taking a step towards him.
+		m_nNumSquaresToMoveInCurrentDirection = 0;
 
 		return;
 	}

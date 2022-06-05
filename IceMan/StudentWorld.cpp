@@ -701,24 +701,25 @@ bool StudentWorld::hasLineOfSightToIceMan(int x, int y, GraphObject::Direction& 
 
 		// Are we below IceMan's?
 		if (y < iceY) {
+			// Do we have a line of sight with him by looking up?
 			for (int j = y; j < iceY && hasLineOfSight; j++) {
-				hasLineOfSight = !isBlocked(x, j, direction);
+				hasLineOfSight = !isBlocked(x, j, GraphObject::Direction::up);
 			}
-			// If we have a line of sight, then face IceMan
+			// If we have a line of sight, then face IceMan above
 			if (hasLineOfSight)
 				direction = GraphObject::Direction::up;
 		}
 		else if (y > iceY) { // Are we above IceMan?
+			// Do we have a line of sight with by looking down?
 			for (int j = y; j > iceY && hasLineOfSight; j--) {
-				hasLineOfSight = !isBlocked(x, j, direction);
+				hasLineOfSight = !isBlocked(x, j, GraphObject::Direction::down);
 			}
-			// If we have a line of sight, then face IceMan
+			// If we have a line of sight, then face IceMan below
 			if (hasLineOfSight)
 				direction = GraphObject::Direction::down;
 		}
 		else {
-			// We're in the same spot as IceMan so just face the default direction
-			direction = GraphObject::Direction::left;
+			direction = GraphObject::Direction::none;
 		}
 	}
 	else if (y == iceY) {
@@ -727,24 +728,25 @@ bool StudentWorld::hasLineOfSightToIceMan(int x, int y, GraphObject::Direction& 
 		// Check for ice or boulders in the way on the vertical axis
 		// Are we on IceMan's left?
 		if (x < iceX) {
+			// Do we have a line of sight with by looking to the right?
 			for (int i = x; i < iceX && hasLineOfSight; i++) {
-				hasLineOfSight = !isBlocked(i, y, direction);
+				hasLineOfSight = !isBlocked(i, y, GraphObject::Direction::right);
 			}
-			// If we have a line of sight, then face IceMan
+			// If we have a line of sight, then face IceMan on our right
 			if (hasLineOfSight)
 				direction = GraphObject::Direction::right;
 		}
 		else if (x > iceX) { // Are we on IceMan's right?
+			// Do we have a line of sight with by looking to the left?
 			for (int i = x; i > iceX && hasLineOfSight; i--) {
-				hasLineOfSight = !isBlocked(i, y, direction);
+				hasLineOfSight = !isBlocked(i, y, GraphObject::Direction::left);
 			}
-			// If we have a line of sight, then face IceMan
+			// If we have a line of sight, then face IceMan on our left
 			if (hasLineOfSight)
 				direction = GraphObject::Direction::left;
 		}
 		else {
-			// We're in the same spot as IceMan so just face the default direction
-			direction = GraphObject::Direction::left;
+			direction = GraphObject::Direction::none;
 		}
 	}
 
