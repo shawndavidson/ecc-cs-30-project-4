@@ -9,15 +9,17 @@
 #include <unordered_map>
 #include <mutex>
 
+#include <functional>
+#include <iostream>
+
 #include "GameWorld.h"
 #include "GameConstants.h"
-#include "Event.h"
-#include "DistanceCalculator.h"
 #include "GraphObject.h"
-#include "ShortestPathFinder.h"
-#include "Person.h"
+
 
 #define TEST_STUDENTWORLD			0
+
+#define PERSON_SIZE					4
 
 // Students:  Add code to this file, StudentWorld.cpp, Actor.h, and Actor.cpp
 
@@ -32,12 +34,13 @@ class OilBarrel;
 class Squirt;
 class Boulder;
 
+class DistanceCalculator;
+
 /*************************************************************************/
-/* Type Declaration(s)														     */
+/* Type Declaration(s)													 */
 /*************************************************************************/
 typedef shared_ptr<Actor>					ActorPtr;
 typedef shared_ptr<Ice>						IcePtr;
-typedef std::function<void(SharedEventPtr)>	EventCallback;
 typedef shared_ptr<thread>					ThreadPtr;
 
 /*************************************************************************/
@@ -45,6 +48,173 @@ typedef shared_ptr<thread>					ThreadPtr;
 /*************************************************************************/
 const int ICE_WIDTH		= VIEW_WIDTH;
 const int ICE_HEIGHT	= VIEW_HEIGHT - PERSON_SIZE;
+
+
+
+
+
+
+
+
+
+/************************************************************************************************/
+/*																								*/
+/* DISTANCE CALCULATOR																		    */
+/*																								*/
+/************************************************************************************************/
+
+#ifndef DISTANCECALCULATOR_H_
+#define DISTANCECALCULATOR_H_
+
+#include <cstdint>
+
+// Set to 1 to ensure optimizations generate the correct results.
+#define TEST_DISTANCECALCULATOR 0
+
+
+class DistanceCalculator
+{
+public:
+	/*************************************************************************/
+	/* Construction														     */
+	/*************************************************************************/
+	// Constructor
+	DistanceCalculator();
+
+	// Copy Constructor (deleted - too expensive)
+	DistanceCalculator(const DistanceCalculator& rhs) = delete;
+
+	// Destructor
+	~DistanceCalculator();
+
+	/*************************************************************************/
+	/* Operators														     */
+	/*************************************************************************/
+	// Assignment Operator (deleted - too expensive)
+	DistanceCalculator& operator=(const DistanceCalculator&) = delete;
+
+	/*************************************************************************/
+	/* Operations														     */
+	/*************************************************************************/
+#if TEST_DISTANCECALCULATOR
+	// Test optimized table - debug only
+	void Test();
+#endif //UNIT_TEST
+
+	// Get distance between two squares
+	inline uint8_t getDistance(int x0, int y0, int x1, int y1) const
+	{
+		return m_table[x0][y0][x1][y1];
+	}
+
+private:
+	uint8_t m_table[VIEW_WIDTH][VIEW_HEIGHT][VIEW_WIDTH][VIEW_HEIGHT];
+};
+
+#endif // DISTANCECALCULATOR_H_
+
+
+/************************************************************************************************/
+/*																								*/
+/*SHORTEST PATH FINDER																		    */
+/*																								*/
+/************************************************************************************************/
+
+#ifndef SHORTESTPATHFINDER_H_
+#define SHORTESTPATHFINDER_H_
+
+#include "GameConstants.h"
+#include "GraphObject.h"
+
+#define TEST_SHORTESTPATHFINDER 0
+
+// Forward Declaration
+class StudentWorld;
+
+struct DirectionDistance {
+	// Constructor
+	DirectionDistance(GraphObject::Direction direction = GraphObject::Direction::none, size_t distance = 0)
+		: direction(direction), distance(distance) {}
+
+	GraphObject::Direction  direction;
+	size_t                  distance;
+};
+
+class ShortestPathFinder
+{
+public:
+	/*************************************************************************/
+	/* Construction															 */
+	/*************************************************************************/
+	// Constructor
+	ShortestPathFinder(StudentWorld* pStudentWorld);
+
+	// Destructor
+	~ShortestPathFinder() {};
+
+	/*************************************************************************/
+	/* Getters/Setters															 */
+	/*************************************************************************/
+	// Get a pointer to StudentWorld
+	StudentWorld* getStudentWorld() { return m_pStudentWorld; }
+
+	// Get the current X location
+	int getX() const { return m_originX; }
+
+	// Get the current Y location
+	int getY() const { return m_originY; }
+
+
+	/*************************************************************************/
+	/* Operations															 */
+	/*************************************************************************/
+
+	// Compute distances from all squares relative to location (x,y)
+	bool compute(int x, int y);
+
+	// Get the direction that has the shortest direction
+	bool getShortestPath(int x, int y, DirectionDistance& result) const;
+
+	void dump() const;
+
+	/*************************************************************************/
+	/* Data Members															 */
+	/*************************************************************************/
+private:
+	struct Coordinates {
+		// Constructor
+		Coordinates(uint8_t x, uint8_t y, size_t distance) : x(x), y(y), distance(distance) {}
+
+		uint8_t x, y;
+		size_t  distance;
+	};
+
+	StudentWorld* m_pStudentWorld;
+
+	// The location from which we want to calculate distances
+	uint8_t m_originX;
+	uint8_t m_originY;
+
+	size_t m_distances[VIEW_WIDTH][VIEW_HEIGHT];
+};
+
+#endif // SHORTESTPATHFINDER_H_
+
+
+
+
+
+
+
+/************************************************************************************************************/
+/*																											*/
+/************************************************************************************************************/
+/*																											*/
+/* STUDENT WORLD																						    */
+/*																											*/
+/************************************************************************************************************/
+/*																											*/
+/************************************************************************************************************/
 
 class StudentWorld : public GameWorld
 {
@@ -60,7 +230,7 @@ public:
 	virtual ~StudentWorld();
 
 	/*************************************************************************/
-	/* Operators													     */
+	/* Operators															 */
 	/*************************************************************************/
 	// Prevent assignment 
 	StudentWorld& operator=(const StudentWorld&) = delete;
@@ -139,12 +309,6 @@ public:
 	// Get the direction that has the shortest path to IceMan
 	bool getShortestPathToIceMan(int x, int y, DirectionDistance& result)	{ return m_shortestPathToIceMan.getShortestPath(x, y, result); }
 
-	// Schedule a new Event
-	void pushEvent(SharedEventPtr e)			{ m_events.push(e); }
-
-	// Register for an Event
-	void listenForEvent(EventTypes type, EventCallback callback);
-
 	// Dump debugging out to the console
 	void dump() const;
 
@@ -197,22 +361,9 @@ public:
 	void iceManShoutedAt();
 
 private:
-	// Get the Event with the smallest tick
-	SharedEventPtr topEvent()					{ return m_events.top(); }
-
-	// Is there another Event in the queue?
-	bool isEventQueueEmpty() const				{ return m_events.empty(); }
-
-	// Start calculations in worker threads
-	void startWorkerThreads();
-
-private:
 	/*************************************************************************/
 	/* Helpers																 */
 	/*************************************************************************/
-
-	// Process the next Event
-	void processNextEvent();
 
 	// Compute distances between all Actors
 	void computeDistancesBetweenActors();
@@ -246,24 +397,6 @@ private:
 	// Number of Oil Barrels in the current level
 	int m_iNumBarrels;
 
-	// Declaration for a Function Object to compare two Events 
-	// in descending order by their tick (time)
-	class EventComparator
-	{
-	public:
-		// Function operator
-		int operator() (const SharedEventPtr& e1, const SharedEventPtr& e2)
-		{
-			return e1->getTick() > e2->getTick();
-		}
-	};
-
-	// Event Queue (Min Heap)
-	std::priority_queue<SharedEventPtr, vector<SharedEventPtr>, StudentWorld::EventComparator> m_events;
-
-	// Registry of Event Listeners
-	std::multimap<EventTypes, EventCallback> m_eventListeners;
-
 	// Tool for fast distance calculations between units
 	DistanceCalculator m_distanceCalc;
 	mutable std::mutex m_distanceCalcMutex;
@@ -275,3 +408,5 @@ private:
 };
 
 #endif // STUDENTWORLD_H_
+
+
