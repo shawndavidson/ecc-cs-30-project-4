@@ -556,7 +556,7 @@ int IceMan::getWater() {
 	return m_iWater;
 }
 
-#if TEST_ICEMAN
+#if TEST_EVENTS
 // Handle an Event
 void IceMan::handleTestEvent(int num, const char* text) {
 	std::cout << "Tick: " << getStudentWorld()->getTick()
@@ -566,7 +566,7 @@ void IceMan::handleTestEvent(int num, const char* text) {
 
 
 }
-#endif // TEST_ICEMAN
+#endif // TEST_EVENTS
 
 // Take a step and dig up ice, if necessary
 void IceMan::takeOneStep(int x, int y) {

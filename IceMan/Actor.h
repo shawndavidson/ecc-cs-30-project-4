@@ -350,7 +350,7 @@ private:
 #ifndef ICEMAN_H_
 #define ICEMAN_H_
 
-#define TEST_ICEMAN 1
+#define TEST_ICEMAN 0
 #define TEST_EVENTS 0 
 
 // Forward Declaration
