@@ -986,20 +986,7 @@ HardcoreProtester::HardcoreProtester(
 		20 /* nHitPoints */,
 		true /* bCanTrackIceMansCell */)
 {
-#if TEST_HARDCOREPROTESTER
-	getStudentWorld()->listenForEvent(
-		EventTypes::EVENT_TEST,
-		[&](SharedEventPtr pEvent) {
-			// TODO: Is capturing "this" safe or could it cause an access violation? 
-			// happens if this object is removed before the callback is invoked?
 
-			// This is a little dangerous but it works. Try to find a better way! 
-			Event<EventTestData>* pData = (Event<EventTestData>*)pEvent.get();
-
-			this->annoy(10);
-			cout << "Event received: HardcoreProtester leaving the oil field." << endl;
-		});
-#endif
 }
 
 // Destructor

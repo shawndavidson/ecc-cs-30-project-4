@@ -16,9 +16,6 @@
 #include "GameConstants.h"
 #include "GraphObject.h"
 
-#include "Event.h"
-//#include "DistanceCalculator.h"
-//#include "ShortestPathFinder.h"
 
 #define TEST_STUDENTWORLD			0
 #define TEST_WORKER_MULTITHREADS	0
@@ -45,7 +42,6 @@ class DistanceCalculator;
 /*************************************************************************/
 typedef shared_ptr<Actor>					ActorPtr;
 typedef shared_ptr<Ice>						IcePtr;
-typedef std::function<void(SharedEventPtr)>	EventCallback;
 typedef shared_ptr<thread>					ThreadPtr;
 
 /*************************************************************************/
@@ -314,12 +310,6 @@ public:
 	// Get the direction that has the shortest path to IceMan
 	bool getShortestPathToIceMan(int x, int y, DirectionDistance& result)	{ return m_shortestPathToIceMan.getShortestPath(x, y, result); }
 
-	// Schedule a new Event
-	void pushEvent(SharedEventPtr e)			{ m_events.push(e); }
-
-	// Register for an Event
-	void listenForEvent(EventTypes type, EventCallback callback);
-
 	// Dump debugging out to the console
 	void dump() const;
 
@@ -372,11 +362,6 @@ public:
 	void iceManShoutedAt();
 
 private:
-	// Get the Event with the smallest tick
-	SharedEventPtr topEvent()					{ return m_events.top(); }
-
-	// Is there another Event in the queue?
-	bool isEventQueueEmpty() const				{ return m_events.empty(); }
 
 	// Start calculations in worker threads
 	void startWorkerThreads();
@@ -385,9 +370,6 @@ private:
 	/*************************************************************************/
 	/* Helpers																 */
 	/*************************************************************************/
-
-	// Process the next Event
-	void processNextEvent();
 
 	// Compute distances between all Actors
 	void computeDistancesBetweenActors();
@@ -420,25 +402,6 @@ private:
 	
 	// Number of Oil Barrels in the current level
 	int m_iNumBarrels;
-
-	// Declaration for a Function Object to compare two Events 
-	// in descending order by their tick (time)
-	class EventComparator
-	{
-	public:
-		// Function operator
-		int operator() (const SharedEventPtr& e1, const SharedEventPtr& e2)
-		{
-			return e1->getTick() > e2->getTick();
-		}
-	};
-
-	// Event Queue (Min Heap)
-	// TODO: Make it thread-safe
-	std::priority_queue<SharedEventPtr, vector<SharedEventPtr>, StudentWorld::EventComparator> m_events;
-
-	// Registry of Event Listeners
-	std::multimap<EventTypes, EventCallback> m_eventListeners;
 
 	// Tool for fast distance calculations between units
 	DistanceCalculator m_distanceCalc;

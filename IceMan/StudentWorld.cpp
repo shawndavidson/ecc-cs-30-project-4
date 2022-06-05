@@ -10,7 +10,6 @@
 #include "StudentWorld.h"
 #include "Actor.h"
 
-#include "Event.h"
 
 using namespace std;
 
@@ -29,8 +28,6 @@ StudentWorld::StudentWorld(std::string assetDir)
 	m_actors(), 
 	m_pIceMan(),
 	m_distances(),
-	m_events(),
-	m_eventListeners(),
 	m_distanceCalc(),
 	m_shortestPathToExit(this),
 	m_shortestPathToIceMan(this),
@@ -192,9 +189,6 @@ int StudentWorld::move()
 	}
 
 	setGameStatText(getGameStatText());
-
-	// Handle the next event from the min heap
-	processNextEvent();
 
 	// Give ALL Actors a chance to do something during this tick
 	for_each(begin(m_actors), end(m_actors), [](ActorPtr& actor) { 
@@ -642,42 +636,6 @@ void StudentWorld::iceManShoutedAt() {
 	playSound(SOUND_PROTESTER_YELL);
 }
 
-// Process the next Event
-void StudentWorld::processNextEvent() {
-	// Iterate through all of the events for this tick
-	while (!m_events.empty() && m_nTick >= m_events.top()->getTick()) {
-		SharedEventPtr e = m_events.top();
-
-		// Skip any missed events but print an error message
-		if (m_nTick > e->getTick()) {
-			cout << "Uh oh! StudentWorld::processNextEvent() is late to process this event: " << *e;
-		}
-
-		try {
-			auto iterBegin	= m_eventListeners.lower_bound(e->getType());
-			auto iterEnd	= m_eventListeners.upper_bound(e->getType());
-
-			// Iterate through all pairs where the key matches our Event type
-			for (auto it = iterBegin; it != iterEnd; it++) {
-				EventCallback& callback = it->second;
-
-				callback(e);
-			}
-		}
-		catch (exception& ex) {
-			cout << "An exception occured within a callback associated with an Event of type: " << *e << endl;
-			cout << ex.what() << endl;
-		}
-
-		m_events.pop();
-	}
-}
- 
-// Register for an Event
-void StudentWorld::listenForEvent(EventTypes type, EventCallback callback) {
-	m_eventListeners.insert({ type, callback });
-}
-
 // Compute distance to IceMan
 int StudentWorld::getDistanceToIceMan(int x, int y) const {
 	shared_ptr<IceMan> pIceMan = m_pIceMan.lock();
@@ -1041,18 +999,6 @@ void DistanceCalculator::Test() {
 	}
 }
 #endif //UNIT_TEST
-
-
-/************************************************************************************************/
-/*																								*/
-/* EVENT																					    */
-/*																								*/
-/************************************************************************************************/
-
-std::ostream& operator<<(std::ostream& out, const EventBase& e) {
-	out << "Event @" << e.getTick() << "of type " << e.getType() << std::endl;
-	return out;
-}
 
 
 /************************************************************************************************/
