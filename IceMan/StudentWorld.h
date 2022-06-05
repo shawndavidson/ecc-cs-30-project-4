@@ -7,7 +7,7 @@
 #include <queue>
 #include <map>
 #include <unordered_map>
-#include <thread>
+#include <mutex>
 
 #include <functional>
 #include <iostream>
@@ -18,7 +18,6 @@
 
 
 #define TEST_STUDENTWORLD			0
-#define TEST_WORKER_MULTITHREADS	0
 
 #define PERSON_SIZE					4
 
@@ -362,11 +361,6 @@ public:
 	void iceManShoutedAt();
 
 private:
-
-	// Start calculations in worker threads
-	void startWorkerThreads();
-
-private:
 	/*************************************************************************/
 	/* Helpers																 */
 	/*************************************************************************/
@@ -405,13 +399,12 @@ private:
 
 	// Tool for fast distance calculations between units
 	DistanceCalculator m_distanceCalc;
+	mutable std::mutex m_distanceCalcMutex;
 
 	// Tools for computing shortest paths to the Exit and IceMan
 	ShortestPathFinder m_shortestPathToExit;
 	ShortestPathFinder m_shortestPathToIceMan;
-
-	// Threads for performing computations 
-	std::vector<ThreadPtr> m_pWorkerThreads;
+	mutable std::mutex m_shortestPathMutex;
 };
 
 #endif // STUDENTWORLD_H_
