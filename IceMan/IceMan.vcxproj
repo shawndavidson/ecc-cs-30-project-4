@@ -82,6 +82,22 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Actor.cpp" />
+    <ClCompile Include="DistanceCalculator.cpp" />
+    <ClCompile Include="Event.cpp" />
+    <ClCompile Include="HardcoreProtester.cpp" />
+    <ClCompile Include="Ice.cpp" />
+    <ClCompile Include="IceMan.cpp" />
+    <ClCompile Include="Goodie.cpp" />
+    <ClCompile Include="OilBarrel.cpp" />
+    <ClCompile Include="Gold.cpp" />
+    <ClCompile Include="SonarKit.cpp" />
+    <ClCompile Include="Boulder.cpp" />
+    <ClCompile Include="Squirt.cpp" />
+    <ClCompile Include="WaterPool.cpp" />
+    <ClCompile Include="Person.cpp" />
+    <ClCompile Include="Protester.cpp" />
+    <ClCompile Include="RegularProtester.cpp" />
+    <ClCompile Include="ShortestPathFinder.cpp" />
     <ClCompile Include="StudentWorld.cpp" />
     <ClCompile Include="GameController.cpp">
       <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MultiThreaded</RuntimeLibrary>
@@ -91,6 +107,22 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Actor.h" />
+    <ClInclude Include="Goodie.h" />
+    <ClInclude Include="Gold.h" />
+    <ClInclude Include="Boulder.h" />
+    <ClInclude Include="Squirt.h" />
+    <ClInclude Include="WaterPool.h" />
+    <ClInclude Include="SonarKit.h" />
+    <ClInclude Include="OilBarrel.h" />
+    <ClInclude Include="DistanceCalculator.h" />
+    <ClInclude Include="Event.h" />
+    <ClInclude Include="HardcoreProtester.h" />
+    <ClInclude Include="Ice.h" />
+    <ClInclude Include="IceMan.h" />
+    <ClInclude Include="Person.h" />
+    <ClInclude Include="Protester.h" />
+    <ClInclude Include="RegularProtester.h" />
+    <ClInclude Include="ShortestPathFinder.h" />
     <ClInclude Include="StudentWorld.h" />
     <ClInclude Include="GameConstants.h" />
     <ClInclude Include="GameController.h" />
